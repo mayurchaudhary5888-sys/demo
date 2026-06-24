@@ -1,0 +1,129 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+:root {
+  --font-scale: 1;
+  --color-navy-900: #0B2A5B;
+  --color-navy-700: #003366;
+  --color-orange-500: #FF6B00;
+  --color-gold-500: #F9B233;
+  --color-bg: #F8FAFC;
+  --color-surface: #FFFFFF;
+}
+
+html {
+  font-size: calc(16px * var(--font-scale));
+  scroll-behavior: smooth;
+  background-color: var(--color-bg);
+  color: #1E293B;
+  transition: font-size 0.15s ease-out;
+}
+
+/* Custom Accessibility Focus Indicator */
+*:focus-visible {
+  outline: 2px solid var(--color-navy-900) !important;
+  outline-offset: 2px !important;
+}
+
+/* Government Page Background Overlay */
+.ashoka-chakra-bg {
+  background-image: radial-gradient(#0b2a5b06 1.5px, transparent 1.5px);
+  background-size: 24px 24px;
+}
+
+/* Custom Background Gradient Animation */
+@keyframes hero-gradient-flow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-hero-gradient {
+  background-size: 300% 300%;
+  animation: hero-gradient-flow 18s ease-in-out infinite;
+}
+
+/* Subtle glowing pulse */
+@keyframes ambient-pulse {
+  0%, 100% {
+    transform: scale(1) translate(0px, 0px) rotate(0deg);
+  }
+  33% {
+    transform: scale(1.2) translate(40px, -30px) rotate(120deg);
+  }
+  66% {
+    transform: scale(0.8) translate(-30px, 50px) rotate(240deg);
+  }
+}
+
+@keyframes ambient-pulse-reverse {
+  0%, 100% {
+    transform: scale(1.1) translate(0px, 0px) rotate(360deg);
+  }
+  50% {
+    transform: scale(0.85) translate(-50px, 30px) rotate(180deg);
+  }
+}
+
+@keyframes float-badge {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+.animate-orb-slow {
+  animation: ambient-pulse 24s infinite ease-in-out;
+}
+
+.animate-orb-slow-reverse {
+  animation: ambient-pulse-reverse 30s infinite ease-in-out;
+}
+
+.animate-float-badge {
+  animation: float-badge 6s infinite ease-in-out;
+}
+
+/* Custom styled scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Notice Ticker Marquee Animation */
+@keyframes marquee {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+
+.animate-marquee {
+  display: inline-block;
+  animation: marquee 35s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}

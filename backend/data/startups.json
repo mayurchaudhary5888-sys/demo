@@ -1,0 +1,30 @@
+[
+  {
+    "id": "startup-1782242491205",
+    "name": "spredai",
+    "logoUrl": "blob:http://localhost:3000/16bbfe37-f91b-40a8-b4f4-7717a7f638a7",
+    "stage": "Validation",
+    "fundingType": "Bootstrapped",
+    "description": "sdfg",
+    "email": "parthparmar5172@gmail.com",
+    "mobile": "8980251571",
+    "state": "Punjab",
+    "city": "ahemdabad",
+    "website": "asdfg",
+    "sector": "Other",
+    "startupType": "AI",
+    "isDpiitRecognized": false,
+    "isMsmeRegistered": false,
+    "interestedPrograms": [
+      "All",
+      "Investors",
+      "Incubators"
+    ],
+    "supportRequired": [
+      "Platform",
+      "SaaS"
+    ],
+    "isApproved": false,
+    "registrationDate": "2026-06-23"
+  }
+]

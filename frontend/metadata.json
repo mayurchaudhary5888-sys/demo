@@ -1,0 +1,6 @@
+{
+  "name": "Bhaskar Startup India",
+  "description": "A comprehensive government-style startup ecosystem platform facilitating discovery, incubation support, scheme exploration, and seed fund applications.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
