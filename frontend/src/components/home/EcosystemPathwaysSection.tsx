@@ -1,0 +1,225 @@
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+import React, { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
+import gsap from "gsap";
+import { ArrowRight, Globe2 } from "lucide-react";
+
+type PathwayCard = {
+  number: string;
+  title: string;
+  shortText: string;
+  detail: string;
+};
+
+const pathwayCards: PathwayCard[] = [
+  {
+    number: "01",
+    title: "Industry Alliances",
+    shortText: "By bringing together stakeholders from different sectors...",
+    detail:
+      "By bringing together stakeholders from different sectors, industries, technologies, and geographical regions, the platform creates opportunities for cross-collaboration for all.",
+  },
+  {
+    number: "02",
+    title: "Dynamic Networking",
+    shortText: "Easily connect and collaborate with like-minded people...",
+    detail:
+      "Easily connect and collaborate with like-minded people via personalised dashboards and peer-to-peer connect features that keep the next opportunity close.",
+  },
+  {
+    number: "03",
+    title: "Enhanced Visibility",
+    shortText: "Showcase your startup story and traction clearly...",
+    detail:
+      "Enhanced visibility helps startups present their work, traction, and credibility in a way that mentors, investors, and ecosystem partners can understand quickly.",
+  },
+  {
+    number: "04",
+    title: "Personalised Identification Number",
+    shortText: "Build recognition through a single ecosystem identity...",
+    detail:
+      "A personalised identification number gives each startup a cleaner ecosystem identity, making recognition, discovery, and future platform journeys easier to manage.",
+  },
+];
+
+export const EcosystemPathwaysSection: React.FC = () => {
+  const sectionRef = useRef<HTMLElement | null>(null);
+  const cardRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const contentRef = useRef<HTMLDivElement | null>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  const activeCard = pathwayCards[activeIndex];
+
+  useEffect(() => {
+    const node = sectionRef.current;
+    if (!node) return;
+
+    const revealTargets = node.querySelectorAll<HTMLElement>(".pathways-reveal");
+    const floatTargets = node.querySelectorAll<HTMLElement>(".pathways-float");
+
+    gsap.fromTo(
+      revealTargets,
+      { autoAlpha: 0, y: 34, filter: "blur(10px)" },
+      { autoAlpha: 1, y: 0, filter: "blur(0px)", duration: 0.8, stagger: 0.08, ease: "power3.out" },
+    );
+
+    gsap.to(floatTargets, {
+      y: -18,
+      x: 12,
+      rotation: 8,
+      duration: 7,
+      ease: "sine.inOut",
+      repeat: -1,
+      yoyo: true,
+      stagger: 0.15,
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!contentRef.current) return;
+    gsap.fromTo(
+      contentRef.current,
+      { autoAlpha: 0, x: 32, filter: "blur(6px)" },
+      { autoAlpha: 1, x: 0, filter: "blur(0px)", duration: 0.45, ease: "power2.out" },
+    );
+  }, [activeIndex]);
+
+  const activateCard = (index: number) => {
+    setActiveIndex(index);
+    const card = cardRefs.current[index];
+    if (!card) return;
+
+    gsap.killTweensOf(card);
+    gsap.to(card, {
+      y: -8,
+      scale: 1.03,
+      duration: 0.34,
+      ease: "power3.out",
+    });
+  };
+
+  const releaseCard = (index: number) => {
+    const card = cardRefs.current[index];
+    if (!card || activeIndex === index) return;
+
+    gsap.to(card, {
+      y: 0,
+      scale: 1,
+      duration: 0.34,
+      ease: "power3.out",
+    });
+  };
+
+  return (
+    <section ref={sectionRef} className="relative overflow-hidden bg-white py-0" id="ecosystem-pathways-section">
+      <div className="absolute left-[7%] top-0 z-10 h-36 w-36 rotate-[-18deg] rounded-[42px] bg-[#FF6B00]/70 blur-[1px] pathways-float" />
+      <div className="absolute left-[6%] top-12 z-10 h-32 w-32 rotate-[22deg] rounded-[36px] border border-white/70 bg-[#FF6B00]/35 pathways-float" />
+
+      <div className="relative h-14 sm:h-20" aria-hidden="true">
+        <div className="absolute inset-x-0 top-1/2 h-px -translate-y-1/2 bg-slate-200/70" />
+        <div className="absolute left-1/2 top-0 h-14 w-[min(760px,90vw)] -translate-x-1/2 rounded-b-[120px] bg-white shadow-[0_16px_32px_rgba(7,20,74,0.08)]" />
+      </div>
+
+      <div className="relative overflow-hidden bg-[#07144A] px-4 pt-24 pb-16 text-white sm:px-6 sm:pt-28 sm:pb-20 lg:px-8 lg:pt-32 lg:pb-24 rounded-tl-[140px] rounded-br-[160px]">
+        <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-white/95 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-16 rounded-tr-[100%] bg-white" />
+        <div className="absolute right-[8%] top-[34%] select-none text-[18rem] font-black leading-none text-white/[0.055] sm:text-[24rem]">
+          "
+        </div>
+        <div className="absolute right-[15%] top-[34%] select-none text-[18rem] font-black leading-none text-white/[0.055] sm:text-[24rem]">
+          "
+        </div>
+
+        <div className="relative mx-auto grid max-w-7xl gap-12 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
+          <div className="pathways-reveal grid max-w-xl gap-5 sm:grid-cols-2 lg:mx-auto">
+            {pathwayCards.map((card, index) => {
+              const isActive = activeIndex === index;
+              return (
+                <button
+                  key={card.number}
+                  ref={(el) => {
+                    cardRefs.current[index] = el;
+                  }}
+                  type="button"
+                  onMouseEnter={() => activateCard(index)}
+                  onMouseLeave={() => releaseCard(index)}
+                  onFocus={() => activateCard(index)}
+                  onClick={() => activateCard(index)}
+                  className={`group relative flex min-h-[218px] flex-col items-center justify-center overflow-hidden p-6 text-center shadow-[0_18px_45px_rgba(0,0,0,0.12)] transition-colors duration-300 sm:min-h-[238px] ${
+                    isActive ? "bg-[#F7B914] text-white" : "bg-white text-slate-950 hover:bg-[#F7B914] hover:text-white"
+                  }`}
+                  style={{
+                    clipPath:
+                      index < 2
+                        ? "polygon(0 16%, 95% 0, 100% 7%, 100% 100%, 0 100%)"
+                        : "polygon(0 0, 100% 0, 100% 84%, 95% 100%, 0 86%)",
+                    borderRadius: "14px",
+                  }}
+                  aria-pressed={isActive}
+                >
+                  <div
+                    className={`absolute inset-0 transition-opacity duration-300 ${
+                      isActive ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                    } bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.26),transparent_42%)]`}
+                  />
+
+                  {isActive ? (
+                    <p className="relative max-w-[12rem] text-base font-semibold leading-7 text-white">
+                      {card.shortText}
+                    </p>
+                  ) : (
+                    <div className="relative flex flex-col items-center">
+                      <div className="relative mb-6 h-16 w-20">
+                        <div className="absolute inset-0 rotate-[-30deg] rounded-[16px] bg-[#FF4B35]" />
+                        <div className="absolute left-0 top-2 h-12 w-16 rotate-[-30deg] rounded-[14px] border border-white/80" />
+                        <span className="absolute inset-0 flex items-center justify-center text-xl font-black text-white">
+                          {card.number}
+                        </span>
+                      </div>
+                      <h3 className="max-w-[12rem] text-xl font-black leading-snug text-inherit">
+                        {card.title}
+                      </h3>
+                    </div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          <div ref={contentRef} className="pathways-reveal relative z-10 max-w-3xl lg:pl-10">
+            <p className="mb-4 text-xs font-black uppercase tracking-[0.28em] text-[#F7B914]">
+              BHASKAR Community
+            </p>
+            <h2 className="text-4xl font-black tracking-normal text-white sm:text-5xl">
+              {activeCard.title}
+            </h2>
+            <p className="mt-5 max-w-3xl text-base leading-8 text-white/88 sm:text-lg">
+              {activeCard.detail}
+            </p>
+
+            <div className="mt-8 flex flex-wrap items-center gap-4">
+              <Link
+                to="/network"
+                className="inline-flex items-center gap-2 rounded-md bg-[#FF6B00] px-6 py-3 text-xs font-black uppercase tracking-[0.2em] text-white shadow-[0_18px_40px_rgba(255,107,0,0.28)] transition hover:bg-[#e65f00]"
+              >
+                Browse Network
+                <Globe2 className="h-4 w-4" />
+              </Link>
+              <Link
+                to="/programs"
+                className="inline-flex items-center gap-2 rounded-md border border-white/30 px-6 py-3 text-xs font-black uppercase tracking-[0.2em] text-white transition hover:bg-white/10"
+              >
+                Explore Programs
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
