@@ -17,6 +17,7 @@ import { IdeaValidationProgram } from "./programs/idea-validation-program/IdeaVa
 import { FoundationProgram } from "./programs/foundation-program/FoundationProgram";
 import { GlobalImpactProgram } from "./programs/global-impact-program/GlobalImpactProgram";
 import { StartupProgramApplication } from "./programs/startup-program/StartupProgramApplication";
+import { MsmeProgramApplication } from "./programs/msme-program/MsmeProgramApplication";
 
 const requestLogin = () => {
   window.dispatchEvent(new CustomEvent("bsi:open-login"));
@@ -443,6 +444,8 @@ export const ProgramDetail: React.FC = () => {
         <GlobalImpactProgram program={prog} onCancel={() => setActiveTab("details")} />
       ) : prog.id === "startup-program" ? (
         <StartupProgramApplication program={prog} onCancel={() => setActiveTab("details")} />
+      ) : prog.id === "msme-program" ? (
+        <MsmeProgramApplication program={prog} onCancel={() => setActiveTab("details")} />
       ) : (
         /* COMMON APPLICATION FORM */
         <div className="bg-white border border-slate-200 rounded-xl p-6 md:p-8 shadow-sm space-y-8" id="application-form-pane">
