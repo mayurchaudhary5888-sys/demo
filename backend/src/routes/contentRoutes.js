@@ -14,6 +14,7 @@ import {
   getStartup,
   listApplications,
   listInvestors,
+  listUsers,
   listNotifications,
   listPrograms,
   listQueries,
@@ -22,6 +23,7 @@ import {
   replyQuery,
   toggleProgram,
   toggleStartupApproval,
+  updateUserStatus,
   updateApplicationStatus,
   updateStartup,
   upsertNotification,
@@ -47,6 +49,8 @@ contentRoutes.get("/applications", listApplications);
 contentRoutes.get("/applications/:id", getApplication);
 contentRoutes.post("/applications", requireAuth, createApplication);
 contentRoutes.patch("/admin/applications/:id/status", requireAuth, requireAdmin, updateApplicationStatus);
+contentRoutes.get("/admin/users", requireAuth, requireAdmin, listUsers);
+contentRoutes.patch("/admin/users/:id/status", requireAuth, requireAdmin, updateUserStatus);
 
 contentRoutes.get("/notifications", requireAuth, listNotifications);
 contentRoutes.patch("/notifications/mark-all-read", requireAuth, markAllNotificationsRead);

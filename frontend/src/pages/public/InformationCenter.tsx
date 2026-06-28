@@ -136,7 +136,7 @@ export const InformationCenter: React.FC = () => {
             </div>
           </div>
           <Link
-            to="/programs/startup-program"
+            to="/support/startup-program"
             className="bg-[#0B2A5B] hover:bg-[#0B2A5B]/90 text-white font-extrabold text-xs px-5 py-2.5 rounded-lg uppercase tracking-wider"
           >
             View Program

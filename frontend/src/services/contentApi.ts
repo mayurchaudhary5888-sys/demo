@@ -34,6 +34,7 @@ export const contentApi = {
   getPrograms: () => unwrap(request<any[]>("/programs")),
   getProgramById: (id: string) => unwrap(request<any>(`/programs/${id}`)),
   getStartups: () => unwrap(request<any[]>("/startups")),
+  getUsers: () => unwrap(request<any[]>("/admin/users")),
   getInvestors: () => unwrap(request<any[]>("/investors")),
   getApplications: (startupId?: string) =>
     unwrap(request<any[]>(`/applications${startupId ? `?startupId=${encodeURIComponent(startupId)}` : ""}`)),
@@ -43,7 +44,6 @@ export const contentApi = {
   getAdminStats: () => unwrap(request<any>("/admin/stats")),
   getFaqs: () => unwrap(request<any[]>("/faqs")),
   getAnnouncements: () => unwrap(request<any[]>("/announcements")),
-  getConnections: () => unwrap(request<any[]>("/connections")),
   markAllNotificationsRead: () =>
     unwrap(request<any[]>("/notifications/mark-all-read", { method: "PATCH" })),
   submitStartup: (payload: Record<string, unknown>) =>
@@ -52,6 +52,8 @@ export const contentApi = {
     unwrap(request<any>(`/startups/${id}`, { method: "PATCH", body: JSON.stringify(payload) })),
   toggleStartupApproval: (id: string) =>
     unwrap(request<any>(`/admin/startups/${id}/approval`, { method: "PATCH" })),
+  updateUserStatus: (id: string, payload: Record<string, unknown>) =>
+    unwrap(request<any>(`/admin/users/${id}/status`, { method: "PATCH", body: JSON.stringify(payload) })),
   addProgram: (payload: Record<string, unknown>) =>
     unwrap(request<any>("/admin/programs", { method: "POST", body: JSON.stringify(payload) })),
   toggleProgramStatus: (id: string) =>

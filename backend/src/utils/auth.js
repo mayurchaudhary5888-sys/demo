@@ -27,6 +27,8 @@ export const buildSession = (user) => ({
   role: user.role,
   name: user.name,
   startupId: user.startupId || null,
+  selectedProgram: user.startupProfile?.selectedProgram || user.selectedProgram || null,
   isOnboarded: user.isOnboarded,
   dept: user.dept,
+  isActive: user.isActive,
 });

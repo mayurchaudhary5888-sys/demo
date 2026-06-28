@@ -3,26 +3,112 @@
  * SPDX-License-Identifier: Apache-2.5
  */
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
+import {
+  Building2,
+  FileText,
+  Globe,
+  ImagePlus,
+  KeyRound,
+  Lock,
+  LockKeyhole,
+  Mail,
+  MapPin,
+  Phone,
+  Save,
+  Settings2,
+  Sparkles,
+} from "lucide-react";
+import { FundingType, StartupProfile, StartupStage } from "../../types";
 import { useAppState } from "../../context/AppContext";
-import { User, Lock, Save, Globe, Shield, Eye, EyeOff, Mail, KeyRound, LockKeyhole } from "lucide-react";
+
+type ProfileFormState = {
+  logoPreview: string;
+  legalName: string;
+  startupName: string;
+  registrationNumber: string;
+  startupBrief: string;
+  stage: StartupStage;
+  fundingStatus: FundingType;
+  industry: string;
+  sector: string;
+  nature: string;
+  state: string;
+  city: string;
+  email: string;
+  mobile: string;
+  website: string;
+  appLink: string;
+  cin: string;
+  udhyogAadhaar: string;
+  services: string;
+  interests: string;
+  registrationDate: string;
+};
+
+const stageOptions: StartupStage[] = [
+  StartupStage.IDEATION,
+  StartupStage.VALIDATION,
+  StartupStage.EARLY_TRACTION,
+  StartupStage.SCALING,
+];
+
+const fundingOptions: FundingType[] = [FundingType.BOOTSTRAPPED, FundingType.FUNDED];
+const industryOptions = ["AI", "Fintech", "Healthtech", "Edtech", "Manufacturing", "Agri", "Climate", "Other"];
+const sectorOptions = ["SaaS", "D2C", "B2B", "B2C", "Marketplace", "Hardware", "Services", "Other"];
+const natureOptions = ["Private Limited Company", "LLP", "Partnership", "Section 8", "Sole Proprietorship", "Other"];
+const stateOptions = ["Punjab", "Delhi", "Haryana", "Maharashtra", "Karnataka", "Gujarat", "Tamil Nadu", "Other"];
+
+const toCsv = (items?: string[]) => (items?.length ? items.join(", ") : "");
+
+const buildFormState = (profile: StartupProfile | undefined, userEmail?: string): ProfileFormState => ({
+  logoPreview: profile?.logoPreview || profile?.logoUrl || "",
+  legalName: profile?.legalName || profile?.startupName || profile?.name || "",
+  startupName: profile?.startupName || profile?.name || "",
+  registrationNumber: profile?.registrationNumber || profile?.id || "",
+  startupBrief: profile?.startupBrief || profile?.description || "",
+  stage: profile?.stage || StartupStage.VALIDATION,
+  fundingStatus: (profile?.fundingStatus as FundingType) || profile?.fundingType || FundingType.BOOTSTRAPPED,
+  industry: profile?.industry || "",
+  sector: profile?.sector || "",
+  nature: profile?.nature || profile?.startupType || "",
+  state: profile?.state || "",
+  city: profile?.city || "",
+  email: profile?.email || userEmail || "",
+  mobile: profile?.mobile || "",
+  website: profile?.website || "",
+  appLink: profile?.appLink || "",
+  cin: profile?.cin || profile?.dpiitNumber || "",
+  udhyogAadhaar: profile?.udhyogAadhaar || profile?.msmeNumber || "",
+  services: toCsv(profile?.services || profile?.supportRequired),
+  interests: toCsv(profile?.interests || profile?.interestedPrograms),
+  registrationDate: profile?.registrationDate || new Date().toISOString().split("T")[0],
+});
+
+const parseCsv = (value: string) =>
+  value
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+const sectionClassName =
+  "rounded-[26px] border border-[#D9DCF4] bg-[radial-gradient(circle_at_top_left,_rgba(255,255,255,0.98),_rgba(248,249,255,0.96)_38%,_rgba(231,236,255,0.88)_100%)] p-6 shadow-[0_20px_55px_rgba(69,84,155,0.14)]";
+
+const inputClassName =
+  "w-full rounded-2xl border border-[#DCE2F6] bg-white px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition focus:border-[#2B2F86] focus:shadow-[0_0_0_4px_rgba(43,47,134,0.08)]";
+
+const labelClassName = "mb-2 block text-[12px] font-black uppercase tracking-[0.16em] text-[#5B64A8]";
 
 export const Settings: React.FC = () => {
   const { user, startups, showToast, updateStartupProfile } = useAppState();
   const location = useLocation();
   const myStartup = startups.find((s) => s.id === user?.startupId);
 
-  const [founderName, setFounderName] = useState(user?.name || "Founder Owner");
-  const [email, setEmail] = useState(user?.email || "founder@company.in");
-  const [mobile, setMobile] = useState(myStartup?.mobile || "9876543210");
-  const [website, setWebsite] = useState(myStartup?.website || "https://company.in");
+  const [profileForm, setProfileForm] = useState<ProfileFormState>(() => buildFormState(myStartup, user?.email));
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [privacyMode, setPrivacyMode] = useState("standard");
-  const [showPassword, setShowPassword] = useState(false);
-
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -32,205 +118,395 @@ export const Settings: React.FC = () => {
     el?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, [location.hash]);
 
-  const handleSave = (e: React.FormEvent) => {
+  useEffect(() => {
+    setProfileForm(buildFormState(myStartup, user?.email));
+  }, [myStartup, user?.email]);
+
+  const companyName = useMemo(
+    () => profileForm.startupName || profileForm.legalName || myStartup?.name || "Startup",
+    [profileForm.legalName, profileForm.startupName, myStartup?.name]
+  );
+
+  const updateProfileField = <K extends keyof ProfileFormState>(key: K, value: ProfileFormState[K]) => {
+    setProfileForm((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleLogoUpload = (file: File | null) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      updateProfileField("logoPreview", typeof reader.result === "string" ? reader.result : "");
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!user?.startupId) {
+      showToast("Startup profile not found for this account.", "error");
+      return;
+    }
+
     setSaving(true);
-    Promise.resolve()
-      .then(async () => {
-        if (user?.startupId) {
-          await updateStartupProfile(user.startupId, {
-            mobile,
-            website,
-          });
-        }
+    try {
+      const payload: Partial<StartupProfile> = {
+        name: profileForm.startupName || profileForm.legalName,
+        logoUrl: profileForm.logoPreview || undefined,
+        logoPreview: profileForm.logoPreview || undefined,
+        legalName: profileForm.legalName,
+        startupName: profileForm.startupName,
+        registrationNumber: profileForm.registrationNumber,
+        startupBrief: profileForm.startupBrief,
+        description: profileForm.startupBrief,
+        stage: profileForm.stage,
+        fundingStatus: profileForm.fundingStatus,
+        fundingType: profileForm.fundingStatus,
+        industry: profileForm.industry,
+        sector: profileForm.sector,
+        nature: profileForm.nature,
+        startupType: profileForm.nature || profileForm.industry,
+        state: profileForm.state,
+        city: profileForm.city,
+        email: profileForm.email,
+        mobile: profileForm.mobile,
+        website: profileForm.website || undefined,
+        appLink: profileForm.appLink || undefined,
+        cin: profileForm.cin || undefined,
+        dpiitNumber: profileForm.cin || undefined,
+        udhyogAadhaar: profileForm.udhyogAadhaar || undefined,
+        msmeNumber: profileForm.udhyogAadhaar || undefined,
+        isDpiitRecognized: Boolean(profileForm.cin),
+        isMsmeRegistered: Boolean(profileForm.udhyogAadhaar),
+        services: parseCsv(profileForm.services),
+        supportRequired: parseCsv(profileForm.services),
+        interests: parseCsv(profileForm.interests),
+        interestedPrograms: parseCsv(profileForm.interests),
+        registrationDate: profileForm.registrationDate,
+      };
 
-        const session = JSON.parse(localStorage.getItem("bsi_session") || "{}");
-        session.name = founderName;
-        session.email = email;
-        localStorage.setItem("bsi_session", JSON.stringify(session));
-
-        showToast("Profile settings saved successfully.", "success");
-      })
-      .finally(() => {
-        setSaving(false);
-      });
+      await updateStartupProfile(user.startupId, payload);
+      showToast("Profile details updated successfully.", "success");
+    } catch {
+      showToast("Unable to save profile changes right now.", "error");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
-    <div className="space-y-6 text-xs text-slate-700" id="settings-container">
-      <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-xs space-y-6">
-      <div className="border-b border-slate-100 pb-3 space-y-1">
-        <h2 className="text-md font-bold text-[#0B2A5B] flex items-center gap-1.5">
-          <Shield className="w-4 h-4 text-[#FF6B00]" />
-          <span>Security & profile controls</span>
-        </h2>
-        <p className="text-[11px] text-slate-500 font-medium">
-          Manage your founder dashboard settings, contact information, and security configurations.
-        </p>
-      </div>
-
-      <form onSubmit={handleSave} className="space-y-5" id="settings-form">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          <div className="space-y-1.5">
-            <label className="block font-bold text-[#0B2A5B]">Founder Name *</label>
-            <div className="relative">
-              <User className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
-              <input
-                type="text"
-                value={founderName}
-                onChange={(e) => setFounderName(e.target.value)}
-                className="pl-10 pr-4 py-2.5 border border-slate-350 rounded-lg w-full outline-none font-semibold text-slate-800 focus:border-[#0B2A5B]"
-              />
-            </div>
+    <div className="space-y-6 text-sm text-slate-700" id="settings-container">
+      <section className={sectionClassName}>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[#5B64A8]">Edit Profile</p>
+            <h1 className="mt-2 text-2xl font-black tracking-tight text-[#162457] sm:text-3xl">
+              {companyName}
+            </h1>
+            <p className="mt-2 max-w-3xl text-sm font-medium leading-6 text-slate-600">
+              Update the same company details that appear on your dashboard profile card.
+            </p>
           </div>
 
-          <div className="space-y-1.5">
-            <label className="block font-bold text-[#0B2A5B]">Email Address *</label>
-            <div className="relative">
-              <User className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
-              <input
-                type="email"
-                value={email}
-                disabled
-                className="pl-10 pr-4 py-2.5 border border-slate-200 bg-slate-50 rounded-lg w-full outline-none font-semibold text-slate-500 cursor-not-allowed"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="block font-bold text-[#0B2A5B]">Contact Phone *</label>
-            <input
-              type="text"
-              value={mobile}
-              onChange={(e) => setMobile(e.target.value)}
-              className="p-2.5 border border-slate-350 rounded-lg w-full outline-none font-semibold text-slate-800 focus:border-[#0B2A5B]"
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="block font-bold text-[#0B2A5B]">Company Website</label>
-            <div className="relative">
-              <Globe className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
-              <input
-                type="url"
-                value={website}
-                onChange={(e) => setWebsite(e.target.value)}
-                className="pl-10 pr-4 py-2.5 border border-slate-350 rounded-lg w-full outline-none font-semibold text-slate-800 focus:border-[#0B2A5B]"
-              />
-            </div>
+          <div className="inline-flex items-center gap-2 rounded-full bg-white/90 px-4 py-2 text-xs font-black uppercase tracking-wide text-[#2B2F86] shadow-sm">
+            <Settings2 className="h-4 w-4 text-[#FF8A1C]" />
+            Profile Editor
           </div>
         </div>
+      </section>
 
-        <div className="border-t border-slate-100 pt-4 flex justify-end">
+      <form onSubmit={handleSave} className="space-y-6" id="settings-form">
+        <section className={sectionClassName}>
+          <div className="grid gap-8 xl:grid-cols-[320px_minmax(0,1fr)]">
+            <div className="border-b border-[#E4E8FB] pb-6 xl:border-b-0 xl:border-r xl:pb-0 xl:pr-8">
+              <div className="mx-auto flex max-w-[220px] flex-col items-center text-center">
+                <label className="flex h-28 w-28 cursor-pointer items-center justify-center overflow-hidden rounded-[26px] border border-white/80 bg-white shadow-[0_20px_45px_rgba(72,82,150,0.16)]">
+                  {profileForm.logoPreview ? (
+                    <img src={profileForm.logoPreview} alt={`${companyName} logo`} className="h-full w-full object-contain p-5" />
+                  ) : (
+                    <Building2 className="h-10 w-10 text-[#394B98]" />
+                  )}
+                  <input type="file" accept="image/*" className="hidden" onChange={(e) => handleLogoUpload(e.target.files?.[0] || null)} />
+                </label>
+
+                <button
+                  type="button"
+                  onClick={() => document.querySelector<HTMLInputElement>("#settings-form input[type='file']")?.click()}
+                  className="mt-4 inline-flex items-center gap-2 rounded-2xl border border-[#DCE2F6] bg-white px-4 py-2 text-sm font-black text-[#2B2F86] transition hover:border-[#2B2F86]"
+                >
+                  <ImagePlus className="h-4 w-4" />
+                  Change Logo
+                </button>
+
+                <div className="mt-5 flex w-full flex-wrap justify-center gap-2">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-[#EDF2FF] px-3 py-1 text-[11px] font-black uppercase tracking-wide text-[#394B98]">
+                    <Sparkles className="h-3.5 w-3.5" />
+                    {profileForm.stage}
+                  </span>
+                  <span className="inline-flex items-center gap-1 rounded-full bg-[#FFF2E8] px-3 py-1 text-[11px] font-black uppercase tracking-wide text-[#DF6B15]">
+                    <FileText className="h-3.5 w-3.5" />
+                    {profileForm.fundingStatus}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              <div className="grid gap-5 lg:grid-cols-2">
+                <div>
+                  <label className={labelClassName}>Entity Name</label>
+                  <input
+                    type="text"
+                    value={profileForm.legalName}
+                    onChange={(e) => updateProfileField("legalName", e.target.value)}
+                    className={inputClassName}
+                  />
+                </div>
+                <div>
+                  <label className={labelClassName}>Startup Name</label>
+                  <input
+                    type="text"
+                    value={profileForm.startupName}
+                    onChange={(e) => updateProfileField("startupName", e.target.value)}
+                    className={inputClassName}
+                  />
+                </div>
+                <div>
+                  <label className={labelClassName}>Registration Number</label>
+                  <input
+                    type="text"
+                    value={profileForm.registrationNumber}
+                    onChange={(e) => updateProfileField("registrationNumber", e.target.value)}
+                    className={inputClassName}
+                  />
+                </div>
+                <div>
+                  <label className={labelClassName}>Registration Date</label>
+                  <input
+                    type="date"
+                    value={profileForm.registrationDate}
+                    onChange={(e) => updateProfileField("registrationDate", e.target.value)}
+                    className={inputClassName}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className={labelClassName}>Startup Brief</label>
+                <textarea
+                  rows={5}
+                  value={profileForm.startupBrief}
+                  onChange={(e) => updateProfileField("startupBrief", e.target.value)}
+                  className={`${inputClassName} resize-none leading-6`}
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="grid gap-6 xl:grid-cols-2">
+          <div className={sectionClassName}>
+            <div className="mb-5 flex items-center gap-2 text-[#162457]">
+              <Building2 className="h-5 w-5 text-[#FF8A1C]" />
+              <h2 className="text-lg font-black">Business Details</h2>
+            </div>
+            <div className="grid gap-5 md:grid-cols-2">
+              <div>
+                <label className={labelClassName}>Stage</label>
+                <select value={profileForm.stage} onChange={(e) => updateProfileField("stage", e.target.value as StartupStage)} className={inputClassName}>
+                  {stageOptions.map((option) => (
+                    <option key={option} value={option}>{option}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className={labelClassName}>Funding Status</label>
+                <select value={profileForm.fundingStatus} onChange={(e) => updateProfileField("fundingStatus", e.target.value as FundingType)} className={inputClassName}>
+                  {fundingOptions.map((option) => (
+                    <option key={option} value={option}>{option}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className={labelClassName}>Industry</label>
+                <select value={profileForm.industry} onChange={(e) => updateProfileField("industry", e.target.value)} className={inputClassName}>
+                  <option value="">Select industry</option>
+                  {industryOptions.map((option) => (
+                    <option key={option} value={option}>{option}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className={labelClassName}>Sector</label>
+                <select value={profileForm.sector} onChange={(e) => updateProfileField("sector", e.target.value)} className={inputClassName}>
+                  <option value="">Select sector</option>
+                  {sectorOptions.map((option) => (
+                    <option key={option} value={option}>{option}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className={labelClassName}>Company Nature</label>
+                <select value={profileForm.nature} onChange={(e) => updateProfileField("nature", e.target.value)} className={inputClassName}>
+                  <option value="">Select nature</option>
+                  {natureOptions.map((option) => (
+                    <option key={option} value={option}>{option}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className={labelClassName}>DPIIT Recognition</label>
+                <input type="text" value={profileForm.cin} onChange={(e) => updateProfileField("cin", e.target.value)} className={inputClassName} />
+              </div>
+              <div className="md:col-span-2">
+                <label className={labelClassName}>MSME / Udyog Aadhaar</label>
+                <input
+                  type="text"
+                  value={profileForm.udhyogAadhaar}
+                  onChange={(e) => updateProfileField("udhyogAadhaar", e.target.value)}
+                  className={inputClassName}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className={sectionClassName}>
+            <div className="mb-5 flex items-center gap-2 text-[#162457]">
+              <Phone className="h-5 w-5 text-[#FF8A1C]" />
+              <h2 className="text-lg font-black">Contact And Links</h2>
+            </div>
+            <div className="grid gap-5 md:grid-cols-2">
+              <div>
+                <label className={labelClassName}>Email</label>
+                <div className="relative">
+                  <Mail className="pointer-events-none absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
+                  <input type="email" value={profileForm.email} onChange={(e) => updateProfileField("email", e.target.value)} className={`${inputClassName} pl-11`} />
+                </div>
+              </div>
+              <div>
+                <label className={labelClassName}>Mobile</label>
+                <div className="relative">
+                  <Phone className="pointer-events-none absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
+                  <input type="text" value={profileForm.mobile} onChange={(e) => updateProfileField("mobile", e.target.value)} className={`${inputClassName} pl-11`} />
+                </div>
+              </div>
+              <div>
+                <label className={labelClassName}>State</label>
+                <div className="relative">
+                  <MapPin className="pointer-events-none absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
+                  <select value={profileForm.state} onChange={(e) => updateProfileField("state", e.target.value)} className={`${inputClassName} pl-11`}>
+                    <option value="">Select state</option>
+                    {stateOptions.map((option) => (
+                      <option key={option} value={option}>{option}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className={labelClassName}>City</label>
+                <input type="text" value={profileForm.city} onChange={(e) => updateProfileField("city", e.target.value)} className={inputClassName} />
+              </div>
+              <div>
+                <label className={labelClassName}>Website</label>
+                <div className="relative">
+                  <Globe className="pointer-events-none absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
+                  <input type="url" value={profileForm.website} onChange={(e) => updateProfileField("website", e.target.value)} className={`${inputClassName} pl-11`} />
+                </div>
+              </div>
+              <div>
+                <label className={labelClassName}>App Link</label>
+                <div className="relative">
+                  <Globe className="pointer-events-none absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
+                  <input type="url" value={profileForm.appLink} onChange={(e) => updateProfileField("appLink", e.target.value)} className={`${inputClassName} pl-11`} />
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="grid gap-6 xl:grid-cols-2">
+          <div className={sectionClassName}>
+            <div className="mb-5 flex items-center gap-2 text-[#162457]">
+              <FileText className="h-5 w-5 text-[#FF8A1C]" />
+              <h2 className="text-lg font-black">Services And Interests</h2>
+            </div>
+            <div className="space-y-5">
+              <div>
+                <label className={labelClassName}>Services</label>
+                <textarea
+                  rows={4}
+                  value={profileForm.services}
+                  onChange={(e) => updateProfileField("services", e.target.value)}
+                  placeholder="Platform, SaaS, Online Aggregator"
+                  className={`${inputClassName} resize-none leading-6`}
+                />
+              </div>
+              <div>
+                <label className={labelClassName}>Interests</label>
+                <textarea
+                  rows={4}
+                  value={profileForm.interests}
+                  onChange={(e) => updateProfileField("interests", e.target.value)}
+                  placeholder="Investors, Incubators, Mentors"
+                  className={`${inputClassName} resize-none leading-6`}
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="email" className={sectionClassName}>
+          <div className="mb-5 flex items-center gap-2 text-[#162457]">
+            <Mail className="h-5 w-5 text-[#FF8A1C]" />
+            <h2 className="text-lg font-black">Login Email</h2>
+          </div>
+          <div className="rounded-2xl border border-[#E7EBFB] bg-white/70 p-4 text-sm font-medium text-slate-600">
+            Your current login email is <span className="font-mono font-bold text-[#162457]">{profileForm.email || user?.email}</span>.
+          </div>
+        </section>
+
+        <section id="password" className={sectionClassName}>
+          <div className="mb-5 flex items-center gap-2 text-[#162457]">
+            <LockKeyhole className="h-5 w-5 text-[#FF8A1C]" />
+            <h2 className="text-lg font-black">Change Password</h2>
+          </div>
+          <div className="grid gap-5 md:grid-cols-3">
+            <div>
+              <label className={labelClassName}>Current Password</label>
+              <div className="relative">
+                <Lock className="pointer-events-none absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
+                <input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} className={`${inputClassName} pl-11`} />
+              </div>
+            </div>
+            <div>
+              <label className={labelClassName}>New Password</label>
+              <div className="relative">
+                <KeyRound className="pointer-events-none absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
+                <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className={`${inputClassName} pl-11`} />
+              </div>
+            </div>
+            <div>
+              <label className={labelClassName}>Confirm Password</label>
+              <div className="relative">
+                <Lock className="pointer-events-none absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
+                <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className={`${inputClassName} pl-11`} />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div className="flex justify-end">
           <button
             type="submit"
             disabled={saving}
-            className="bg-[#0B2A5B] hover:bg-[#0B2A5B]/90 text-white font-extrabold uppercase py-2.5 px-6 rounded-lg shadow-sm flex items-center gap-1.5 disabled:opacity-55 transition-all"
+            className="inline-flex items-center gap-2 rounded-2xl bg-[#2B2F86] px-6 py-3 text-sm font-black uppercase tracking-wide text-white shadow-[0_16px_30px_rgba(43,47,134,0.24)] transition hover:bg-[#21256A] disabled:opacity-60"
             id="btn-settings-save"
           >
-            <Save className="w-4 h-4" />
-            <span>{saving ? "Saving changes..." : "Save Profile Settings"}</span>
+            <Save className="h-4 w-4" />
+            {saving ? "Saving Changes..." : "Save Profile"}
           </button>
         </div>
       </form>
-      </div>
-
-      <div id="privacy" className="bg-white border border-slate-200 rounded-xl p-6 shadow-xs space-y-4">
-        <div className="border-b border-slate-100 pb-3 space-y-1">
-          <h2 className="text-md font-bold text-[#0B2A5B] flex items-center gap-1.5">
-            <Shield className="w-4 h-4 text-[#FF6B00]" />
-            <span>Privacy Settings</span>
-          </h2>
-          <p className="text-[11px] text-slate-500 font-medium">Control visibility and data-sharing preferences for your founder profile.</p>
-        </div>
-        <div className="grid gap-3 sm:grid-cols-3">
-          {["standard", "private", "public"].map((mode) => (
-            <button
-              key={mode}
-              type="button"
-              onClick={() => setPrivacyMode(mode)}
-              className={`rounded-xl border px-4 py-3 text-left font-semibold capitalize transition ${
-                privacyMode === mode
-                  ? "border-[#0B2A5B] bg-[#0B2A5B] text-white"
-                  : "border-slate-200 bg-slate-50 text-slate-600 hover:border-slate-300"
-              }`}
-            >
-              {mode}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div id="email" className="bg-white border border-slate-200 rounded-xl p-6 shadow-xs space-y-4">
-        <div className="border-b border-slate-100 pb-3 space-y-1">
-          <h2 className="text-md font-bold text-[#0B2A5B] flex items-center gap-1.5">
-            <Mail className="w-4 h-4 text-[#FF6B00]" />
-            <span>Change Email ID</span>
-          </h2>
-          <p className="text-[11px] text-slate-500 font-medium">Email changes are handled through verified profile updates.</p>
-        </div>
-        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
-          Your current login email is <span className="font-mono font-bold text-[#0B2A5B]">{email}</span>.
-        </div>
-      </div>
-
-      <div id="password" className="bg-white border border-slate-200 rounded-xl p-6 shadow-xs space-y-4">
-        <div className="border-b border-slate-100 pb-3 space-y-1">
-          <h2 className="text-md font-bold text-[#0B2A5B] flex items-center gap-1.5">
-            <LockKeyhole className="w-4 h-4 text-[#FF6B00]" />
-            <span>Change Password</span>
-          </h2>
-          <p className="text-[11px] text-slate-500 font-medium">Update your portal password from the secure founder account controls.</p>
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-3">
-          <div className="space-y-1.5">
-            <label className="block font-bold text-[#0B2A5B]">Current Password</label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
-              <input
-                type={showPassword ? "text" : "password"}
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                className="pl-10 pr-10 py-2.5 border border-slate-350 rounded-lg w-full outline-none font-semibold text-slate-800 focus:border-[#0B2A5B]"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword((prev) => !prev)}
-                className="absolute right-3 top-3 text-slate-400 hover:text-slate-600"
-              >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
-            </div>
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="block font-bold text-[#0B2A5B]">New Password</label>
-            <div className="relative">
-              <KeyRound className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
-              <input
-                type={showPassword ? "text" : "password"}
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                className="pl-10 pr-4 py-2.5 border border-slate-350 rounded-lg w-full outline-none font-semibold text-slate-800 focus:border-[#0B2A5B]"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="block font-bold text-[#0B2A5B]">Confirm Password</label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
-              <input
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="pl-10 pr-4 py-2.5 border border-slate-350 rounded-lg w-full outline-none font-semibold text-slate-800 focus:border-[#0B2A5B]"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };

@@ -1,4 +1,5 @@
 import { AppError } from "../utils/errors.js";
+import { User } from "../models/User.js";
 import { Program } from "../models/Program.js";
 import { StartupProfile } from "../models/StartupProfile.js";
 import { InvestorProfile } from "../models/InvestorProfile.js";
@@ -8,8 +9,11 @@ import { Notification } from "../models/Notification.js";
 import { Connection } from "../models/Connection.js";
 import { Faq } from "../models/Faq.js";
 import { Announcement } from "../models/Announcement.js";
+import { generateApplicationId } from "../utils/applicationId.js";
+import { sendApplicationStatusEmail } from "../utils/otpEmail.js";
 
 const sortNewestFirst = { createdAt: -1, updatedAt: -1 };
+const isPlaceholderStartupId = (value) => !value || value === "temp-id" || String(value).startsWith("temp-");
 
 const upsertById = async (Model, req, res, next, transform = (item) => item) => {
   try {
@@ -92,6 +96,29 @@ export const listStartups = async (req, res, next) => {
   }
 };
 
+export const listUsers = async (_req, res, next) => {
+  try {
+    const data = await User.find().select("-passwordHash").sort(sortNewestFirst).lean();
+    res.json({ success: true, data });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const updateUserStatus = async (req, res, next) => {
+  try {
+    const user = await User.findOne({ id: req.params.id });
+    if (!user) throw new AppError("User not found.", 404);
+
+    user.isActive = req.body.isActive ?? !user.isActive;
+    await user.save();
+
+    res.json({ success: true, data: user.toObject() });
+  } catch (err) {
+    next(err);
+  }
+};
+
 export const getStartup = async (req, res, next) => {
   try {
     const data = await StartupProfile.findOne({ id: req.params.id }).lean();
@@ -163,9 +190,38 @@ export const getApplication = async (req, res, next) => {
 
 export const createApplication = async (req, res, next) => {
   try {
+    let selectedProgram = req.body.selectedProgram || null;
+    let submittedByEmail = req.body.submittedByEmail || null;
+    let submittedByName = req.body.submittedByName || null;
+    let startupId = req.body.startupId || null;
+    const programId = req.body.programId || null;
+
+    if (req.user?.role !== "admin") {
+      const user = await User.findOne({ email: req.user?.email }).lean();
+      if (!user) {
+        throw new AppError("Account not found.", 404);
+      }
+
+      if (user.isActive === false) {
+        throw new AppError("Your profile is under review. Please try again after some time.", 403);
+      }
+
+      selectedProgram = selectedProgram || user.startupProfile?.selectedProgram || user.selectedProgram || null;
+      submittedByEmail = submittedByEmail || user.email || null;
+      submittedByName = submittedByName || user.name || null;
+      startupId = startupId || user.startupId || null;
+    }
+
+    if (req.user?.role !== "admin" && isPlaceholderStartupId(startupId)) {
+      throw new AppError("Your startup profile is missing. Please complete registration before applying.", 400);
+    }
+
     const payload = {
       ...req.body,
-      id: req.body.id || `APP-${Date.now()}`,
+      selectedProgram,
+      submittedByEmail: submittedByEmail ? String(submittedByEmail).trim().toLowerCase() : null,
+      submittedByName,
+      id: req.body.id || generateApplicationId(),
       submittedDate: req.body.submittedDate || new Date().toISOString().split("T")[0],
       lastUpdated: req.body.lastUpdated || new Date().toISOString().split("T")[0],
       status: req.body.status || "Submitted",
@@ -203,6 +259,9 @@ export const updateApplicationStatus = async (req, res, next) => {
 
     app.status = req.body.status;
     app.lastUpdated = new Date().toISOString().split("T")[0];
+    if (req.body.status === "Rejected") {
+      app.rejectedAt = new Date().toISOString();
+    }
     if (req.body.remarks) {
       app.adminRemarks = req.body.remarks;
     }
@@ -215,6 +274,20 @@ export const updateApplicationStatus = async (req, res, next) => {
       ...(app.timeline || []),
     ];
     await app.save();
+
+    if (req.body.status === "Document Requested") {
+      await sendApplicationStatusEmail({
+        to: app.submittedByEmail || app.applicantEmail,
+        application: app.toObject(),
+        subject: `Documents requested for ${app.programName}`,
+        title: "Document request received",
+        headline: "Please share the requested documents",
+        body: "Reply to this email with the listed documents attached. You can include them in a single response and our team will continue the review once received.",
+        actionLabel: "Requested documents",
+        actionText: req.body.remarks || "Please reply with the listed documents as soon as possible.",
+      });
+    }
+
     res.json({ success: true, data: app.toObject() });
   } catch (err) {
     next(err);

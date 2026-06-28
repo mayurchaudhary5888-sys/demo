@@ -164,7 +164,7 @@ export const InvestorNetwork: React.FC = () => {
         </p>
         <div className="pt-2">
           <Link
-            to="/contact"
+            to="/contact-us"
             className="bg-[#0B2A5B] hover:bg-[#0B2A5B]/90 text-white font-bold py-2 px-5 rounded-lg text-xs"
           >
             Contact Facilitation Desk

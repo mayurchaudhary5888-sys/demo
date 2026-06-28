@@ -20,12 +20,13 @@ const startupProfileSchema = new mongoose.Schema(
     cin: String,
     nature: String,
     legalName: String,
+    selectedProgram: String,
     interests: [String],
     agreeTerms: Boolean,
     logoPreview: String,
     registeredAt: Number,
   },
-  { _id: false }
+  { _id: false, strict: false }
 );
 
 const userSchema = new mongoose.Schema(
@@ -71,6 +72,10 @@ const userSchema = new mongoose.Schema(
     isEmailVerified: {
       type: Boolean,
       default: false,
+    },
+    isActive: {
+      type: Boolean,
+      default: true,
     },
   },
   { timestamps: true }

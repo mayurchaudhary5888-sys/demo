@@ -34,6 +34,24 @@ export interface StartupProfile {
   id: string;
   name: string;
   logoUrl?: string;
+  logoPreview?: string;
+  logoName?: string;
+  founderName?: string;
+  startupName?: string;
+  legalName?: string;
+  startupBrief?: string;
+  fundingStatus?: string;
+  industry?: string;
+  nature?: string;
+  services?: string[];
+  interests?: string[];
+  selectedProgram?: string;
+  cin?: string;
+  udhyogAadhaar?: string;
+  hasCompanyLogo?: boolean;
+  registrationNumber?: string;
+  registeredAt?: number;
+  agreeTerms?: boolean;
   stage: StartupStage;
   fundingType: FundingType;
   description: string;
@@ -100,6 +118,12 @@ export interface Application {
   pitchDeckName: string;
   additionalDocumentsName?: string;
   adminRemarks?: string;
+  rejectedAt?: string;
+  selectedProgram?: string;
+  submittedByEmail?: string;
+  submittedByName?: string;
+  updatedAt?: string;
+  createdAt?: string;
   timeline: {
     status: ApplicationStatus;
     timestamp: string;
@@ -107,20 +131,20 @@ export interface Application {
   }[];
 }
 
-export interface Connection {
+export interface AdminUser {
   id: string;
-  fromId: string;
-  fromName: string;
-  fromLogo?: string;
-  fromSector?: string;
-  fromStage?: string;
-  toId: string;
-  toName: string;
-  status: "pending" | "accepted" | "Initiated" | "Approved";
-  timestamp: string;
-  startupId?: string;
-  incubatorName?: string;
-  message?: string;
+  name: string;
+  email: string;
+  mobile?: string;
+  role: "admin" | "founder";
+  startupId?: string | null;
+  dept?: string;
+  isOnboarded?: boolean;
+  isEmailVerified?: boolean;
+  isActive?: boolean;
+  selectedProgram?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Notification {

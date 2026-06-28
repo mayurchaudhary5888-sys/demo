@@ -1,50 +1,30 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.5
- */
-
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { 
-  Award, TrendingUp, Cpu, Workflow, BookOpen, Globe, ArrowRight, CheckCircle, ShieldCheck
-} from "lucide-react";
+import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { useAppState } from "../../context/AppContext";
+import { programCatalog } from "../../data/programCatalog";
+
+const requestLogin = () => {
+  window.dispatchEvent(new CustomEvent("bsi:open-login"));
+};
 
 export const ProgramsListing: React.FC = () => {
-  const { programs, showToast, user } = useAppState();
+  const { user, showToast } = useAppState();
   const navigate = useNavigate();
 
-  // Helper to map icon name to Lucide Icon dynamically
-  const getIcon = (name: string) => {
-    switch (name) {
-      case "Award": return <Award className="w-8 h-8 text-[#FF6B00]" />;
-      case "TrendingUp": return <TrendingUp className="w-8 h-8 text-indigo-500" />;
-      case "Workflow": return <Workflow className="w-8 h-8 text-emerald-500" />;
-      case "BookOpen": return <BookOpen className="w-8 h-8 text-cyan-500" />;
-      case "Cpu": return <Cpu className="w-8 h-8 text-amber-500" />;
-      case "Globe": return <Globe className="w-8 h-8 text-blue-500" />;
-      default: return <Award className="w-8 h-8 text-slate-500" />;
-    }
-  };
-
-  const handleApplyClick = (progId: string, e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
+  const handleApply = (programSlug: string) => {
     if (!user) {
-      showToast("Verification Required. Directing you to Register / Sign In.", "info");
-      navigate("/register");
+      showToast("Please login to apply for this program.", "info");
+      requestLogin();
       return;
     }
 
-    // Is onboarded, direct apply
-    navigate(`/programs/${progId}`);
+    navigate(`/support/${programSlug}/apply`);
   };
 
   return (
-    <div className="space-y-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" id="programs-listing-container">
-      
-      {/* breadcrumbs */}
+    <div className="bg-slate-50" id="programs-listing-container">
+      <div className="mx-auto max-w-7xl space-y-8 px-4 py-8 sm:px-6 lg:px-8">
       <nav className="flex" aria-label="Breadcrumb">
         <ol role="list" className="flex items-center space-x-2 text-xs font-medium text-slate-500">
           <li>
@@ -52,118 +32,79 @@ export const ProgramsListing: React.FC = () => {
           </li>
           <li>
             <span className="text-slate-300 mx-1">/</span>
-            <span className="text-[#0B2A5B] font-semibold">Initiatives & Programs</span>
+            <span className="text-[#0B2A5B] font-semibold">Programs</span>
           </li>
         </ol>
       </nav>
 
-      {/* heading block */}
-      <div className="space-y-2">
-        <span className="text-xs font-bold text-[#FF6B00] tracking-wider uppercase font-mono">Ministry Outlays</span>
-        <h1 className="text-3xl font-black text-[#0B2A5B] tracking-tight">Ecosystem Growth Initiatives</h1>
-        <p className="text-sm text-slate-500 max-w-xl text-justify">
-          Browse active central funding and mentoring schemes. Filter your eligibility profiles to trigger physical allocations and incubator committee reviews.
+      <section className="space-y-3">
+        <span className="text-xs font-bold text-[#FF6B00] tracking-wider uppercase font-mono">Support Programs</span>
+        <h1 className="text-3xl sm:text-4xl font-black text-[#0B2A5B] tracking-tight">Find the right startup support program</h1>
+        <p className="text-sm text-slate-600 max-w-3xl leading-relaxed">
+          Explore curated funding and mentorship tracks for idea validation, MSME innovation, foundation-stage founders, seed-stage startups, and global impact ventures.
         </p>
-      </div>
+      </section>
 
-      {/* DETAILED CARDS GRID */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="programs-listing-grid">
-        {programs.map((prog) => {
-          const isSisfs = prog.id === "sisfs-seed-fund";
+      <section className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-6" id="programs-listing-grid">
+        {programCatalog.map((program) => {
+          const Icon = program.icon;
+
           return (
-            <div 
-              key={prog.id} 
-              className={`bg-white rounded-xl border flex flex-col justify-between hover:shadow-md transition-all h-full overflow-hidden ${
-                isSisfs 
-                  ? "border-amber-400 ring-2 ring-amber-400/20" 
-                  : "border-slate-250"
-              }`}
-              id={`program-card-${prog.id}`}
+            <article
+              key={program.slug}
+              className="group relative flex min-h-[410px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_12px_34px_rgba(7,20,74,0.06)] transition duration-300 hover:-translate-y-1 hover:border-[#FF6B00]/30 hover:shadow-[0_22px_52px_rgba(7,20,74,0.10)] md:col-span-1 xl:col-span-2"
+              id={`program-card-${program.slug}`}
             >
-              {/* Highlight ribbon for SISFS */}
-              {isSisfs && (
-                <div className="bg-[#FF6B00] text-white text-[10px] font-black text-center py-1 uppercase tracking-widest font-mono">
-                  ★ Flagship Sovereign Funding Outlay
-                </div>
-              )}
-
-              <div className="p-6 space-y-4">
-                
-                {/* Upper line icons */}
-                <div className="flex justify-between items-start">
-                  <div className="p-3 bg-slate-50 rounded-xl shrink-0">
-                    {getIcon(prog.iconName)}
+              <div className="flex flex-1 flex-col p-6">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex h-13 w-13 items-center justify-center rounded-2xl border border-orange-100 bg-orange-50 text-[#FF6B00] shadow-sm transition group-hover:scale-105 group-hover:bg-[#FF6B00] group-hover:text-white">
+                    <Icon className="h-6 w-6" />
                   </div>
-                  <span className={`text-[10px] font-bold uppercase py-0.5 px-2 rounded-full font-mono ${
-                    prog.isOpen 
-                      ? "bg-emerald-50 text-emerald-700 border border-emerald-200" 
-                      : "bg-red-50 text-red-700 border border-red-200"
-                  }`}>
-                    {prog.isOpen ? "Filing Open" : "Cohort Closed"}
+                  <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-emerald-700">
+                    Open
                   </span>
                 </div>
 
-                {/* headings info */}
-                <div className="space-y-1">
-                  <h3 className="text-sm font-extrabold text-[#0B2A5B] hover:text-[#FF6B00] transition-colors leading-snug">
-                    <Link to={`/programs/${prog.id}`}>{prog.name}</Link>
-                  </h3>
-                  <p className="text-slate-500 text-xs leading-relaxed line-clamp-3 text-justify">
-                    {prog.shortDescription}
-                  </p>
+                <div className="mt-6 space-y-3">
+                  <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">{program.partner}</p>
+                  <h2 className="text-xl font-black leading-tight text-[#0B2A5B]">{program.name}</h2>
+                  <p className="inline-flex rounded-full bg-orange-50 px-3 py-1 text-xs font-extrabold text-[#FF6B00]">{program.funding}</p>
+                  <p className="text-sm leading-7 text-slate-600">{program.shortDescription}</p>
                 </div>
 
-                {/* Single line checklist summary */}
-                <div className="bg-slate-50 p-3 rounded border border-slate-150 text-[11px] text-slate-600 font-medium">
-                  <p className="font-bold text-[#0B2A5B] flex items-center gap-1">
-                    <CheckCircle className="w-3.5 h-3.5 text-[#FF6B00]" />
-                    <span>Eligibility Focus:</span>
-                  </p>
-                  <p className="truncate mt-0.5 font-sans">• {prog.eligibility[0] || "Open to all DPIIT recognitions"}</p>
+                <div className="mt-6 space-y-2.5">
+                  {program.focusAreas.slice(0, 3).map((area) => (
+                    <div key={area} className="flex items-center gap-2.5 text-xs font-bold text-slate-600">
+                      <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                      <span>{area}</span>
+                    </div>
+                  ))}
                 </div>
-
               </div>
 
-              {/* Bottom operational buttons split */}
-              <div className="border-t border-slate-100 bg-slate-50/50 p-4 grid grid-cols-2 gap-2 text-center text-xs">
+              <div className="grid grid-cols-2 gap-3 border-t border-slate-100 bg-slate-50/80 p-4">
                 <Link
-                  to={`/programs/${prog.id}`}
-                  className="py-2.5 px-3 border border-slate-200 hover:bg-slate-100 text-slate-700 font-bold rounded-lg transition-colors"
-                  id={`view-details-${prog.id}`}
+                  to={`/support/${program.slug}`}
+                  className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-3 text-xs font-black text-[#0B2A5B] transition-colors hover:border-[#0B2A5B]/30 hover:bg-slate-100"
+                  id={`see-more-${program.slug}`}
                 >
-                  View Details
+                  Details
+                  <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
-                {prog.isOpen ? (
-                  <button
-                    onClick={(e) => handleApplyClick(prog.id, e)}
-                    className="py-2.5 px-3 bg-[#FF6B00] hover:bg-[#FF6B00]/95 text-white font-bold rounded-lg shadow-sm transition-all text-xs"
-                    id={`apply-now-${prog.id}`}
-                  >
-                    Apply Now
-                  </button>
-                ) : (
-                  <span className="py-2.5 px-2 bg-slate-100 border border-slate-200 text-slate-400 font-bold rounded-lg select-none cursor-not-allowed text-xs">
-                    Apply Closed
-                  </span>
-                )}
+                <button
+                  type="button"
+                  onClick={() => handleApply(program.slug)}
+                  className="rounded-xl bg-[#FF6B00] px-3 py-3 text-xs font-black text-white shadow-[0_12px_24px_rgba(255,107,0,0.22)] transition-colors hover:bg-[#e65f00]"
+                  id={`apply-now-${program.slug}`}
+                >
+                  Apply Now
+                </button>
               </div>
-
-            </div>
+            </article>
           );
         })}
+      </section>
       </div>
-
-      {/* ADDITIONAL GUIDANCE ALERT */}
-      <div className="bg-blue-50 border border-blue-200 p-6 rounded-xl flex items-start gap-4 max-w-3xl mx-auto text-xs leading-relaxed">
-        <ShieldCheck className="w-6 h-6 text-blue-600 shrink-0 mt-0.5" />
-        <div className="space-y-1">
-          <p className="font-bold text-[#0B2A5B]">DPIIT Verification Requirements Checklist:</p>
-          <p className="text-[#3b82f6-700] text-justify font-sans">
-            Your startup must complete the pre-registration profiling block before generating application forms. Make sure you possess certified scan sheets for Udyam micro registries or DPIIT recognition numbers; these directories cascaded dynamically into specific scheme requirements.
-          </p>
-        </div>
-      </div>
-
     </div>
   );
 };

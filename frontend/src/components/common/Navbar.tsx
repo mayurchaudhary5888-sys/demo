@@ -5,8 +5,9 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, ChevronDown, Globe, LogIn, LogOut, User, Award, Eye, EyeOff, LayoutDashboard, Users, Bell, Settings } from "lucide-react";
+import { Menu, X, ChevronDown, LogIn, LogOut, User, Award, Eye, EyeOff, LayoutDashboard, Users, Bell, Settings } from "lucide-react";
 import { useAppState } from "../../context/AppContext";
+import { programCatalog } from "../../data/programCatalog";
 import { authApi } from "../../services/authApi";
 
 export const Navbar: React.FC = () => {
@@ -17,6 +18,7 @@ export const Navbar: React.FC = () => {
   const [openMobileDropdown, setOpenMobileDropdown] = useState<string | null>(null);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [settingsSubmenuOpen, setSettingsSubmenuOpen] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] = useState("en");
   const profileMenuRef = useRef<HTMLDivElement | null>(null);
 
   // Modal Login / Register Popup states
@@ -35,27 +37,14 @@ export const Navbar: React.FC = () => {
   const [regEmail, setRegEmail] = useState("");
   const [regMobile, setRegMobile] = useState("");
   const [regPassword, setRegPassword] = useState("");
+  const [regProgram, setRegProgram] = useState("");
   const [regErrors, setRegErrors] = useState<Record<string, string>>({});
   const [regLoading, setRegLoading] = useState(false);
 
   const navConfig = [
-    { label: "HOME", path: "/" },
     {
       label: "ABOUT US",
       path: "/about-us",
-    },
-    {
-      label: "PROGRAMS",
-      path: "/programs",
-      dropdownItems: [
-        { label: "All Programs", path: "/programs" },
-        { label: "Startup Program", path: "/programs/startup-program" },
-        { label: "MSME Program", path: "/programs/msme-program" },
-        { label: "Foundation Program", path: "/programs/foundation-program" },
-        { label: "Idea Validation Program", path: "/programs/idea-validation-program" },
-        { label: "Global Impact Program", path: "/programs/global-impact-program" },
-        { label: "Track Application", path: "/programs/track-application" },
-      ],
     },
     {
       label: "NETWORK",
@@ -66,14 +55,18 @@ export const Navbar: React.FC = () => {
       ],
     },
     {
-      label: "PORTFOLIOS",
-      path: "/portfolios",
+      label: "PORTFOLIO",
+      path: "/portfolio",
       dropdownItems: [
-        { label: "Incubator Portfolios", path: "/portfolios/incubators" },
-        { label: "Startup Portfolios", path: "/portfolios/startups" },
+        { label: "Incubator Portfolios", path: "/portfolio/incubators" },
+        { label: "Startup Portfolios", path: "/portfolio/startups" },
       ],
     },
-    { label: "CONTACT US", path: "/contact" },
+    {
+      label: "SUPPORT",
+      path: "/support",
+    },
+    { label: "CONTACT US", path: "/contact-us" },
   ];
 
   const handleLogout = () => {
@@ -84,11 +77,11 @@ export const Navbar: React.FC = () => {
   };
 
   const isPathActive = (item: typeof navConfig[number]) => {
-    if (item.path === "/") {
-      return location.pathname === "/";
-    }
     if (item.dropdownItems) {
       return item.dropdownItems.some((sub) => location.pathname === sub.path.split("?")[0]);
+    }
+    if (item.path === "/support") {
+      return location.pathname.startsWith("/support");
     }
     return location.pathname === item.path;
   };
@@ -107,6 +100,18 @@ export const Navbar: React.FC = () => {
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    const openLoginModal = () => {
+      setShowLoginModal(true);
+      setModalMode("login");
+      setLoginErrors({});
+      setMobileMenuOpen(false);
+    };
+
+    window.addEventListener("bsi:open-login", openLoginModal);
+    return () => window.removeEventListener("bsi:open-login", openLoginModal);
   }, []);
 
   // ── Handle Login Form Submit ──
@@ -151,7 +156,6 @@ export const Navbar: React.FC = () => {
   ];
 
   const settingsLinks = [
-    { label: "Privacy Settings", path: "/startup/settings#privacy", icon: <Settings className="w-3.5 h-3.5" /> },
     { label: "Change Email ID", path: "/startup/settings#email", icon: <Settings className="w-3.5 h-3.5" /> },
     { label: "Change Password", path: "/startup/settings#password", icon: <Settings className="w-3.5 h-3.5" /> },
   ];
@@ -166,7 +170,11 @@ export const Navbar: React.FC = () => {
     if (!regMobile.trim()) errs.mobile = "Mobile number required.";
     else if (!/^\d{10}$/.test(regMobile)) errs.mobile = "10-digit mobile number required.";
     if (!regPassword) errs.password = "Password required.";
-    else if (regPassword.length < 6) errs.password = "Minimum 6 characters.";
+    else if (regPassword.length < 8) errs.password = "Minimum 8 characters.";
+    else if (!/[A-Z]/.test(regPassword) || !/[a-z]/.test(regPassword) || !/\d/.test(regPassword)) {
+      errs.password = "Use uppercase, lowercase, and one number.";
+    }
+    if (!regProgram) errs.selectedProgram = "Select one program.";
 
     if (Object.keys(errs).length > 0) {
       setRegErrors(errs);
@@ -182,6 +190,7 @@ export const Navbar: React.FC = () => {
         email: regEmail,
         mobile: regMobile,
         password: regPassword,
+        selectedProgram: regProgram,
         startupProfile: {
           startupName: regName,
           mobile: regMobile,
@@ -193,6 +202,7 @@ export const Navbar: React.FC = () => {
           sector: "Other",
           services: [],
           interests: [],
+          selectedProgram: regProgram,
           registeredAt: Date.now(),
         },
       });
@@ -201,6 +211,7 @@ export const Navbar: React.FC = () => {
         name: regName,
         email: regEmail,
         mobile: regMobile,
+        selectedProgram: regProgram,
         startupId: response.startupId,
         timestamp: Date.now()
       }));
@@ -211,6 +222,7 @@ export const Navbar: React.FC = () => {
       setRegEmail("");
       setRegMobile("");
       setRegPassword("");
+      setRegProgram("");
 
       navigate(`/verify-otp?email=${encodeURIComponent(regEmail)}`);
     } catch {
@@ -220,47 +232,52 @@ export const Navbar: React.FC = () => {
     }
   };
 
+  const languageSelector = (
+    <div className="relative flex items-center">
+      <select
+        value={selectedLanguage}
+        onChange={(e) => {
+          if (e.target.value === "en") {
+            setSelectedLanguage("en");
+            showToast("Language set to English.", "info");
+          }
+        }}
+        aria-label="Select language"
+        className="appearance-none rounded-full border border-slate-200 bg-white py-2 pl-3 pr-8 text-[11px] font-bold text-[#0B2A5B] shadow-sm transition-colors hover:border-[#FF6B00] focus:border-[#FF6B00] focus:outline-none"
+      >
+        <option value="en">English</option>
+        <option value="hi" disabled>
+          Hindi
+        </option>
+      </select>
+      <ChevronDown className="pointer-events-none absolute right-2.5 h-3.5 w-3.5 text-slate-400" />
+    </div>
+  );
+
   return (
     <div className="w-full flex flex-col z-50 sticky top-0" id="main-navbar-container">
       {/* Primary White Navbar */}
-      <header className="bg-white border-b border-slate-200 shadow-sm relative h-20 flex items-center">
-        <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+      <header className="bg-white border-b border-slate-200 shadow-sm relative min-h-[5.75rem] sm:min-h-[6.25rem] flex items-center">
+        <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-3 sm:py-4 flex items-center justify-between">
           
-          {/* Logo on Left: Yellow bulb logo + text */}
-          <Link to="/" className="flex items-center gap-3 shrink-0" id="navbar-logo">
-            {/* SVG Yellow Light Bulb Logo */}
-            <div className="relative w-10 h-10 flex-shrink-0">
-              <svg viewBox="0 0 100 100" className="w-full h-full">
-                <circle cx="50" cy="45" r="28" fill="#FFF9C4" opacity="0.6" />
-                <path
-                  d="M 50 15 C 33.4 15 20 28.4 20 45 C 20 54.3 24.3 62.6 31 68 L 31 79 C 31 81.2 32.8 83 35 83 L 65 83 C 67.2 83 69 81.2 69 79 L 69 68 C 75.7 62.6 80 54.3 80 45 C 80 28.4 66.6 15 50 15 Z"
-                  fill="#FDD835"
+          <div className="flex items-center gap-3 sm:gap-4 shrink-0">
+            <div className="flex items-center gap-2.5 sm:gap-3" id="navbar-logo">
+              <Link to="/" aria-label="Go to home" className="flex items-center">
+                <img
+                  src="/logos/bhaskar.jpeg"
+                  alt="BHASKAR"
+                  className="h-12 sm:h-14 w-auto object-contain"
                 />
-                <circle cx="50" cy="45" r="12" fill="none" stroke="#0B2A5B" strokeWidth="2.5" />
-                <line x1="50" y1="33" x2="50" y2="57" stroke="#0B2A5B" strokeWidth="1.5" />
-                <line x1="38" y1="45" x2="62" y2="45" stroke="#0B2A5B" strokeWidth="1.5" />
-                <line x1="41.5" y1="36.5" x2="58.5" y2="53.5" stroke="#0B2A5B" strokeWidth="1" />
-                <line x1="41.5" y1="53.5" x2="58.5" y2="36.5" stroke="#0B2A5B" strokeWidth="1" />
-                <path d="M 38 65 L 50 53 L 62 65" stroke="#E65100" strokeWidth="3" fill="none" />
-                <rect x="37" y="83" width="26" height="5" rx="1.5" fill="#90A4AE" />
-                <rect x="39" y="89" width="22" height="5" rx="1.5" fill="#78909C" />
-                <path d="M 43 94 L 57 94 L 50 99 Z" fill="#37474F" />
-              </svg>
-              <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-[#FF6B00] rounded-full border border-white flex items-center justify-center">
-                <span className="text-[6px] text-white font-bold">★</span>
-              </div>
+              </Link>
+              <span className="h-12 sm:h-14 w-px bg-slate-300" aria-hidden="true" />
+              <img
+                src="/logos/azadi-logo.png"
+                alt="Azadi Ka Amrit Mahotsav"
+                className="h-10 sm:h-12 w-auto object-contain"
+              />
             </div>
-            {/* Text logo brand */}
-            <div className="flex flex-col leading-tight select-none">
-              <span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest font-mono">DPIIT | Govt of India</span>
-              <span className="text-lg font-black text-[#0B2A5B] tracking-tight block">BHASKAR</span>
-              <div className="text-[8.5px] font-bold uppercase tracking-wider font-mono flex items-center gap-1">
-                <span className="text-[#FF6B00]">SEED</span>
-                <span className="text-[#0B2A5B]">FUND</span>
-                <span className="text-[#0B2A5B]">SCHEME</span>
-              </div>
-            </div>
-          </Link>
+            {languageSelector}
+          </div>
 
           {/* Center Navigation Links */}
           <nav className="hidden lg:flex items-center gap-6 h-full" id="desktop-nav">
@@ -316,27 +333,6 @@ export const Navbar: React.FC = () => {
                 </Link>
               );
             })}
-
-            {/* Globe Language Link */}
-            <div className="relative group h-full flex items-center">
-              <button className="text-[#0B2A5B] hover:text-[#FF6B00] py-2 relative">
-                <Globe className="w-4 h-4" />
-              </button>
-              <div className="absolute right-0 top-[70%] hidden group-hover:block w-32 bg-white rounded-lg shadow-lg border border-slate-155 p-1.5 z-[100]">
-                <button
-                  onClick={() => showToast("Language changed to English.", "info")}
-                  className="block w-full text-left px-3 py-1.5 text-[11px] font-bold text-slate-700 hover:bg-slate-50 rounded"
-                >
-                  English
-                </button>
-                <button
-                  onClick={() => showToast("भाषा बदलकर हिंदी की गई।", "info")}
-                  className="block w-full text-left px-3 py-1.5 text-[11px] font-bold text-slate-700 hover:bg-slate-50 rounded"
-                >
-                  हिन्दी (Hindi)
-                </button>
-              </div>
-            </div>
           </nav>
 
           {/* Right side buttons */}
@@ -355,7 +351,7 @@ export const Navbar: React.FC = () => {
                     </button>
                     <Link
                       to={user.role === "admin" ? "/admin/dashboard" : "/startup/dashboard"}
-                      className="px-5 py-2.5 bg-[#FCD34D] hover:bg-[#FBBF24] text-[#0B2A5B] font-extrabold text-[11.5px] uppercase tracking-wider rounded-full transition-all shadow-sm flex items-center gap-1.5 active:scale-97"
+                      className="px-5 py-2.5 bg-[#FF6B00] hover:bg-[#E65F00] text-white font-extrabold text-[11.5px] uppercase tracking-wider rounded-full transition-all shadow-sm flex items-center gap-1.5 active:scale-97"
                       id="nav-dashboard-btn"
                     >
                       <User className="w-3.5 h-3.5" />
@@ -366,7 +362,7 @@ export const Navbar: React.FC = () => {
                   <div className="relative">
                     <button
                       onClick={() => setProfileMenuOpen((prev) => !prev)}
-                      className="px-5 py-2.5 bg-[#FCD34D] hover:bg-[#FBBF24] text-[#0B2A5B] font-extrabold text-[11.5px] uppercase tracking-wider rounded-full transition-all shadow-sm flex items-center gap-1.5 active:scale-97"
+                      className="px-5 py-2.5 bg-[#FF6B00] hover:bg-[#E65F00] text-white font-extrabold text-[11.5px] uppercase tracking-wider rounded-full transition-all shadow-sm flex items-center gap-1.5 active:scale-97"
                       id="nav-profile-btn"
                       aria-expanded={profileMenuOpen}
                       aria-haspopup="menu"
@@ -461,13 +457,12 @@ export const Navbar: React.FC = () => {
                   <LogIn className="w-3.5 h-3.5" />
                   <span>LOGIN</span>
                 </button>
-                {/* Solid Yellow REGISTER Button opens the registration route */}
                 <Link
                   to="/register"
-                  className="px-6 py-2.5 bg-[#FCD34D] hover:bg-[#FBBF24] text-[#0B2A5B] font-extrabold text-[11.5px] uppercase tracking-wider rounded-full transition-all shadow-sm flex items-center gap-1.5 active:scale-97"
+                  className="px-6 py-2.5 bg-[#FF6B00] hover:bg-[#E65F00] text-white font-extrabold text-[11.5px] uppercase tracking-wider rounded-full transition-all shadow-sm flex items-center gap-1.5 active:scale-97"
                   id="nav-register-btn"
                 >
-                  <Award className="w-3.5 h-3.5 text-[#0B2A5B]" />
+                  <Award className="w-3.5 h-3.5" />
                   <span>REGISTER</span>
                 </Link>
               </div>
@@ -548,7 +543,7 @@ export const Navbar: React.FC = () => {
                   <Link
                     to={user.role === "admin" ? "/admin/dashboard" : "/startup/dashboard"}
                     onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center justify-center gap-1.5 px-4 py-2.5 text-xs font-bold text-[#0B2A5B] bg-[#FCD34D] rounded-full text-center"
+                    className="flex items-center justify-center gap-1.5 px-4 py-2.5 text-xs font-bold text-white bg-[#FF6B00] rounded-full text-center"
                   >
                     <User className="w-3.5 h-3.5" />
                     <span>Dashboard</span>
@@ -577,7 +572,7 @@ export const Navbar: React.FC = () => {
                   <Link
                     to="/register"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center justify-center gap-1.5 px-4 py-2.5 text-xs font-bold text-[#0B2A5B] bg-[#FCD34D] rounded-full text-center cursor-pointer"
+                    className="flex items-center justify-center gap-1.5 px-4 py-2.5 text-xs font-bold text-white bg-[#FF6B00] rounded-full text-center cursor-pointer"
                   >
                     <Award className="w-3.5 h-3.5" />
                     <span>REGISTER</span>
@@ -683,26 +678,6 @@ export const Navbar: React.FC = () => {
                     </button>
                   </form>
 
-                  <div className="text-center text-[10px] font-bold text-slate-405 flex items-center justify-center gap-2">
-                    <span className="h-[1px] bg-slate-200 flex-1"></span>
-                    <span>Login with others</span>
-                    <span className="h-[1px] bg-slate-200 flex-1"></span>
-                  </div>
-
-                  <button
-                    onClick={() => {
-                      showToast("Google SSO session connected successfully.", "info");
-                    }}
-                    className="w-full py-2 border border-slate-250 hover:bg-slate-50 rounded-lg text-xs font-extrabold text-[#1E293B] flex items-center justify-center gap-2 cursor-pointer shadow-xs bg-white"
-                  >
-                    <svg viewBox="0 0 24 24" width="14" height="14">
-                      <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
-                      <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
-                      <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05" />
-                      <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335" />
-                    </svg>
-                    <span>Login with Google</span>
-                  </button>
                 </div>
               </div>
             ) : (
@@ -763,11 +738,34 @@ export const Navbar: React.FC = () => {
                     </div>
 
                     <div className="space-y-1">
+                      <div className="relative">
+                        <select
+                          value={regProgram}
+                          onChange={(e) => setRegProgram(e.target.value)}
+                          className={`w-full appearance-none px-3 py-2.5 border rounded-lg text-xs font-semibold text-slate-700 outline-none focus:border-[#F05A28] ${
+                            regErrors.selectedProgram ? "border-red-500 bg-red-50/10" : "border-slate-300"
+                          }`}
+                        >
+                          <option value="">Select program</option>
+                          {programCatalog.map((program) => (
+                            <option key={program.id} value={program.id}>
+                              {program.name}
+                            </option>
+                          ))}
+                        </select>
+                        <ChevronDown className="pointer-events-none absolute right-3 top-3 text-slate-400 w-3.5 h-3.5" />
+                      </div>
+                      {regErrors.selectedProgram && (
+                        <p className="text-red-500 text-[9px] font-bold">⚠ {regErrors.selectedProgram}</p>
+                      )}
+                    </div>
+
+                    <div className="space-y-1">
                       <input
                         type="password"
                         value={regPassword}
                         onChange={(e) => setRegPassword(e.target.value)}
-                        placeholder="Choose Security Password (Min 6 chars)"
+                        placeholder="Password: 8+ chars, upper, lower, number"
                         className={`w-full px-3 py-2 border rounded-lg text-xs font-semibold text-slate-700 outline-none focus:border-[#F05A28] ${
                           regErrors.password ? "border-red-500 bg-red-50/10" : "border-slate-300"
                         }`}
@@ -794,19 +792,11 @@ export const Navbar: React.FC = () => {
               
               {/* BHASKAR brand stack */}
               <div className="space-y-3 w-full">
-                <svg viewBox="0 0 200 100" className="h-14 mx-auto drop-shadow-xs">
-                  <path
-                    d="M40,10 C15,10 10,35 10,60 C10,85 30,90 50,90 C70,90 85,75 85,50 C85,25 70,10 50,10"
-                    fill="none"
-                    stroke="#1B5E20"
-                    strokeWidth="11"
-                    strokeLinecap="round"
-                  />
-                  <rect x="50" y="28" width="45" height="9" fill="#FF9933" rx="2" />
-                  <rect x="50" y="44" width="55" height="9" fill="#FFFFFF" stroke="#CFD8DC" strokeWidth="1" rx="2" />
-                  <rect x="50" y="60" width="50" height="9" fill="#128807" rx="2" />
-                  <circle cx="77" cy="48" r="4.5" fill="none" stroke="#000088" strokeWidth="1.2" />
-                </svg>
+                <img
+                  src="/logos/bhaskar.jpeg"
+                  alt="BHASKAR"
+                  className="mx-auto h-20 w-auto max-w-[180px] object-contain"
+                />
 
                 <div className="space-y-1">
                   <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Welcome to</span>
@@ -830,8 +820,9 @@ export const Navbar: React.FC = () => {
                     <p className="text-[10px] font-bold text-slate-500">Don't have an account?</p>
                     <button
                       onClick={() => {
-                        setModalMode("register");
+                        setShowLoginModal(false);
                         setRegErrors({});
+                        navigate("/register");
                       }}
                       className="text-xs font-black text-[#F05A28] hover:underline cursor-pointer block mt-1 mx-auto"
                     >

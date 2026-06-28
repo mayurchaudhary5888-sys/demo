@@ -10,6 +10,7 @@ import { StatusBadge } from "../../components/common/StatusBadge";
 import { Timeline } from "../../components/common/Timeline";
 import { Application, ApplicationStatus } from "../../types";
 import { FileText, Eye, X, MessageSquare, CheckSquare } from "lucide-react";
+import { ApplicationDetailsModal } from "../../components/common/ApplicationDetailsModal";
 
 export const AdminApplicationManagement: React.FC = () => {
   const { applications, updateApplicationStatus, showToast } = useAppState();
@@ -18,6 +19,7 @@ export const AdminApplicationManagement: React.FC = () => {
   const [remarksInput, setRemarksInput] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [showFullDetails, setShowFullDetails] = useState(false);
 
   const handleUpdateStatus = (e: React.FormEvent) => {
     e.preventDefault();
@@ -187,6 +189,14 @@ export const AdminApplicationManagement: React.FC = () => {
               </div>
             </div>
 
+            <button
+              type="button"
+              onClick={() => setShowFullDetails(true)}
+              className="rounded-full bg-[#F05A28] px-4 py-2 text-xs font-black uppercase tracking-wider text-white transition hover:bg-[#d9481b]"
+            >
+              View Full Application
+            </button>
+
             {/* Application Detail Fields */}
             <div className="space-y-4 text-xs font-sans text-slate-700">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -320,6 +330,12 @@ export const AdminApplicationManagement: React.FC = () => {
           </div>
         </div>
       )}
+
+      <ApplicationDetailsModal
+        open={showFullDetails}
+        application={selectedApp}
+        onClose={() => setShowFullDetails(false)}
+      />
     </div>
   );
 };

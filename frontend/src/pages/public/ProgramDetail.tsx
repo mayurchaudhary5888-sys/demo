@@ -4,22 +4,39 @@
  */
 
 import React, { useState, useEffect } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
 import { 
   Award, ArrowLeft, CheckCircle, FileText, UploadCloud, CheckCircle2, ShieldAlert, 
   HelpCircle, Sparkles, UserCheck, CalendarDays, Workflow, BookOpen, Cpu, Globe, TrendingUp
 } from "lucide-react";
 import { useAppState } from "../../context/AppContext";
+import { getCatalogProgram } from "../../data/programCatalog";
+import { ApplicationSuccessModal } from "../../components/common/ApplicationSuccessModal";
+import { ProfileUnderReviewModal } from "../../components/common/ProfileUnderReviewModal";
+import { IdeaValidationProgram } from "./programs/idea-validation-program/IdeaValidationProgram";
+import { FoundationProgram } from "./programs/foundation-program/FoundationProgram";
+import { GlobalImpactProgram } from "./programs/global-impact-program/GlobalImpactProgram";
+import { StartupProgramApplication } from "./programs/startup-program/StartupProgramApplication";
+
+const requestLogin = () => {
+  window.dispatchEvent(new CustomEvent("bsi:open-login"));
+};
 
 export const ProgramDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { programs, user, applyToProgram, showToast, startups } = useAppState();
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const [activeTab, setActiveTab] = useState<"details" | "apply">("details");
+  const [activeTab, setActiveTab] = useState<"details" | "apply">(
+    location.pathname.endsWith("/apply") ? "apply" : "details"
+  );
   const [dragActive, setDragActive] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [additionalFile, setAdditionalFile] = useState<File | null>(null);
+  const [successModalOpen, setSuccessModalOpen] = useState(false);
+  const [successApplication, setSuccessApplication] = useState<{ id: string; programName: string } | null>(null);
+  const [profileReviewOpen, setProfileReviewOpen] = useState(false);
 
   // Form states
   const [fields, setFields] = useState({
@@ -34,12 +51,16 @@ export const ProgramDetail: React.FC = () => {
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
 
-  const prog = programs.find((p) => p.id === id);
+  const prog = programs.find((p) => p.id === id) || getCatalogProgram(id);
+  const userStartup = startups.find((s) => s.id === user?.startupId);
 
   useEffect(() => {
     // Reset states if program changes
     setUploadedFile(null);
     setAdditionalFile(null);
+    setSuccessModalOpen(false);
+    setSuccessApplication(null);
+    setProfileReviewOpen(false);
     setFields({
       problemStatement: "",
       solutionDescription: "",
@@ -49,8 +70,23 @@ export const ProgramDetail: React.FC = () => {
       declarationChecked: false
     });
     setFormErrors({});
-    setActiveTab("details");
-  }, [id]);
+    setActiveTab(location.pathname.endsWith("/apply") ? "apply" : "details");
+  }, [id, location.pathname, user?.email, user?.name, userStartup?.name]);
+
+  useEffect(() => {
+    if (location.pathname.endsWith("/apply") && !user && prog) {
+      showToast("Please login to apply for this program.", "info");
+      requestLogin();
+      navigate(`/support/${prog.id}`, { replace: true });
+    }
+  }, [location.pathname, navigate, prog, showToast, user]);
+
+  useEffect(() => {
+    if (location.pathname.endsWith("/apply") && user?.isActive === false && prog) {
+      setProfileReviewOpen(true);
+      navigate(`/support/${prog.id}`, { replace: true });
+    }
+  }, [location.pathname, navigate, prog, user?.isActive]);
 
   if (!prog) {
     return (
@@ -58,15 +94,12 @@ export const ProgramDetail: React.FC = () => {
         <ShieldAlert className="w-12 h-12 text-red-500 mx-auto mb-3" />
         <h2 className="text-xl font-bold text-[#0B2A5B]">Resource Not Located</h2>
         <p className="text-xs text-slate-500 mt-1">Sovereign program template with ID "{id}" was not compiled in database.</p>
-        <Link to="/programs" className="text-xs text-[#FF6B00] font-bold mt-4 inline-block hover:underline">
+        <Link to="/support" className="text-xs text-[#FF6B00] font-bold mt-4 inline-block hover:underline">
           Return to Program Listings
         </Link>
       </div>
     );
   }
-
-  // Find user's startup profile if logged in
-  const userStartup = startups.find((s) => s.id === user?.startupId);
 
   // Drag over handler
   const handleDrag = (e: React.DragEvent) => {
@@ -151,6 +184,10 @@ export const ProgramDetail: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (user?.isActive === false) {
+      setProfileReviewOpen(true);
+      return;
+    }
     if (!validateForm()) {
       showToast("Please correct error flags prior to submission.", "error");
       return;
@@ -158,10 +195,10 @@ export const ProgramDetail: React.FC = () => {
 
     setSubmitting(true);
     try {
-      await applyToProgram({
+      const created = await applyToProgram({
         programId: prog.id,
         programName: prog.name,
-        startupId: user?.startupId || "temp-id",
+        startupId: user?.startupId || "",
         startupName: userStartup?.name || "Temp Startup",
         problemStatement: fields.problemStatement,
         solutionDescription: fields.solutionDescription,
@@ -172,12 +209,18 @@ export const ProgramDetail: React.FC = () => {
         additionalDocumentsName: additionalFile?.name || undefined
       });
       setActiveTab("details");
-      navigate("/track-application");
+      setSuccessApplication({ id: created.id, programName: created.programName || prog.name });
+      setSuccessModalOpen(true);
     } catch (err) {
       console.error(err);
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleSuccessContinue = () => {
+    setSuccessModalOpen(false);
+    navigate("/startup/dashboard");
   };
 
   return (
@@ -187,7 +230,7 @@ export const ProgramDetail: React.FC = () => {
       <nav className="flex" aria-label="Breadcrumb">
         <ol role="list" className="flex items-center space-x-2 text-xs font-medium text-slate-500">
           <li>
-            <Link to="/programs" className="hover:text-[#0B2A5B] flex items-center gap-1">
+            <Link to="/support" className="hover:text-[#0B2A5B] flex items-center gap-1">
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>Back to Programs</span>
             </Link>
@@ -201,25 +244,10 @@ export const ProgramDetail: React.FC = () => {
 
       {/* DETAILED HEADER WITH TABS */}
       <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-        
-        {prog.id === "sisfs-seed-fund" && (
-          <div className="bg-[#FF6B00] text-center text-white py-1.5 text-[10px] font-black tracking-widest uppercase font-mono">
-            ★ Under evaluation of recognized ISMC regional committees
-          </div>
-        )}
-
         <div className="p-6 md:p-8 space-y-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="space-y-2">
-              <span className="text-xs font-mono font-bold text-[#FF6B00] bg-orange-50 px-2.5 py-1 rounded border border-orange-100 uppercase">
-                {prog.id.toUpperCase()}
-              </span>
+            <div>
               <h1 className="text-2xl sm:text-3xl font-black text-[#0B2A5B] tracking-tight">{prog.name}</h1>
-              <div className="flex items-center gap-4 text-xs font-medium text-slate-500 font-mono">
-                <span>START: {prog.startDate}</span>
-                <span>•</span>
-                <span>END: {prog.endDate}</span>
-              </div>
             </div>
 
             {/* Selector tabs */}
@@ -236,14 +264,16 @@ export const ProgramDetail: React.FC = () => {
                 Scheme details
               </button>
                 <button
-                  onClick={() => {
-                    if (!user) {
-                      showToast("Authentication required. Please sign in or sign up first.", "info");
-                      navigate("/");
-                    } else {
-                      setActiveTab("apply");
-                    }
-                  }}
+                onClick={() => {
+                  if (!user) {
+                    showToast("Authentication required. Please sign in or sign up first.", "info");
+                    requestLogin();
+                  } else if (user.isActive === false) {
+                    setProfileReviewOpen(true);
+                  } else {
+                    setActiveTab("apply");
+                  }
+                }}
                 className={`px-4 py-2 text-xs font-bold rounded-md transition-all ${
                   activeTab === "apply"
                     ? "bg-[#0B2A5B] text-white shadow"
@@ -361,18 +391,18 @@ export const ProgramDetail: React.FC = () => {
 
               <div className="pt-2">
                 {prog.isOpen ? (
-                  <button
-                    onClick={() => {
-                      if (!user) {
-                        showToast("Authentication required. Please sign in or sign up first.", "info");
-                        navigate("/");
-                      } else {
-                        setActiveTab("apply");
-                      }
-                    }}
-                    className="w-full bg-[#FF6B00] hover:bg-[#FF6B00]/95 text-white font-extrabold text-xs py-3 rounded-lg text-center tracking-widest uppercase transition-all shadow-md inline-block focus:ring-2 focus:ring-orange-300 outline-none"
-                    id="sticky-trigger-apply"
-                  >
+              <button
+                onClick={() => {
+                  if (!user) {
+                    showToast("Authentication required. Please sign in or sign up first.", "info");
+                    requestLogin();
+                  } else {
+                    setActiveTab("apply");
+                  }
+                }}
+                className="w-full bg-[#FF6B00] font-extrabold text-xs py-3 rounded-lg text-center tracking-widest uppercase transition-all shadow-md inline-block focus:ring-2 focus:ring-orange-300 outline-none hover:bg-[#FF6B00]/95 text-white"
+                id="sticky-trigger-apply"
+              >
                     🚀 Initiate Digital Application
                   </button>
                 ) : (
@@ -397,6 +427,14 @@ export const ProgramDetail: React.FC = () => {
           </div>
 
         </div>
+      ) : prog.id === "idea-validation-program" ? (
+        <IdeaValidationProgram program={prog} onCancel={() => setActiveTab("details")} />
+      ) : prog.id === "foundation-program" ? (
+        <FoundationProgram program={prog} onCancel={() => setActiveTab("details")} />
+      ) : prog.id === "global-impact-program" ? (
+        <GlobalImpactProgram program={prog} onCancel={() => setActiveTab("details")} />
+      ) : prog.id === "startup-program" ? (
+        <StartupProgramApplication program={prog} onCancel={() => setActiveTab("details")} />
       ) : (
         /* COMMON APPLICATION FORM */
         <div className="bg-white border border-slate-200 rounded-xl p-6 md:p-8 shadow-sm space-y-8" id="application-form-pane">
@@ -621,7 +659,7 @@ export const ProgramDetail: React.FC = () => {
                   id="declaration-checkbox"
                 />
                 <label htmlFor="declaration-checkbox" className="text-[11px] leading-relaxed text-slate-600 font-semibold select-none cursor-pointer">
-                  I solemnly declare that our company KisanBot Agrotech, incorporated less than 2 years at the moment of filing, is DPIIT registered, and the minimum promoter Indian holdings represent at least 51% of aggregate equity shares. All statements, credentials, and uploaded pitch documents are verified and accurate. We understand that any false metrics will lead to automatic blacklisting by the ISMC partners.
+                  I solemnly declare that the applicant startup and submitted documents are accurate, complete, and authorized for review. We understand that false metrics, misleading credentials, or invalid uploads can lead to rejection or blacklisting by the program review partners.
                 </label>
               </div>
               {formErrors.declaration && (
@@ -641,7 +679,7 @@ export const ProgramDetail: React.FC = () => {
               <button
                 type="submit"
                 disabled={submitting}
-                className="px-8 py-3 bg-[#FF6B00] hover:bg-[#FF6B00]/95 text-white font-extrabold tracking-widest uppercase rounded-lg shadow disabled:opacity-50 transition-all focus:ring-2 focus:ring-orange-200 outline-none"
+                className="px-8 py-3 font-extrabold tracking-widest uppercase rounded-lg shadow transition-all focus:ring-2 focus:ring-orange-200 outline-none bg-[#FF6B00] hover:bg-[#FF6B00]/95 text-white disabled:opacity-50"
                 id="submit-proposal-btn"
               >
                 {submitting ? "Processing secure file..." : "🚀 Certify & Submit Application"}
@@ -661,10 +699,12 @@ export const ProgramDetail: React.FC = () => {
             <p className="text-xs font-black truncate max-w-[200px]">{prog.name}</p>
           </div>
           <button
-            onClick={() => {
-              if (!user) {
-                showToast("Filing restricted. Sign in first.", "info");
-                navigate("/");
+                onClick={() => {
+                  if (!user) {
+                    showToast("Filing restricted. Sign in first.", "info");
+                    requestLogin();
+                  } else if (user.isActive === false) {
+                    setProfileReviewOpen(true);
               } else {
                 setActiveTab("apply");
                 showToast("Opening filing form", "info");
@@ -677,6 +717,15 @@ export const ProgramDetail: React.FC = () => {
           </button>
         </div>
       )}
+
+      <ApplicationSuccessModal
+        open={successModalOpen}
+        applicationId={successApplication?.id}
+        programName={successApplication?.programName}
+        onClose={() => setSuccessModalOpen(false)}
+        onContinue={handleSuccessContinue}
+      />
+      <ProfileUnderReviewModal open={profileReviewOpen} onClose={() => setProfileReviewOpen(false)} />
 
     </div>
   );
