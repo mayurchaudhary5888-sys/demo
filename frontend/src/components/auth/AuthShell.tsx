@@ -14,6 +14,7 @@ type AuthShellProps = {
   aside?: React.ReactNode;
   maxWidthClassName?: string;
   showFooterNote?: boolean;
+  decorated?: boolean;
 };
 
 export const AuthShell: React.FC<AuthShellProps> = ({
@@ -24,17 +25,22 @@ export const AuthShell: React.FC<AuthShellProps> = ({
   aside,
   maxWidthClassName = "max-w-7xl",
   showFooterNote = true,
+  decorated = true,
 }) => {
   return (
     <div
       className="relative min-h-[calc(100vh-7rem)] overflow-hidden bg-[#F8FAFC] px-4 py-8 text-slate-900 sm:px-6 lg:px-8"
       id="auth-shell"
     >
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-x-0 top-0 h-72 bg-[#07184A]" />
-        <div className="absolute right-[-8rem] top-[-8rem] h-96 w-96 rounded-full bg-[#FF6B00]/18 blur-3xl" />
-        <div className="absolute left-[-10rem] top-20 h-80 w-80 rounded-full bg-[#07184A]/8 blur-3xl" />
-      </div>
+      {decorated ? (
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute inset-x-0 top-0 h-72 bg-[#07184A]" />
+          <div className="absolute right-[-8rem] top-[-8rem] h-96 w-96 rounded-full bg-[#FF6B00]/18 blur-3xl" />
+          <div className="absolute left-[-10rem] top-20 h-80 w-80 rounded-full bg-[#07184A]/8 blur-3xl" />
+        </div>
+      ) : (
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-[#07184A]" />
+      )}
 
       <div
         className={`relative mx-auto ${maxWidthClassName} overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_28px_90px_rgba(7,20,74,0.14)]`}
