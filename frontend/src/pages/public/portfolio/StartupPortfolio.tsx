@@ -159,7 +159,6 @@ export const StartupPortfolio: React.FC = () => {
                   className="portfolio-reveal group overflow-hidden rounded-lg border border-slate-200 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.08)] transition duration-300 hover:-translate-y-2 hover:shadow-[0_24px_70px_rgba(15,23,42,0.14)]"
                 >
                   <div className="relative flex aspect-[16/9] items-center justify-center overflow-hidden bg-[#07144A]">
-                    <div className="absolute inset-0 opacity-[0.1] bg-[linear-gradient(90deg,rgba(255,255,255,1)_1px,transparent_1px)] bg-[length:42px_42px]" />
                     <div className="absolute right-[-20%] top-[-30%] h-52 w-52 rounded-full bg-[#FF6B00]/35 blur-3xl" />
                     <div className="relative flex h-20 w-20 items-center justify-center rounded-lg bg-white text-3xl font-black text-[#2947B8] shadow-[0_20px_50px_rgba(0,0,0,0.22)]">
                       {startup.name.slice(0, 2).toUpperCase()}

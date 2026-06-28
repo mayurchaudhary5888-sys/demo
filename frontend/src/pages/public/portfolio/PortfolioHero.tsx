@@ -15,7 +15,6 @@ export const PortfolioHero: React.FC<PortfolioHeroProps> = ({ eyebrow, title, de
 
   return (
     <section className="relative overflow-hidden bg-[#07144A] text-white">
-      <div className="absolute inset-0 opacity-[0.06] bg-[linear-gradient(90deg,rgba(255,255,255,1)_1px,transparent_1px)] bg-[length:64px_64px]" />
       <div className="absolute right-[-12%] top-[-22%] h-[32rem] w-[32rem] rounded-full bg-[#FF6B00]/18 blur-3xl" />
 
       <div className="relative mx-auto grid max-w-7xl items-center gap-10 px-4 py-16 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:px-8 lg:py-20">
