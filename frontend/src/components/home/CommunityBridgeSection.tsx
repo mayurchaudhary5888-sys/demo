@@ -78,7 +78,7 @@ export const CommunityBridgeSection: React.FC = () => {
   return (
     <section
       ref={sectionRef}
-      className="relative overflow-hidden border-b border-slate-100 bg-white pt-16 pb-24 sm:pt-24 sm:pb-32"
+      className="relative overflow-hidden bg-white pt-16 pb-24 sm:pt-24 sm:pb-32"
       id="community-bridge-section"
     >
       {/* Background Grid Pattern */}

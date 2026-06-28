@@ -9,11 +9,16 @@ export const Footer: React.FC = () => {
     <footer className="mt-auto bg-[#151515] text-white" id="app-footer">
       <div className="bg-[#262626]">
         <div className="mx-auto grid max-w-7xl items-center gap-6 px-4 py-7 sm:px-6 lg:grid-cols-[1fr_1.45fr_0.8fr_0.8fr] lg:px-8">
-          <div className="flex justify-center lg:justify-start">
+          <div className="flex items-center justify-center lg:justify-start gap-4">
             <img
               src="/logos/bhaskar.jpeg"
               alt="BHASKAR"
-              className="h-16 w-auto max-w-[220px] rounded bg-white object-contain"
+              className="h-16 w-auto max-w-[140px] rounded bg-white object-contain"
+            />
+            <img
+              src="/logos/azadi-logo.png"
+              alt="Azadi Ka Amrit Mahotsav"
+              className="h-16 w-auto max-w-[140px] rounded bg-white object-contain"
             />
           </div>
 
