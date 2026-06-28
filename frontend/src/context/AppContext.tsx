@@ -9,11 +9,11 @@ import {
   Program,
   Application,
   ContactQuery,
-  Connection,
   ApplicationStatus,
 } from "../types";
 import { authApi } from "../services/authApi";
 import { contentApi } from "../services/contentApi";
+import { normalizeStartupProfile } from "../pages/startup/utils/normalizeStartupProfile";
 
 // ── Toast type ──
 interface Toast {
@@ -28,8 +28,10 @@ interface UserSession {
   role: "admin" | "founder" | string;
   name: string;
   startupId?: string | null;
+  selectedProgram?: string | null;
   isOnboarded?: boolean;
   dept?: string;
+  isActive?: boolean;
 }
 
 // ── Context value shape ──
@@ -39,7 +41,6 @@ interface AppContextValue {
   startups: StartupProfile[];
   programs: Program[];
   applications: Application[];
-  connections: Connection[];
   queries: ContactQuery[];
   toasts: Toast[];
 
@@ -61,7 +62,7 @@ interface AppContextValue {
   addProgram: (program: any) => void;
 
   // Application actions
-  applyToProgram: (data: any) => Promise<void>;
+  applyToProgram: (data: any) => Promise<Application>;
   updateApplicationStatus: (appId: string, status: ApplicationStatus, remarks?: string) => void;
 }
 
@@ -91,27 +92,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return [];
   });
 
-  const [connections, setConnections] = useState<Connection[]>([]);
-
   const [toasts, setToasts] = useState<Toast[]>([]);
 
   // ── Persist helpers ──
   useEffect(() => {
     const hydrate = async () => {
       try {
-        const [remoteStartups, remotePrograms, remoteApplications, remoteQueries, remoteConnections] = await Promise.all([
+        const [remoteStartups, remotePrograms, remoteApplications, remoteQueries] = await Promise.all([
           contentApi.getStartups(),
           contentApi.getPrograms(),
           contentApi.getApplications(),
           contentApi.getQueries(),
-          contentApi.getConnections().catch(() => []),
         ]);
 
-        setStartups(remoteStartups);
+        setStartups(remoteStartups.map((profile) => normalizeStartupProfile(profile as Record<string, unknown>)));
         setPrograms(remotePrograms);
         setApplications(remoteApplications);
         setQueries(remoteQueries);
-        setConnections(remoteConnections as Connection[]);
       } catch {
         // Backend is the source of truth; remain empty if the API is unavailable.
       }
@@ -141,6 +138,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     localStorage.setItem("bsi_auth_token", response.token);
     localStorage.setItem("bsi_session", JSON.stringify(response.user));
     setUser(response.user);
+    if (response.startupProfile) {
+      const startupProfile = normalizeStartupProfile(response.startupProfile);
+      setStartups((prev) => {
+        const exists = prev.some((item) => item.id === startupProfile.id || item.email === startupProfile.email);
+        if (exists) {
+          return prev.map((item) =>
+            item.id === startupProfile.id || item.email === startupProfile.email ? { ...item, ...startupProfile } : item
+          );
+        }
+        return [startupProfile, ...prev];
+      });
+    }
     return response.user;
   }, []);
 
@@ -162,31 +171,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     localStorage.setItem("bsi_session", JSON.stringify(response.user));
 
     if (response.startupProfile || tempReg.startupProfile) {
-      const profile = (response.startupProfile || tempReg.startupProfile) as any;
-      const startupProfile: StartupProfile = {
+      const profile = (response.startupProfile || tempReg.startupProfile) as Record<string, unknown>;
+      const startupProfile: StartupProfile = normalizeStartupProfile({
+        ...profile,
         id: response.user.startupId || tempReg.startupId || profile.id || `startup-${Date.now()}`,
-        name: profile.startupName || response.user.name || tempReg.name || "Founder Startup",
-        logoUrl: profile.logoPreview || undefined,
-        stage: profile.stage || "Validation",
-        fundingType: profile.fundingStatus || "Bootstrapped",
-        description: profile.startupBrief || "Registered through BHASKAR Startup India.",
-        email: response.user.email,
-        mobile: profile.mobile || tempReg.mobile || "",
-        state: profile.state || "Other",
-        city: profile.city || "",
-        website: profile.website || undefined,
-        appLink: profile.appLink || undefined,
-        sector: profile.sector || "Other",
-        startupType: profile.industry || profile.nature || "Other",
-        isDpiitRecognized: Boolean(profile.cin),
-        dpiitNumber: profile.cin || undefined,
-        isMsmeRegistered: Boolean(profile.udhyogAadhaar),
-        msmeNumber: profile.udhyogAadhaar || undefined,
-        interestedPrograms: profile.interests || [],
-        supportRequired: profile.services || [],
-        isApproved: false,
-        registrationDate: new Date().toISOString().split("T")[0],
-      };
+        email: response.user.email || tempReg.email || profile.email,
+        mobile: tempReg.mobile || profile.mobile,
+        founderName: response.user.name || tempReg.name,
+      });
 
       setStartups((prev) => {
         const exists = prev.some((item) => item.id === startupProfile.id || item.email === startupProfile.email);
@@ -262,24 +254,41 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // ── Application action ──
   const applyToProgram = useCallback(
     async (data: any) => {
-      const created = await contentApi.submitApplication({
-        programId: data.programId,
-        programName: data.programName,
-        startupId: data.startupId,
-        startupName: data.startupName,
-        problemStatement: data.problemStatement,
-        solutionDescription: data.solutionDescription,
-        currentStage: data.currentStage,
-        teamSize: data.teamSize,
-        fundingStatus: data.fundingStatus,
-        pitchDeckName: data.pitchDeckName || "PitchDeck.pdf",
-        additionalDocumentsName: data.additionalDocumentsName,
-      });
+      try {
+        if (user?.role !== "admin" && user?.isActive === false) {
+          throw new Error("Your profile is under review. Please try again later.");
+        }
+        const startupId = data.startupId || user?.startupId;
+        if (user?.role !== "admin" && (!startupId || startupId === "temp-id" || String(startupId).startsWith("temp-"))) {
+          throw new Error("Your startup profile is missing. Please complete registration before applying.");
+        }
+        const created = await contentApi.submitApplication({
+          ...data,
+          programId: data.programId,
+          programName: data.programName,
+          startupId,
+          startupName: data.startupName,
+          selectedProgram: user?.selectedProgram || data.selectedProgram || data.programId,
+          submittedByEmail: user?.email || data.submittedByEmail,
+          submittedByName: user?.name || data.submittedByName,
+          problemStatement: data.problemStatement,
+          solutionDescription: data.solutionDescription,
+          currentStage: data.currentStage,
+          teamSize: data.teamSize,
+          fundingStatus: data.fundingStatus,
+          pitchDeckName: data.pitchDeckName || "PitchDeck.pdf",
+          additionalDocumentsName: data.additionalDocumentsName,
+        });
 
-      setApplications((prev) => [created as unknown as Application, ...prev]);
-      showToast(`Application ${(created as any).id} submitted successfully to ${data.programName}!`, "success");
+        setApplications((prev) => [created as unknown as Application, ...prev]);
+        return created as Application;
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Unable to submit application.";
+        showToast(message, "error");
+        throw error;
+      }
     },
-    [showToast]
+    [showToast, user]
   );
 
   const updateApplicationStatus = useCallback(
@@ -316,7 +325,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     startups,
     programs,
     applications,
-    connections,
     queries,
     toasts,
     login,

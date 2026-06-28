@@ -4,11 +4,9 @@
  */
 
 import React, { Suspense, lazy } from "react";
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useParams } from "react-router-dom";
 import { AppProvider, useAppState } from "./context/AppContext";
 
-// Common layout items
-import { HeaderStrip } from "./components/common/HeaderStrip";
 import { Navbar } from "./components/common/Navbar";
 import { Footer } from "./components/common/Footer";
 import { ToastContainer } from "./components/common/ToastContainer";
@@ -20,14 +18,8 @@ const InformationCenter = lazy(() => import("./pages/public/InformationCenter").
 const StartupProfiles = lazy(() => import("./pages/public/network/startup-profiles/StartupProfiles").then((mod) => ({ default: mod.StartupProfiles })));
 const InvestorProfiles = lazy(() => import("./pages/public/network/investor-profiles/InvestorProfiles").then((mod) => ({ default: mod.InvestorProfiles })));
 const ProgramsListing = lazy(() => import("./pages/public/ProgramsListing").then((mod) => ({ default: mod.ProgramsListing })));
+const ProgramInfoPage = lazy(() => import("./pages/public/ProgramInfoPage").then((mod) => ({ default: mod.ProgramInfoPage })));
 const ProgramDetail = lazy(() => import("./pages/public/ProgramDetail").then((mod) => ({ default: mod.ProgramDetail })));
-const StartupProgram = lazy(() => import("./pages/public/programs/startup-program/StartupProgram").then((mod) => ({ default: mod.StartupProgram })));
-const MSMEProgram = lazy(() => import("./pages/public/programs/msme-program/MSMEProgram").then((mod) => ({ default: mod.MSMEProgram })));
-const FoundationProgram = lazy(() => import("./pages/public/programs/foundation-program/FoundationProgram").then((mod) => ({ default: mod.FoundationProgram })));
-const IdeaValidationProgram = lazy(() => import("./pages/public/programs/idea-validation-program/IdeaValidationProgram").then((mod) => ({ default: mod.IdeaValidationProgram })));
-const GlobalImpactProgram = lazy(() => import("./pages/public/programs/global-impact-program/GlobalImpactProgram").then((mod) => ({ default: mod.GlobalImpactProgram })));
-const ProgramTrackApplication = lazy(() => import("./pages/public/programs/track-application/ProgramTrackApplication").then((mod) => ({ default: mod.ProgramTrackApplication })));
-const TrackApplication = lazy(() => import("./pages/public/TrackApplication").then((mod) => ({ default: mod.TrackApplication })));
 const ContactUs = lazy(() => import("./pages/public/ContactUs").then((mod) => ({ default: mod.ContactUs })));
 const PortfolioIndex = lazy(() => import("./pages/public/portfolio/PortfolioIndex").then((mod) => ({ default: mod.PortfolioIndex })));
 const IncubatorPortfolio = lazy(() => import("./pages/public/portfolio/IncubatorPortfolio").then((mod) => ({ default: mod.IncubatorPortfolio })));
@@ -44,6 +36,7 @@ const Settings = lazy(() => import("./pages/startup/Settings").then((mod) => ({ 
 
 // Admin Settings
 const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard").then((mod) => ({ default: mod.AdminDashboard })));
+const AdminUserManagement = lazy(() => import("./pages/admin/AdminUserManagement").then((mod) => ({ default: mod.AdminUserManagement })));
 const AdminStartupManagement = lazy(() => import("./pages/admin/AdminStartupManagement").then((mod) => ({ default: mod.AdminStartupManagement })));
 const AdminApplicationManagement = lazy(() => import("./pages/admin/AdminApplicationManagement").then((mod) => ({ default: mod.AdminApplicationManagement })));
 const AdminProgramManagement = lazy(() => import("./pages/admin/AdminProgramManagement").then((mod) => ({ default: mod.AdminProgramManagement })));
@@ -72,6 +65,12 @@ const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return <>{children}</>;
 };
 
+const LegacyProgramRedirect: React.FC<{ apply?: boolean }> = ({ apply = false }) => {
+  const { id, slug } = useParams();
+  const programId = id || slug;
+  return <Navigate to={programId ? `/support/${programId}${apply ? "/apply" : ""}` : "/support"} replace />;
+};
+
 // Main Routing Router Node
 const AppContent: React.FC = () => {
   const location = useLocation();
@@ -83,14 +82,11 @@ const AppContent: React.FC = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-slate-50 text-slate-900" id="app-root-wrapper">
-      {/* 1. Header Accessibility Stripe */}
-      <HeaderStrip />
-
-      {/* 2. Primary Navigation Bar */}
+      {/* Primary Navigation Bar */}
       <Navbar />
 
       {/* Skip to Main Content target */}
-      <main className="flex-grow pt-4" id="main-content">
+      <main className="relative flex-grow" id="main-content">
         <Suspense
           fallback={
             <div className="flex min-h-[60vh] items-center justify-center text-sm font-medium text-slate-500">
@@ -101,6 +97,7 @@ const AppContent: React.FC = () => {
           <Routes>
             {/* Public Channels */}
             <Route path="/" element={<Home />} />
+            <Route path="/home" element={<Navigate to="/" replace />} />
             <Route path="/about-us" element={<AboutUs />} />
             <Route path="/about" element={<Navigate to="/about-us" replace />} />
             <Route path="/information-center" element={<InformationCenter />} />
@@ -109,20 +106,20 @@ const AppContent: React.FC = () => {
             <Route path="/network/startup-profiles" element={<StartupProfiles />} />
             <Route path="/network/investor-profiles" element={<InvestorProfiles />} />
             <Route path="/investors" element={<Navigate to="/network/investor-profiles" replace />} />
-            <Route path="/programs" element={<ProgramsListing />} />
-            <Route path="/programs/startup-program" element={<StartupProgram />} />
-            <Route path="/programs/msme-program" element={<MSMEProgram />} />
-            <Route path="/programs/foundation-program" element={<FoundationProgram />} />
-            <Route path="/programs/idea-validation-program" element={<IdeaValidationProgram />} />
-            <Route path="/programs/global-impact-program" element={<GlobalImpactProgram />} />
-            <Route path="/programs/track-application" element={<ProgramTrackApplication />} />
-            <Route path="/programs/:id" element={<ProgramDetail />} />
-            <Route path="/track-application" element={<TrackApplication />} />
-            <Route path="/contact" element={<ContactUs />} />
-            <Route path="/contact-us" element={<Navigate to="/contact" replace />} />
-            <Route path="/portfolios" element={<PortfolioIndex />} />
-            <Route path="/portfolios/incubators" element={<IncubatorPortfolio />} />
-            <Route path="/portfolios/startups" element={<StartupPortfolio />} />
+            <Route path="/support" element={<ProgramsListing />} />
+            <Route path="/support/:id/apply" element={<ProgramDetail />} />
+            <Route path="/support/:slug" element={<ProgramInfoPage />} />
+            <Route path="/programs" element={<Navigate to="/support" replace />} />
+            <Route path="/programs/:id/apply" element={<LegacyProgramRedirect apply />} />
+            <Route path="/programs/:slug" element={<LegacyProgramRedirect />} />
+            <Route path="/contact-us" element={<ContactUs />} />
+            <Route path="/contact" element={<Navigate to="/contact-us" replace />} />
+            <Route path="/portfolio" element={<PortfolioIndex />} />
+            <Route path="/portfolio/incubators" element={<IncubatorPortfolio />} />
+            <Route path="/portfolio/startups" element={<StartupPortfolio />} />
+            <Route path="/portfolios" element={<Navigate to="/portfolio" replace />} />
+            <Route path="/portfolios/incubators" element={<Navigate to="/portfolio/incubators" replace />} />
+            <Route path="/portfolios/startups" element={<Navigate to="/portfolio/startups" replace />} />
 
             {/* Auth Channels */}
             <Route path="/register" element={<Register />} />
@@ -155,7 +152,8 @@ const AppContent: React.FC = () => {
                 </AdminRoute>
               }
             >
-              <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="dashboard" element={<AdminDashboard />} />
+              <Route path="users" element={<AdminUserManagement />} />
               <Route path="startups" element={<AdminStartupManagement />} />
               <Route path="applications" element={<AdminApplicationManagement />} />
               <Route path="programs" element={<AdminProgramManagement />} />

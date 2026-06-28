@@ -137,7 +137,7 @@ export const StartupPortfolio: React.FC = () => {
                 ))}
               </select>
               <Link
-                to="/portfolios/incubators"
+                to="/portfolio/incubators"
                 className="inline-flex h-12 items-center justify-center gap-2 rounded-md bg-[#07144A] px-5 text-xs font-black uppercase tracking-[0.18em] text-white transition hover:bg-[#102262]"
               >
                 Incubators

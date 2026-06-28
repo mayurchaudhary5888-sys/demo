@@ -11,6 +11,7 @@ import { CommunityBridgeSection } from "../../components/home/CommunityBridgeSec
 import { EcosystemPathwaysSection } from "../../components/home/EcosystemPathwaysSection";
 import { HowItWorksSection } from "../../components/home/HowItWorksSection";
 import { EcosystemStakeholdersSection } from "../../components/home/EcosystemStakeholdersSection";
+import { DisclaimerSection } from "../../components/home/DisclaimerSection";
 
 export const Home: React.FC = () => {
   const { startups, programs, showToast } = useAppState();
@@ -304,6 +305,7 @@ export const Home: React.FC = () => {
       <EcosystemPathwaysSection />
       <HowItWorksSection />
       <EcosystemStakeholdersSection />
+      <DisclaimerSection />
 
     </div>
   );

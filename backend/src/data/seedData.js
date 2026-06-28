@@ -99,73 +99,7 @@ export const seedInvestors = [
   { id: "inv-shrishti-grants", name: "Shrishti Innovation Hub", organization: "Government of India Initiative", investmentFocus: ["Social Impact", "CleanTech", "AgriTech", "BioTech"], website: "https://shrishti.gov.in", type: "Funding Partner" }
 ];
 
-export const seedApplications = [
-  {
-    id: "APP-2026-0091",
-    programId: "sisfs-seed-fund",
-    programName: "Startup India Seed Fund Scheme (SISFS)",
-    startupId: "startup-kisan-bot",
-    startupName: "KisanBot Agrotech",
-    submittedDate: "2026-05-18",
-    lastUpdated: "2026-06-15",
-    status: "Under Review",
-    problemStatement: "Smallhold Indian farmers spend excessive amounts on chemical weed killers.",
-    solutionDescription: "Solar utility micro-rovers navigating fields autonomously.",
-    currentStage: "MVP functional, tested in 15 farms in Saswad district.",
-    teamSize: 4,
-    fundingStatus: "Bootstrap capital and small family grant.",
-    pitchDeckName: "Kisan_SeedFund_Pitch_v2.pdf",
-    adminRemarks: "Assigned to ISMC, waiting for scheduled physical demo at the Pune Agriculture College center.",
-    timeline: [
-      { status: "Submitted", timestamp: "2026-05-18 10:24 AM", remarks: "Form filed and documents validated successfully." },
-      { status: "Under Review", timestamp: "2026-06-15 02:40 PM", remarks: "Waiting for Physical Test Assessment scheduling." }
-    ]
-  },
-  {
-    id: "APP-2026-0105",
-    programId: "sisfs-seed-fund",
-    programName: "Startup India Seed Fund Scheme (SISFS)",
-    startupId: "startup-heallink",
-    startupName: "HealLink Diagnostics",
-    submittedDate: "2026-06-01",
-    lastUpdated: "2026-06-16",
-    status: "Document Requested",
-    problemStatement: "Rural Indian clinics miss certified radiologists, delaying diagnosis.",
-    solutionDescription: "AI framework digesting radiology scans and pushing report summary.",
-    currentStage: "Passed clinical trials with 230 test cases under institutional validation.",
-    teamSize: 5,
-    fundingStatus: "₹10 Lakh from Angel, now seeking milestone grant.",
-    pitchDeckName: "Heal_Diagnostics_Doc.pdf",
-    adminRemarks: "Please upload the official self-certified clinical validation report.",
-    timeline: [
-      { status: "Submitted", timestamp: "2026-06-01 11:15 AM", remarks: "Submitted initial files." },
-      { status: "Document Requested", timestamp: "2026-06-16 09:12 AM", remarks: "Academic validation report requested." }
-    ]
-  },
-  {
-    id: "APP-2026-0044",
-    programId: "startup-program",
-    programName: "National Startup Acceleration Program",
-    startupId: "startup-urja-recycle",
-    startupName: "Urja EcoCells",
-    submittedDate: "2026-04-20",
-    lastUpdated: "2026-05-10",
-    status: "Approved",
-    problemStatement: "Grid dependencies in remote agricultural tube wells limit irrigation.",
-    solutionDescription: "Bio-degradable thermal cell arrays storage backup.",
-    currentStage: "Active commercial manufacturing in Jamnagar facility.",
-    teamSize: 12,
-    fundingStatus: "Seed equity round closed.",
-    pitchDeckName: "Urja_Scale_Proposal.pdf",
-    adminRemarks: "Welcome to Cohort-IV! Onboarding email sent for technical audit sessions.",
-    timeline: [
-      { status: "Submitted", timestamp: "2026-04-20 09:00 AM" },
-      { status: "Under Review", timestamp: "2026-04-30 02:22 PM", remarks: "Verification of manufacturing certificates completed." },
-      { status: "Shortlisted", timestamp: "2026-05-05 11:45 AM", remarks: "Excellent jury ratings during online pitches." },
-      { status: "Approved", timestamp: "2026-05-10 04:00 PM", remarks: "Approved for National Acceleration cohort support." }
-    ]
-  }
-];
+export const seedApplications = [];
 
 export const seedQueries = [
   {

@@ -3,88 +3,242 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import { ArrowRight, BadgeCheck, BookOpen, Building2, FileText, Sparkles } from "lucide-react";
 import { useAppState } from "../../context/AppContext";
-import { LayoutDashboard, FileText, Building2, CheckCircle, Clock, AlertTriangle } from "lucide-react";
+import { StatusBadge } from "../../components/common/StatusBadge";
+import { ApplicationDetailsModal } from "../../components/common/ApplicationDetailsModal";
+import { StartupProfileSummaryCard } from "./components/StartupProfileSummaryCard";
+import { getCatalogProgram } from "../../data/programCatalog";
 
 export const StartupDashboard: React.FC = () => {
   const { user, startups, applications } = useAppState();
+  const [showApplicationModal, setShowApplicationModal] = useState(false);
 
   const myStartup = startups.find((s) => s.id === user?.startupId);
-  const myApps = applications.filter((a) => a.startupId === user?.startupId);
+  const companyName = myStartup?.startupName || myStartup?.legalName || myStartup?.name || user?.name || "Startup";
+  const selectedProgramId = myStartup?.selectedProgram || user?.selectedProgram || "";
+  const selectedProgram = getCatalogProgram(selectedProgramId);
+  const myApplications = applications.filter((app) => app.startupId === user?.startupId);
+  const latestApplication = myApplications[0];
 
   return (
     <div className="space-y-8" id="startup-dashboard-container">
-      {/* Welcome */}
-      <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-xs">
-        <h2 className="text-xl font-black text-[#0B2A5B]">Welcome, {user?.name || "Founder"}</h2>
-        <p className="text-xs text-slate-500 mt-1">Your startup dashboard overview and activity summary.</p>
-      </div>
+      <section className="rounded-[28px] border border-[#D9DCF4] bg-[linear-gradient(135deg,rgba(244,246,255,0.98),rgba(232,237,255,0.92))] px-6 py-7 shadow-[0_20px_55px_rgba(69,84,155,0.14)] sm:px-8">
+        <h1 className="text-2xl font-black tracking-tight text-[#162457] sm:text-3xl">
+          Welcome, {companyName}
+        </h1>
+        <p className="mt-2 text-sm font-medium leading-6 text-slate-600">
+          Review the registration details and company profile information submitted for your startup.
+        </p>
+      </section>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-        <div className="bg-white border border-slate-200 p-5 rounded-xl shadow-xs">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-50 rounded-lg"><Building2 className="w-5 h-5 text-blue-600" /></div>
-            <div>
-              <p className="text-[10px] text-slate-400 font-bold uppercase">Profile Status</p>
-              <p className="text-sm font-black text-[#0B2A5B]">
-                {myStartup?.isApproved ? "Approved" : "Pending Review"}
-              </p>
+      {myStartup ? (
+        <StartupProfileSummaryCard profile={myStartup} />
+      ) : (
+        <div className="rounded-[24px] border border-dashed border-slate-300 bg-white p-10 text-center shadow-sm">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-500">
+            <Building2 className="h-6 w-6" />
+          </div>
+          <h2 className="mt-4 text-xl font-black text-[#162457]">Startup profile is still loading</h2>
+          <p className="mx-auto mt-2 max-w-xl text-sm font-medium text-slate-500">
+            We could not find your startup registration profile yet. Complete registration verification, then come back here to see the full dashboard card.
+          </p>
+        </div>
+      )}
+
+      {selectedProgram ? (
+        <section className="relative overflow-hidden rounded-[32px] border border-[#D9DCF4] bg-white shadow-[0_24px_60px_rgba(69,84,155,0.14)]">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(255,255,255,0.96),_rgba(245,247,255,0.92)_35%,_rgba(232,236,255,0.84)_100%)]" aria-hidden="true" />
+          <div className="relative grid gap-0 xl:grid-cols-[360px_minmax(0,1fr)]">
+            <div className="border-b border-[#E4E8FB] bg-[linear-gradient(180deg,rgba(43,47,134,0.98),rgba(17,25,74,0.98))] p-8 text-white xl:border-b-0 xl:border-r">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/10 text-[#FFB36B]">
+                <selectedProgram.icon className="h-8 w-8" />
+              </div>
+              <div className="mt-5">
+                <p className="text-[11px] font-black uppercase tracking-[0.28em] text-white/65">Your Selected Program</p>
+                <h2 className="mt-3 text-3xl font-black tracking-tight">{selectedProgram.name}</h2>
+                <p className="mt-3 text-sm leading-7 text-white/80">{selectedProgram.tagline}</p>
+              </div>
+
+              <div className="mt-6 grid gap-3">
+                <div className="rounded-2xl border border-white/10 bg-white/8 px-4 py-3">
+                  <p className="text-[10px] font-black uppercase tracking-[0.24em] text-white/60">Partner</p>
+                  <p className="mt-1 text-sm font-bold text-white">{selectedProgram.partner}</p>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-white/8 px-4 py-3">
+                  <p className="text-[10px] font-black uppercase tracking-[0.24em] text-white/60">Funding</p>
+                  <p className="mt-1 text-sm font-bold text-white">{selectedProgram.funding}</p>
+                </div>
+              </div>
+
+              <Link
+                to={`/support/${selectedProgram.slug}`}
+                className="mt-7 inline-flex items-center gap-2 rounded-2xl bg-[#F05A28] px-5 py-3 text-sm font-black uppercase tracking-wide text-white shadow-[0_16px_30px_rgba(240,90,40,0.3)] transition hover:bg-[#D9481B]"
+              >
+                View Program Details
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+
+            <div className="p-6 sm:p-8">
+              <div className="grid gap-6 xl:grid-cols-2">
+                <div className="rounded-2xl border border-[#E7EBFB] bg-white/80 p-5">
+                  <div className="mb-3 flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.22em] text-[#5B64A8]">
+                    <BookOpen className="h-4 w-4 text-[#F05A28]" />
+                    About the Program
+                  </div>
+                  <p className="text-sm leading-7 text-slate-700">{selectedProgram.longDescription}</p>
+                </div>
+
+                <div className="rounded-2xl border border-[#E7EBFB] bg-white/80 p-5">
+                  <div className="mb-3 flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.22em] text-[#5B64A8]">
+                    <BadgeCheck className="h-4 w-4 text-[#F05A28]" />
+                    Eligibility
+                  </div>
+                  <ul className="space-y-3 text-sm leading-7 text-slate-700">
+                    {selectedProgram.eligibility.map((item) => (
+                      <li key={item} className="flex gap-3">
+                        <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-[#F05A28]" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              <div className="mt-6 grid gap-6 lg:grid-cols-2">
+                <div className="rounded-2xl border border-[#E7EBFB] bg-white/80 p-5">
+                  <div className="mb-3 flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.22em] text-[#5B64A8]">
+                    <FileText className="h-4 w-4 text-[#F05A28]" />
+                    Required Documents
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedProgram.requiredDocuments.map((doc) => (
+                      <span key={doc} className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700">
+                        {doc}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-[#E7EBFB] bg-white/80 p-5">
+                  <div className="mb-3 flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.22em] text-[#5B64A8]">
+                    <Sparkles className="h-4 w-4 text-[#F05A28]" />
+                    What Happens Next
+                  </div>
+                  <div className="space-y-3">
+                    {selectedProgram.processSteps.map((step, index) => (
+                      <div key={step} className="flex gap-3">
+                        <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#EDF2FF] text-[11px] font-black text-[#394B98]">
+                          {index + 1}
+                        </div>
+                        <p className="text-sm leading-6 text-slate-700">{step}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-
-        <div className="bg-white border border-slate-200 p-5 rounded-xl shadow-xs">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-emerald-50 rounded-lg"><FileText className="w-5 h-5 text-emerald-600" /></div>
-            <div>
-              <p className="text-[10px] text-slate-400 font-bold uppercase">Applications</p>
-              <p className="text-sm font-black text-emerald-600">{myApps.length} Filed</p>
-            </div>
+        </section>
+      ) : (
+        <section className="rounded-[28px] border border-dashed border-slate-300 bg-white p-10 text-center shadow-sm">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-500">
+            <Building2 className="h-6 w-6" />
           </div>
+          <h2 className="mt-4 text-xl font-black text-[#162457]">Selected program is not available yet</h2>
+          <p className="mx-auto mt-2 max-w-xl text-sm font-medium text-slate-500">
+            We could not find a support program on your profile yet. Once a program is saved, this full-screen support card will appear here.
+          </p>
+        </section>
+      )}
+
+      <section className="overflow-hidden rounded-[32px] border border-[#D9DCF4] bg-white shadow-[0_24px_60px_rgba(69,84,155,0.14)]">
+        <div className="border-b border-[#E4E8FB] bg-[linear-gradient(135deg,rgba(11,42,91,0.96),rgba(43,47,134,0.96))] px-6 py-5 sm:px-8">
+          <p className="text-[11px] font-black uppercase tracking-[0.28em] text-white/60">Track Application</p>
+          <h2 className="mt-2 text-2xl font-black tracking-tight text-white">Your submission status</h2>
         </div>
 
-        <div className="bg-white border border-slate-200 p-5 rounded-xl shadow-xs">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-amber-50 rounded-lg"><Clock className="w-5 h-5 text-amber-600" /></div>
-            <div>
-              <p className="text-[10px] text-slate-400 font-bold uppercase">Sector</p>
-              <p className="text-sm font-black text-slate-700">{myStartup?.sector || "Not Set"}</p>
+        {latestApplication ? (
+          <div className="grid gap-0 xl:grid-cols-[320px_minmax(0,1fr)]">
+            <div className="border-b border-[#E7EBFB] bg-slate-50 p-6 xl:border-b-0 xl:border-r">
+              <div className="space-y-4">
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[#5B64A8]">Application ID</p>
+                  <p className="mt-1 font-mono text-lg font-black text-[#0B2A5B]">{latestApplication.id}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[#5B64A8]">Program</p>
+                  <p className="mt-1 text-sm font-bold text-slate-800">{latestApplication.programName}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[#5B64A8]">Current Status</p>
+                  <div className="mt-2">
+                    <StatusBadge status={latestApplication.status} />
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowApplicationModal(true)}
+                  className="inline-flex items-center justify-center rounded-2xl bg-[#F05A28] px-4 py-3 text-xs font-black uppercase tracking-wider text-white transition hover:bg-[#d9481b]"
+                >
+                  View Application
+                </button>
+              </div>
             </div>
-          </div>
-        </div>
-      </div>
 
-      {/* Applications List */}
-      <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-xs space-y-4">
-        <h3 className="text-md font-bold text-[#0B2A5B] border-b border-slate-100 pb-2">My Applications</h3>
-        {myApps.length === 0 ? (
-          <div className="text-center py-8 text-xs text-slate-400">
-            <p className="mb-2">No applications filed yet.</p>
-            <Link to="/programs" className="text-[#FF6B00] font-bold hover:underline">Browse Programs →</Link>
+            <div className="p-6 sm:p-8">
+              <div className="grid gap-6 lg:grid-cols-2">
+                <div className="rounded-2xl border border-[#E7EBFB] bg-white/80 p-5">
+                  <p className="text-[11px] font-black uppercase tracking-[0.22em] text-[#5B64A8]">Latest update</p>
+                  <p className="mt-3 text-sm leading-7 text-slate-700">
+                    {latestApplication.adminRemarks || "Your application has been saved and is waiting for the next review step."}
+                  </p>
+                  <div className="mt-5 text-xs font-semibold text-slate-500">
+                    Submitted on <span className="font-mono text-slate-700">{latestApplication.submittedDate}</span>
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-[#E7EBFB] bg-white/80 p-5">
+                  <p className="text-[11px] font-black uppercase tracking-[0.22em] text-[#5B64A8]">Timeline</p>
+                  <div className="mt-4 space-y-3">
+                    {latestApplication.timeline.slice(0, 3).map((step) => (
+                      <div key={`${step.status}-${step.timestamp}`} className="flex gap-3 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3">
+                        <div className="mt-1 h-2.5 w-2.5 rounded-full bg-[#F05A28]" />
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm font-bold text-[#0B2A5B]">{step.status}</p>
+                            <span className="text-[11px] font-semibold text-slate-400">{step.timestamp}</span>
+                          </div>
+                          {step.remarks && <p className="mt-1 text-sm text-slate-600">{step.remarks}</p>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         ) : (
-          <div className="space-y-3">
-            {myApps.map((app) => (
-              <div key={app.id} className="flex items-center justify-between p-4 bg-slate-50 border border-slate-150 rounded-lg text-xs">
-                <div>
-                  <p className="font-bold text-[#0B2A5B]">{app.programName}</p>
-                  <p className="text-[10px] text-slate-400 font-mono mt-0.5">ID: {app.id} • Filed: {app.submittedDate}</p>
-                </div>
-                <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
-                  app.status === "Approved" ? "bg-emerald-50 text-emerald-700 border border-emerald-200" :
-                  app.status === "Rejected" ? "bg-red-50 text-red-700 border border-red-200" :
-                  "bg-amber-50 text-amber-700 border border-amber-200"
-                }`}>
-                  {app.status}
-                </span>
-              </div>
-            ))}
+          <div className="px-6 py-10 sm:px-8 sm:py-12 text-center">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 text-slate-500">
+              <Sparkles className="h-7 w-7" />
+            </div>
+            <h3 className="mt-4 text-xl font-black text-[#162457]">No application submitted yet</h3>
+            <p className="mx-auto mt-2 max-w-xl text-sm font-medium leading-7 text-slate-500">
+              Once you submit a program application, the tracking section will appear here with your application ID, status, and review timeline.
+            </p>
           </div>
         )}
-      </div>
+      </section>
+
+      <ApplicationDetailsModal
+        open={showApplicationModal}
+        application={latestApplication}
+        onClose={() => setShowApplicationModal(false)}
+      />
     </div>
   );
 };

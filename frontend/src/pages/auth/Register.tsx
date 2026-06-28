@@ -20,9 +20,11 @@ import {
   ShieldCheck,
   Upload,
   Users,
+  Lock,
 } from "lucide-react";
 import { AuthShell } from "../../components/auth/AuthShell";
 import { useAppState } from "../../context/AppContext";
+import { programCatalog } from "../../data/programCatalog";
 import { authApi } from "../../services/authApi";
 
 type RegistrationForm = {
@@ -34,6 +36,8 @@ type RegistrationForm = {
   stage: "Ideation" | "Validation" | "Early Traction" | "Scaling";
   email: string;
   mobile: string;
+  password: string;
+  confirmPassword: string;
   state: string;
   city: string;
   website: string;
@@ -46,13 +50,14 @@ type RegistrationForm = {
   nature: string;
   legalName: string;
   interests: string[];
+  selectedProgram: string;
   agreeTerms: boolean;
 };
 
 const steps = [
   { number: 1, title: "About Startup" },
   { number: 2, title: "Contact info" },
-  { number: 3, title: "Category" },
+  { number: 3, title: "Category & Program" },
   { number: 4, title: "Your Interest" },
 ];
 
@@ -71,7 +76,7 @@ export const Register: React.FC = () => {
 
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string>("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [form, setForm] = useState<RegistrationForm>({
     logoName: "",
@@ -82,6 +87,8 @@ export const Register: React.FC = () => {
     stage: "Validation",
     email: "",
     mobile: "",
+    password: "",
+    confirmPassword: "",
     state: "Punjab",
     city: "",
     website: "",
@@ -94,14 +101,9 @@ export const Register: React.FC = () => {
     nature: "Private Limited Company",
     legalName: "",
     interests: ["All", "Investors", "Incubators"],
+    selectedProgram: "",
     agreeTerms: false,
   });
-
-  useEffect(() => {
-    return () => {
-      if (logoPreview) URL.revokeObjectURL(logoPreview);
-    };
-  }, [logoPreview]);
 
   const updateField = <K extends keyof RegistrationForm>(key: K, value: RegistrationForm[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -132,12 +134,22 @@ export const Register: React.FC = () => {
       if (!form.mobile.trim()) nextErrors.mobile = "Mobile number is required.";
       else if (!/^\d{10}$/.test(form.mobile)) nextErrors.mobile = "Enter a 10-digit mobile number.";
 
+      if (!form.password) nextErrors.password = "Password is required.";
+      else if (form.password.length < 8) nextErrors.password = "Password must be at least 8 characters.";
+      else if (!/[A-Z]/.test(form.password) || !/[a-z]/.test(form.password) || !/\d/.test(form.password)) {
+        nextErrors.password = "Use uppercase, lowercase, and one number.";
+      }
+
+      if (!form.confirmPassword) nextErrors.confirmPassword = "Confirm your password.";
+      else if (form.confirmPassword !== form.password) nextErrors.confirmPassword = "Passwords do not match.";
+
       if (!form.city.trim()) nextErrors.city = "City is required.";
     }
 
     if (targetStep === 3) {
       if (!form.industry.trim()) nextErrors.industry = "Select an industry.";
       if (!form.sector.trim()) nextErrors.sector = "Select a sector.";
+      if (!form.selectedProgram.trim()) nextErrors.selectedProgram = "Select one program for your registration.";
       if (!form.services.length) nextErrors.services = "Choose at least one service.";
       if (!form.legalName.trim()) nextErrors.legalName = "Legal name is required.";
     }
@@ -167,9 +179,9 @@ export const Register: React.FC = () => {
 
     if (mergedErrors.startupName || mergedErrors.startupBrief) {
       setStep(1);
-    } else if (mergedErrors.email || mergedErrors.mobile || mergedErrors.city) {
+    } else if (mergedErrors.email || mergedErrors.mobile || mergedErrors.password || mergedErrors.confirmPassword || mergedErrors.city) {
       setStep(2);
-    } else if (mergedErrors.industry || mergedErrors.sector || mergedErrors.services || mergedErrors.legalName) {
+    } else if (mergedErrors.industry || mergedErrors.sector || mergedErrors.selectedProgram || mergedErrors.services || mergedErrors.legalName) {
       setStep(3);
     } else if (mergedErrors.interests || mergedErrors.agreeTerms) {
       setStep(4);
@@ -181,15 +193,15 @@ export const Register: React.FC = () => {
   const handleLogoUpload = (file: File | null) => {
     if (!file) return;
 
-    if (logoPreview) {
-      URL.revokeObjectURL(logoPreview);
-    }
-
-    setLogoPreview(URL.createObjectURL(file));
-    setForm((prev) => ({
-      ...prev,
-      logoName: file.name,
-    }));
+    const reader = new FileReader();
+    reader.onload = () => {
+      setLogoPreview(typeof reader.result === "string" ? reader.result : "");
+      setForm((prev) => ({
+        ...prev,
+        logoName: file.name,
+      }));
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleNext = () => {
@@ -212,8 +224,9 @@ export const Register: React.FC = () => {
     setLoading(true);
     try {
       const startupId = `startup-${Date.now()}`;
+      const { password, confirmPassword, ...startupProfileFields } = form;
       const payload = {
-        ...form,
+        ...startupProfileFields,
         id: startupId,
         logoPreview,
         registeredAt: Date.now(),
@@ -223,7 +236,9 @@ export const Register: React.FC = () => {
         name: form.startupName,
         email: form.email,
         mobile: form.mobile,
+        password: form.password,
         startupId,
+        selectedProgram: form.selectedProgram,
         startupProfile: payload,
       });
 
@@ -233,6 +248,7 @@ export const Register: React.FC = () => {
           name: form.startupName,
           email: form.email,
           mobile: form.mobile,
+          selectedProgram: form.selectedProgram,
           startupId: response.startupId || startupId,
           startupProfile: payload,
           timestamp: Date.now(),
@@ -494,6 +510,47 @@ export const Register: React.FC = () => {
 
                 <div>
                   <label className="mb-2 block text-[13px] font-black uppercase tracking-wider text-slate-500">
+                    Password
+                  </label>
+                  <div className="relative">
+                    <Lock className="pointer-events-none absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
+                    <input
+                      type="password"
+                      value={form.password}
+                      onChange={(e) => updateField("password", e.target.value)}
+                      placeholder="Create a secure password"
+                      autoComplete="new-password"
+                      className={`w-full rounded-xl border py-3 pl-11 pr-4 text-sm font-semibold text-slate-800 outline-none transition focus:border-[#FF6B00] focus:shadow-[0_0_0_4px_rgba(255,107,0,0.08)] ${
+                        errors.password ? "border-red-400 bg-red-50" : "border-slate-300 bg-white"
+                      }`}
+                    />
+                  </div>
+                  <p className="mt-1 text-[11px] font-semibold text-slate-500">Minimum 8 characters with uppercase, lowercase, and a number.</p>
+                  {errors.password && <p className="mt-1 text-xs font-bold text-red-500">{errors.password}</p>}
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-[13px] font-black uppercase tracking-wider text-slate-500">
+                    Confirm password
+                  </label>
+                  <div className="relative">
+                    <ShieldCheck className="pointer-events-none absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
+                    <input
+                      type="password"
+                      value={form.confirmPassword}
+                      onChange={(e) => updateField("confirmPassword", e.target.value)}
+                      placeholder="Re-enter password"
+                      autoComplete="new-password"
+                      className={`w-full rounded-xl border py-3 pl-11 pr-4 text-sm font-semibold text-slate-800 outline-none transition focus:border-[#FF6B00] focus:shadow-[0_0_0_4px_rgba(255,107,0,0.08)] ${
+                        errors.confirmPassword ? "border-red-400 bg-red-50" : "border-slate-300 bg-white"
+                      }`}
+                    />
+                  </div>
+                  {errors.confirmPassword && <p className="mt-1 text-xs font-bold text-red-500">{errors.confirmPassword}</p>}
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-[13px] font-black uppercase tracking-wider text-slate-500">
                     State
                   </label>
                   <div className="relative">
@@ -585,9 +642,9 @@ export const Register: React.FC = () => {
                   {errors.industry && <p className="mt-1 text-xs font-bold text-red-500">{errors.industry}</p>}
                 </div>
 
-                <div>
-                  <label className="mb-2 block text-[13px] font-black uppercase tracking-wider text-slate-500">
-                    Sector
+                  <div>
+                    <label className="mb-2 block text-[13px] font-black uppercase tracking-wider text-slate-500">
+                      Sector
                   </label>
                   <div className="relative">
                     <select
@@ -605,8 +662,32 @@ export const Register: React.FC = () => {
                     </select>
                     <ChevronDown className="pointer-events-none absolute right-4 top-3.5 h-4 w-4 text-slate-400" />
                   </div>
-                  {errors.sector && <p className="mt-1 text-xs font-bold text-red-500">{errors.sector}</p>}
-                </div>
+                    {errors.sector && <p className="mt-1 text-xs font-bold text-red-500">{errors.sector}</p>}
+                  </div>
+
+                  <div>
+                    <label className="mb-2 block text-[13px] font-black uppercase tracking-wider text-slate-500">
+                      Select program *
+                    </label>
+                    <div className="relative">
+                      <select
+                        value={form.selectedProgram}
+                        onChange={(e) => updateField("selectedProgram", e.target.value)}
+                        className={`w-full appearance-none rounded-xl border bg-white py-3 pl-4 pr-10 text-sm font-semibold text-slate-800 outline-none transition focus:border-[#FF6B00] focus:shadow-[0_0_0_4px_rgba(255,107,0,0.08)] ${
+                          errors.selectedProgram ? "border-red-400 bg-red-50" : "border-slate-300"
+                        }`}
+                      >
+                        <option value="">Select a program</option>
+                        {programCatalog.map((program) => (
+                          <option key={program.id} value={program.id}>
+                            {program.name}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown className="pointer-events-none absolute right-4 top-3.5 h-4 w-4 text-slate-400" />
+                    </div>
+                    {errors.selectedProgram && <p className="mt-1 text-xs font-bold text-red-500">{errors.selectedProgram}</p>}
+                  </div>
 
                 <div className="lg:col-span-2">
                   <label className="mb-2 block text-[13px] font-black uppercase tracking-wider text-slate-500">

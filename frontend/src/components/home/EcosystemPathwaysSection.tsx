@@ -4,9 +4,7 @@
  */
 
 import React, { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
 import gsap from "gsap";
-import { ArrowRight, Globe2 } from "lucide-react";
 
 type PathwayCard = {
   number: string;
@@ -59,24 +57,11 @@ export const EcosystemPathwaysSection: React.FC = () => {
     if (!node) return;
 
     const revealTargets = node.querySelectorAll<HTMLElement>(".pathways-reveal");
-    const floatTargets = node.querySelectorAll<HTMLElement>(".pathways-float");
-
     gsap.fromTo(
       revealTargets,
       { autoAlpha: 0, y: 34, filter: "blur(10px)" },
       { autoAlpha: 1, y: 0, filter: "blur(0px)", duration: 0.8, stagger: 0.08, ease: "power3.out" },
     );
-
-    gsap.to(floatTargets, {
-      y: -18,
-      x: 12,
-      rotation: 8,
-      duration: 7,
-      ease: "sine.inOut",
-      repeat: -1,
-      yoyo: true,
-      stagger: 0.15,
-    });
   }, []);
 
   useEffect(() => {
@@ -115,17 +100,10 @@ export const EcosystemPathwaysSection: React.FC = () => {
   };
 
   return (
-    <section ref={sectionRef} className="relative overflow-hidden bg-white py-0" id="ecosystem-pathways-section">
-      <div className="absolute left-[7%] top-0 z-10 h-36 w-36 rotate-[-18deg] rounded-[42px] bg-[#FF6B00]/70 blur-[1px] pathways-float" />
-      <div className="absolute left-[6%] top-12 z-10 h-32 w-32 rotate-[22deg] rounded-[36px] border border-white/70 bg-[#FF6B00]/35 pathways-float" />
-
-      <div className="relative h-14 sm:h-20" aria-hidden="true">
-        <div className="absolute inset-x-0 top-1/2 h-px -translate-y-1/2 bg-slate-200/70" />
-        <div className="absolute left-1/2 top-0 h-14 w-[min(760px,90vw)] -translate-x-1/2 rounded-b-[120px] bg-white shadow-[0_16px_32px_rgba(7,20,74,0.08)]" />
-      </div>
-
-      <div className="relative overflow-hidden bg-[#07144A] px-4 pt-24 pb-16 text-white sm:px-6 sm:pt-28 sm:pb-20 lg:px-8 lg:pt-32 lg:pb-24 rounded-tl-[140px] rounded-br-[160px]">
-        <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-white/95 to-transparent" />
+    <section ref={sectionRef} className="relative overflow-hidden bg-white pt-10" id="ecosystem-pathways-section">
+      <div className="relative overflow-hidden rounded-t-[56px] bg-[#07144A] px-4 pt-24 pb-16 text-white shadow-[0_-24px_70px_rgba(7,20,74,0.10)] sm:px-6 sm:pt-28 sm:pb-20 lg:rounded-t-[96px] lg:px-8 lg:pt-32 lg:pb-24">
+        <div className="absolute left-[7%] top-10 z-10 h-32 w-32 rotate-[-18deg] rounded-[38px] bg-[#FF6B00]/70 blur-[1px]" />
+        <div className="absolute left-[6%] top-20 z-10 h-28 w-28 rotate-[22deg] rounded-[32px] border border-white/70 bg-[#FF6B00]/35" />
         <div className="absolute inset-x-0 bottom-0 h-16 rounded-tr-[100%] bg-white" />
         <div className="absolute right-[8%] top-[34%] select-none text-[18rem] font-black leading-none text-white/[0.055] sm:text-[24rem]">
           "
@@ -201,22 +179,7 @@ export const EcosystemPathwaysSection: React.FC = () => {
               {activeCard.detail}
             </p>
 
-            <div className="mt-8 flex flex-wrap items-center gap-4">
-              <Link
-                to="/network"
-                className="inline-flex items-center gap-2 rounded-md bg-[#FF6B00] px-6 py-3 text-xs font-black uppercase tracking-[0.2em] text-white shadow-[0_18px_40px_rgba(255,107,0,0.28)] transition hover:bg-[#e65f00]"
-              >
-                Browse Network
-                <Globe2 className="h-4 w-4" />
-              </Link>
-              <Link
-                to="/programs"
-                className="inline-flex items-center gap-2 rounded-md border border-white/30 px-6 py-3 text-xs font-black uppercase tracking-[0.2em] text-white transition hover:bg-white/10"
-              >
-                Explore Programs
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
+            <div className="mt-8 h-px w-28 bg-gradient-to-r from-[#FF6B00] via-[#F7B914] to-transparent" />
           </div>
         </div>
       </div>

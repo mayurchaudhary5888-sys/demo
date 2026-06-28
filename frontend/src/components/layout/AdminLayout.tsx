@@ -6,7 +6,7 @@
 import React from "react";
 import { Link, useLocation, Outlet } from "react-router-dom";
 import { 
-  Building, FileSpreadsheet, ListTodo, Terminal, ShieldAlert
+  Building, FileSpreadsheet, ListTodo, Terminal, ShieldAlert, Users
 } from "lucide-react";
 import { useAppState } from "../../context/AppContext";
 
@@ -19,6 +19,7 @@ export const AdminLayout: React.FC = () => {
 
   const adminMenu = [
     { name: "Overview Stats", path: "/admin/dashboard", icon: <Terminal className="w-4 h-4" /> },
+    { name: "Users", path: "/admin/users", icon: <Users className="w-4 h-4" /> },
     { name: "Startups", path: "/admin/startups", icon: <Building className="w-4 h-4" />, count: pendingStartups },
     { name: "Applications", path: "/admin/applications", icon: <FileSpreadsheet className="w-4 h-4" />, count: pendingApps },
     { name: "Programs", path: "/admin/programs", icon: <ListTodo className="w-4 h-4 text-emerald-500" /> },

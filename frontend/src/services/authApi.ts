@@ -29,8 +29,10 @@ export type AuthSession = {
   role: "admin" | "founder" | string;
   name: string;
   startupId?: string | null;
+  selectedProgram?: string | null;
   isOnboarded?: boolean;
   dept?: string;
+  isActive?: boolean;
 };
 
 export const authApi = {
@@ -38,8 +40,9 @@ export const authApi = {
     name: string;
     email: string;
     mobile: string;
-    password?: string;
+    password: string;
     startupId?: string;
+    selectedProgram: string;
     startupProfile?: Record<string, unknown>;
   }) =>
     request<{ email: string; startupId: string }>("/auth/register", {
@@ -48,7 +51,7 @@ export const authApi = {
     }),
 
   login: (payload: { email: string; password: string }) =>
-    request<{ token: string; user: AuthSession }>("/auth/login", {
+    request<{ token: string; user: AuthSession; startupProfile?: Record<string, unknown> }>("/auth/login", {
       method: "POST",
       body: JSON.stringify(payload),
     }),

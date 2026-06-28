@@ -75,17 +75,10 @@ export const CommunityBridgeSection: React.FC = () => {
     return () => observer.disconnect();
   }, []);
 
-  const handleScrollToDetails = () => {
-    const element = document.getElementById("community-details");
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth", block: "center" });
-    }
-  };
-
   return (
     <section
       ref={sectionRef}
-      className="relative overflow-hidden bg-white py-16 sm:py-24"
+      className="relative overflow-hidden border-b border-slate-100 bg-white pt-16 pb-24 sm:pt-24 sm:pb-32"
       id="community-bridge-section"
     >
       {/* Background Grid Pattern */}
@@ -97,7 +90,7 @@ export const CommunityBridgeSection: React.FC = () => {
 
       {/* Left Bottom Orange Pebble Blob */}
       <div
-        className="bg-blob-left absolute -left-10 -bottom-12 w-48 h-48 bg-gradient-to-tr from-[#FF6B00] to-[#FF8C3D] opacity-95 blur-[1px] z-10 pointer-events-none"
+        className="bg-blob-left absolute -left-12 bottom-6 w-44 h-44 bg-gradient-to-tr from-[#FF6B00] to-[#FF8C3D] opacity-85 blur-[1px] z-10 pointer-events-none"
         style={{ borderRadius: "45% 55% 60% 40% / 40% 60% 40% 60%" }}
       />
 
@@ -255,16 +248,16 @@ export const CommunityBridgeSection: React.FC = () => {
             startup ecosystem players on a single platform.
           </p>
 
-          <button
-            onClick={handleScrollToDetails}
+          <Link
+            to="/about-us"
             className="group relative overflow-hidden inline-flex items-center justify-center rounded-full bg-gradient-to-r from-[#FF6B00] to-[#FF4B2B] px-8 py-3 text-sm font-bold tracking-wide text-white shadow-[0_12px_30px_rgba(255,107,0,0.3)] transition hover:shadow-[0_16px_35px_rgba(255,107,0,0.45)] active:scale-95 duration-300 cursor-pointer"
           >
             <span className="relative z-10 flex items-center gap-1.5">
-              Know more
+              About Us
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </span>
             <div className="absolute inset-0 bg-gradient-to-r from-[#FF4B2B] to-[#FF6B00] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          </button>
+          </Link>
         </div>
 
         {/* Middle Two-Column & Bottom Stats Bar Container */}
@@ -313,8 +306,9 @@ export const CommunityBridgeSection: React.FC = () => {
                 <span className="hidden sm:block h-8 w-px bg-slate-200 mr-6" />
 
                 {/* Browse Button */}
-                <Link
-                  to="/network"
+                <button
+                  type="button"
+                  onClick={() => window.dispatchEvent(new CustomEvent("bsi:open-login"))}
                   className="group/btn relative overflow-hidden inline-flex items-center gap-2.5 rounded-xl bg-gradient-to-r from-[#FF6B00] to-[#FF4B2B] px-8 py-4 text-sm font-extrabold uppercase tracking-widest text-white shadow-md hover:shadow-lg transition duration-300 w-full sm:w-auto justify-center"
                 >
                   <span className="relative z-10 flex items-center gap-2">
@@ -322,7 +316,7 @@ export const CommunityBridgeSection: React.FC = () => {
                     <Globe className="h-4.5 w-4.5 transition-transform group-hover/btn:rotate-12" />
                   </span>
                   <div className="absolute inset-0 bg-gradient-to-r from-[#FF4B2B] to-[#FF6B00] opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300" />
-                </Link>
+                </button>
               </div>
             </div>
           </div>

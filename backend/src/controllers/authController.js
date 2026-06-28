@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import { env } from "../config/env.js";
 import { User } from "../models/User.js";
 import { OtpToken } from "../models/OtpToken.js";
+import { normalizeStartupProfile, syncStartupProfileRecord } from "../services/startupProfileService.js";
 import { AppError } from "../utils/errors.js";
 import { buildSession, generateOtp, hashOtp, normalizeEmail, signToken } from "../utils/auth.js";
 import { sendOtpEmail } from "../utils/otpEmail.js";
@@ -41,28 +42,30 @@ export const register = async (req, res, next) => {
     const email = normalizeEmail(req.body.email);
     const startupId = req.body.startupId || `startup-${Date.now()}`;
     const startupProfile = req.body.startupProfile
-      ? {
-          ...req.body.startupProfile,
-          id: startupId,
+      ? normalizeStartupProfile({
+          startupId,
+          startupProfile: req.body.startupProfile,
           email,
           mobile: req.body.mobile,
-        }
+          founderName: req.body.name,
+        })
       : undefined;
+    const selectedProgram = req.body.selectedProgram;
 
     const update = {
       name: req.body.name,
       email,
       mobile: req.body.mobile,
+      passwordHash: await bcrypt.hash(req.body.password, 12),
       startupId,
-      startupProfile,
+      startupProfile: {
+        ...(startupProfile || {}),
+        selectedProgram,
+      },
       role: "founder",
       isOnboarded: true,
       isEmailVerified: false,
     };
-
-    if (req.body.password) {
-      update.passwordHash = await bcrypt.hash(req.body.password, 12);
-    }
 
     const user = await User.findOneAndUpdate(
       { email },
@@ -105,11 +108,13 @@ export const login = async (req, res, next) => {
     }
 
     const token = signToken(user);
+    const startupProfile = await syncStartupProfileRecord(user);
     res.json({
       success: true,
       message: "Secure session active.",
       token,
       user: buildSession(user),
+      startupProfile,
     });
   } catch (err) {
     await OtpToken.deleteMany({ email: normalizeEmail(req.body?.email || ""), purpose: "registration" }).catch(() => {});
@@ -155,12 +160,13 @@ export const verifyOtp = async (req, res, next) => {
     await OtpToken.deleteMany({ email, purpose: "registration" });
 
     const token = signToken(user);
+    const startupProfile = await syncStartupProfileRecord(user);
     res.json({
       success: true,
       message: "Verification code approved! Welcome to Bhaskar.",
       token,
       user: buildSession(user),
-      startupProfile: user.startupProfile,
+      startupProfile,
     });
   } catch (err) {
     next(err);
