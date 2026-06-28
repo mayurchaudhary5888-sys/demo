@@ -58,11 +58,11 @@ const contactFields = (profile: StartupProfile) => [
 
 export const StartupProfileSummaryCard: React.FC<StartupProfileSummaryCardProps> = ({ profile }) => {
   return (
-    <section className="overflow-hidden rounded-[28px] border border-[#D9DCF4] bg-[radial-gradient(circle_at_top_left,_rgba(255,255,255,0.98),_rgba(248,249,255,0.96)_38%,_rgba(231,236,255,0.88)_100%)] shadow-[0_24px_60px_rgba(73,84,153,0.16)]">
+    <section className="overflow-hidden rounded-[28px] border border-[#D9DCF4] bg-[radial-gradient(circle_at_top_left,_rgba(255,255,255,0.98),_rgba(248,249,255,0.96)_38%,_rgba(231,236,255,0.88)_100%)]">
       <div className="grid gap-0 xl:grid-cols-[300px_minmax(0,1fr)]">
         <div className="border-b border-[#E4E8FB] bg-[linear-gradient(180deg,rgba(255,255,255,0.9),rgba(244,246,255,0.96))] p-8 xl:border-b-0 xl:border-r">
           <div className="mx-auto flex max-w-[220px] flex-col items-center text-center">
-            <div className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-[26px] border border-white/80 bg-white shadow-[0_20px_45px_rgba(72,82,150,0.16)]">
+            <div className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-[26px] border border-white/80 bg-white">
               {profile.logoPreview || profile.logoUrl ? (
                 <img
                   src={profile.logoPreview || profile.logoUrl}
@@ -94,7 +94,7 @@ export const StartupProfileSummaryCard: React.FC<StartupProfileSummaryCardProps>
 
             <Link
               to="/startup/settings"
-              className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-[#2B2F86] px-5 py-3 text-sm font-black uppercase tracking-wide text-white shadow-[0_16px_30px_rgba(43,47,134,0.25)] transition hover:bg-[#21256A]"
+              className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-[#2B2F86] px-5 py-3 text-sm font-black uppercase tracking-wide text-white transition hover:bg-[#21256A]"
             >
               <Edit3 className="h-4 w-4" />
               Edit Profile
