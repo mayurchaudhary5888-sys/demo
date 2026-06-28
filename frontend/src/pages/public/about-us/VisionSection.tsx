@@ -4,7 +4,7 @@ import { visionPillars } from "./aboutData";
 export const VisionSection: React.FC = () => {
   return (
     <section className="relative overflow-hidden bg-white py-20 sm:py-24">
-      <div className="about-reveal mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="about-reveal mx-auto max-w-[86rem] px-5 sm:px-8 lg:px-10 xl:px-12">
         <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr]">
           <div>
             <p className="text-xs font-black uppercase tracking-[0.28em] text-[#FF6B00]">

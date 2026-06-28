@@ -12,7 +12,7 @@ export const FaqSection: React.FC = () => {
       id="about-faq"
       className="relative overflow-hidden bg-[#F8FAFC] py-20 sm:py-24"
     >
-      <div className="about-reveal relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+      <div className="about-reveal relative mx-auto max-w-[78rem] px-5 sm:px-8 lg:px-10 xl:px-12">
         <div className="mx-auto max-w-3xl text-center">
           <p className="text-xs font-black uppercase tracking-[0.28em] text-[#FF6B00]">
             Need clarity?

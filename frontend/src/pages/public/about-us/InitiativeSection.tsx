@@ -7,7 +7,7 @@ export const InitiativeSection: React.FC = () => {
     <section id="about-initiative" className="relative overflow-hidden bg-[#F8FAFC] py-20 sm:py-24">
       <div className="absolute left-0 top-0 h-full w-[34%] bg-white" />
 
-      <div className="about-reveal relative mx-auto grid max-w-7xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-[1fr_1fr] lg:px-8">
+      <div className="about-reveal relative mx-auto grid max-w-[86rem] items-center gap-12 px-5 sm:px-8 lg:grid-cols-[1fr_1fr] lg:px-10 xl:px-12">
         <div className="relative order-2 lg:order-1">
           <div className="overflow-hidden rounded-lg shadow-[0_28px_80px_rgba(7,20,74,0.18)]">
             <img

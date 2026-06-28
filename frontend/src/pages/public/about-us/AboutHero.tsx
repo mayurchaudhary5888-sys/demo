@@ -6,9 +6,8 @@ export const AboutHero: React.FC = () => {
   return (
     <section className="relative overflow-hidden bg-white text-slate-950">
       <div className="absolute inset-x-0 top-0 h-[72%] bg-[#07144A]" />
-      <div className="absolute inset-0 opacity-[0.06] bg-[linear-gradient(90deg,rgba(255,255,255,1)_1px,transparent_1px)] bg-[length:64px_64px]" />
 
-      <div className="about-reveal relative mx-auto max-w-7xl px-4 pb-14 pt-16 sm:px-6 sm:pt-20 lg:px-8">
+      <div className="about-reveal relative mx-auto max-w-[86rem] px-5 pb-14 pt-16 sm:px-8 sm:pt-20 lg:px-10 xl:px-12">
         <div className="grid items-end gap-10 lg:grid-cols-[0.85fr_1.15fr]">
           <div className="pb-8 text-white lg:pb-20">
             <p className="text-xs font-black uppercase tracking-[0.34em] text-[#F9B233]">
