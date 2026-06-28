@@ -6,8 +6,8 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate, useLocation, Navigate } from "react-router-dom";
 import { 
-  Award, ArrowLeft, CheckCircle, FileText, UploadCloud, CheckCircle2, ShieldAlert, 
-  HelpCircle, Sparkles, UserCheck, CalendarDays, Workflow, BookOpen, Cpu, Globe, TrendingUp
+  ArrowLeft, FileText, UploadCloud, CheckCircle2, ShieldAlert, 
+  HelpCircle
 } from "lucide-react";
 import { useAppState } from "../../context/AppContext";
 import { getCatalogProgram } from "../../data/programCatalog";
@@ -109,6 +109,8 @@ export const ProgramDetail: React.FC = () => {
       </div>
     );
   }
+
+  const fundingLabel = "funding" in prog && typeof prog.funding === "string" ? prog.funding : "Program support";
 
   // Drag over handler
   const handleDrag = (e: React.DragEvent) => {
@@ -299,142 +301,104 @@ export const ProgramDetail: React.FC = () => {
 
       {/* CONTENT AREA */}
       {activeTab === "details" ? (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start" id="details-section">
-          
-          <div className="lg:col-span-8 space-y-8 font-sans">
-            
-            {/* 1. Overview */}
-            <div className="bg-white border border-slate-200 p-6 rounded-xl space-y-3 shadow-xs">
-              <h3 className="text-md font-bold text-[#0B2A5B] flex items-center gap-2 border-b border-slate-100 pb-2">
-                <Sparkles className="w-5 h-5 text-amber-500" />
-                <span>Overview & Framework</span>
-              </h3>
-              <p className="text-slate-600 text-xs leading-relaxed text-justify whitespace-pre-line">
+        <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12" id="details-section">
+          <div className="space-y-5 lg:col-span-8">
+            <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+              <p className="text-[11px] font-black uppercase tracking-[0.22em] text-[#FF6B00]">Overview</p>
+              <h2 className="mt-2 text-xl font-black text-[#0B2A5B]">{prog.name}</h2>
+              <p className="mt-3 max-w-4xl whitespace-pre-line text-sm leading-7 text-slate-600">
                 {prog.longDescription}
               </p>
-            </div>
+            </section>
 
-            {/* 2. Benefits */}
-            <div className="bg-white border border-slate-200 p-6 rounded-xl space-y-3 shadow-xs">
-              <h3 className="text-md font-bold text-[#0B2A5B] flex items-center gap-2 border-b border-slate-100 pb-2">
-                <span>Sanctioned Benefits & Allocations</span>
-              </h3>
-              <ul className="space-y-3 text-xs leading-relaxed">
-                {prog.benefits.map((ben, idx) => (
-                  <li key={idx} className="flex gap-2.5 text-slate-700">
-                    <CheckCircle className="w-4.5 h-4.5 text-emerald-600 shrink-0 mt-0.5" />
-                    <span className="font-medium text-justify">{ben}</span>
+            <div className="grid gap-5 md:grid-cols-2">
+              <SimplePanel title="Benefits">
+                {prog.benefits.map((item) => (
+                  <li key={item} className="flex gap-2.5 text-sm leading-6 text-slate-700">
+                    <CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-emerald-600" />
+                    <span>{item}</span>
                   </li>
                 ))}
-              </ul>
-            </div>
+              </SimplePanel>
 
-            {/* 3. Eligibility Criteria Checklist */}
-            <div className="bg-white border border-slate-200 p-6 rounded-xl space-y-3 shadow-xs" id="eligibility-checklist">
-              <h3 className="text-md font-bold text-[#0B2A5B] flex items-center gap-2 border-b border-slate-100 pb-2">
-                <span>DPIIT Eligibility Checklist (Strict Vetting)</span>
-              </h3>
-              <div className="grid grid-cols-1 gap-2.5">
-                {prog.eligibility.map((el, idx) => (
-                  <div key={idx} className="flex gap-2.5 items-start text-xs text-slate-700 font-medium">
-                    <span className="w-5 h-5 rounded-full bg-orange-50 text-[#FF6B00] flex items-center justify-center shrink-0 font-bold text-[10px] mt-0.5">✓</span>
-                    <span className="text-justify leading-relaxed">{el}</span>
-                  </div>
+              <SimplePanel title="Eligibility">
+                {prog.eligibility.map((item) => (
+                  <li key={item} className="flex gap-2.5 text-sm leading-6 text-slate-700">
+                    <CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-[#FF6B00]" />
+                    <span>{item}</span>
+                  </li>
                 ))}
-              </div>
+              </SimplePanel>
             </div>
 
-            {/* 4. Required Documentation */}
-            <div className="bg-white border border-slate-200 p-6 rounded-xl space-y-3 shadow-xs">
-              <h3 className="text-md font-bold text-[#0B2A5B] flex items-center gap-2 border-b border-slate-100 pb-2">
-                <span>Mandatory Documents (PDF formats supported)</span>
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                {prog.requiredDocuments.map((doc, idx) => (
-                  <div key={idx} className="flex items-center gap-3 p-3 bg-slate-50 border border-slate-150 rounded-lg">
-                    <FileText className="w-5 h-5 text-indigo-500" />
-                    <span className="text-slate-700 text-xs font-semibold leading-tight">{doc}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* 5. STEPWISE APPLICATION PROCESS */}
-            <div className="bg-white border border-slate-200 p-6 rounded-xl space-y-4 shadow-xs">
-              <h3 className="text-md font-bold text-[#0B2A5B] flex items-center gap-2 border-b border-slate-100 pb-2">
-                <span>Facilitation Process Roadmap</span>
-              </h3>
-              
-              <div className="relative pl-6 space-y-6 border-l border-slate-150 animate-in fade-in" id="process-roadmap">
-                {prog.processSteps.map((step, idx) => (
-                  <div key={idx} className="relative">
-                    <span className="absolute -left-[37px] top-0 w-6 h-6 rounded-full bg-[#0B2A5B] text-white flex items-center justify-center font-bold text-[10px]">
-                      {idx + 1}
+            <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+              <h3 className="text-base font-black text-[#0B2A5B]">Application Process</h3>
+              <div className="mt-4 grid gap-3 md:grid-cols-2">
+                {prog.processSteps.map((step, index) => (
+                  <div key={step} className="flex gap-3 rounded-md border border-slate-200 bg-slate-50 p-4">
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#0B2A5B] text-xs font-black text-white">
+                      {index + 1}
                     </span>
-                    <h5 className="text-xs font-bold text-[#0B2A5B]">Stage Step: {step.split(":")[0]}</h5>
-                    <p className="text-xs text-slate-500 leading-relaxed text-justify mt-0.5 font-sans">
-                      {step.split(":")[1] || step}
-                    </p>
+                    <p className="text-sm leading-6 text-slate-700">{step}</p>
                   </div>
                 ))}
               </div>
-            </div>
-
+            </section>
           </div>
 
-          {/* SIDEBAR DISCLAIMERS AND ACTION PANE */}
-          <div className="lg:col-span-4 space-y-6">
-            
-            {/* STICKY QUICK APPLY CARD */}
-            <div className="bg-slate-900 text-white rounded-xl p-6 space-y-4 shadow-lg border-b-4 border-[#FF6B00]">
-              <div className="space-y-1.5">
-                <span className="inline-block bg-amber-400 text-slate-900 font-extrabold text-[9px] px-2 py-0.5 rounded uppercase">
-                  Registry Status: OPEN
+          <aside className="space-y-5 lg:col-span-4 lg:sticky lg:top-28">
+            <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+              <p className="text-[11px] font-black uppercase tracking-[0.22em] text-[#FF6B00]">Funding Support</p>
+              <p className="mt-2 text-2xl font-black text-[#0B2A5B]">{fundingLabel}</p>
+              <p className="mt-3 text-sm leading-6 text-slate-600">
+                Review the details and continue when your profile and documents are ready.
+              </p>
+              {prog.isOpen ? (
+                <button
+                  onClick={() => {
+                    if (!user) {
+                      showToast("Authentication required. Please sign in or sign up first.", "info");
+                      requestLogin();
+                    } else if (user.isActive === false) {
+                      setProfileReviewOpen(true);
+                    } else {
+                      setActiveTab("apply");
+                    }
+                  }}
+                  className="mt-5 w-full rounded-md bg-[#FF6B00] px-4 py-3 text-xs font-black uppercase tracking-wider text-white transition-colors hover:bg-[#e65f00]"
+                  id="sticky-trigger-apply"
+                >
+                  Apply Now
+                </button>
+              ) : (
+                <span className="mt-5 block rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-center text-xs font-black uppercase tracking-wider text-slate-400">
+                  Applications Closed
                 </span>
-                <p className="text-xs text-slate-400 font-mono">BHASKAR SOVEREIGN SCHEME</p>
-              </div>
+              )}
+            </section>
 
-              <div className="border-t border-slate-800 pt-3 text-xs leading-relaxed text-slate-300">
-                Ensure alignment of your active registered DPIIT indicators prior to filing milestone reports.
+            <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+              <h3 className="text-base font-black text-[#0B2A5B]">Required Documents</h3>
+              <div className="mt-4 space-y-2">
+                {prog.requiredDocuments.map((doc) => (
+                  <div key={doc} className="flex items-center gap-3 rounded-md border border-slate-200 bg-slate-50 p-3">
+                    <FileText className="h-4 w-4 shrink-0 text-slate-500" />
+                    <span className="text-xs font-semibold leading-5 text-slate-700">{doc}</span>
+                  </div>
+                ))}
               </div>
+            </section>
 
-              <div className="pt-2">
-                {prog.isOpen ? (
-              <button
-                onClick={() => {
-                  if (!user) {
-                    showToast("Authentication required. Please sign in or sign up first.", "info");
-                    requestLogin();
-                  } else {
-                    setActiveTab("apply");
-                  }
-                }}
-                className="w-full bg-[#FF6B00] font-extrabold text-xs py-3 rounded-lg text-center tracking-widest uppercase transition-all shadow-md inline-block focus:ring-2 focus:ring-orange-300 outline-none hover:bg-[#FF6B00]/95 text-white"
-                id="sticky-trigger-apply"
-              >
-                    🚀 Initiate Digital Application
-                  </button>
-                ) : (
-                  <span className="block text-center py-3 bg-slate-800 text-slate-500 border border-slate-700 font-bold rounded-lg cursor-not-allowed text-xs">
-                    Apply Cohort Closed
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {/* STYLED OFFICIAL DISCLAIMER CALLOUT BOX */}
             {prog.disclaimer && (
-              <div className="bg-amber-50/50 border border-amber-300 p-4 rounded-xl text-[11px] leading-relaxed text-slate-600 flex items-start gap-2.5 shadow-sm">
-                <HelpCircle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+              <section className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-slate-700">
+                <HelpCircle className="mt-0.5 h-5 w-5 shrink-0 text-amber-500" />
                 <div>
-                  <p className="font-bold text-[#0B2A5B]">ISMC Facilitation Disclaimer:</p>
-                  <p className="text-justify font-sans">{prog.disclaimer}</p>
+                  <p className="font-black text-[#0B2A5B]">Note</p>
+                  <p>{prog.disclaimer}</p>
                 </div>
-              </div>
+              </section>
             )}
-
-          </div>
-
+          </aside>
         </div>
       ) : prog.id === "idea-validation-program" ? (
         <IdeaValidationProgram program={prog} onCancel={() => setActiveTab("details")} />
@@ -741,3 +705,10 @@ export const ProgramDetail: React.FC = () => {
     </div>
   );
 };
+
+const SimplePanel: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
+  <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+    <h3 className="text-base font-black text-[#0B2A5B]">{title}</h3>
+    <ul className="mt-4 space-y-3">{children}</ul>
+  </section>
+);
