@@ -11,6 +11,7 @@ import { Faq } from "../models/Faq.js";
 import { Announcement } from "../models/Announcement.js";
 import { generateApplicationId } from "../utils/applicationId.js";
 import { sendApplicationStatusEmail } from "../utils/otpEmail.js";
+import mongoose from "mongoose";
 
 const sortNewestFirst = { createdAt: -1, updatedAt: -1 };
 const isPlaceholderStartupId = (value) => !value || value === "temp-id" || String(value).startsWith("temp-");
@@ -172,7 +173,11 @@ export const listApplications = async (req, res, next) => {
   try {
     const query = req.query.startupId ? { startupId: req.query.startupId } : {};
     const data = await ApplicationRecord.find(query).sort(sortNewestFirst).lean();
-    res.json({ success: true, data });
+    const normalized = data.map((app) => ({
+      ...app,
+      id: app.id || app._id.toString(),
+    }));
+    res.json({ success: true, data: normalized });
   } catch (err) {
     next(err);
   }
@@ -180,9 +185,14 @@ export const listApplications = async (req, res, next) => {
 
 export const getApplication = async (req, res, next) => {
   try {
-    const data = await ApplicationRecord.findOne({ id: req.params.id }).lean();
+    const data = await ApplicationRecord.findOne({
+      $or: [
+        { id: req.params.id },
+        ...(mongoose.Types.ObjectId.isValid(req.params.id) ? [{ _id: req.params.id }] : []),
+      ],
+    }).lean();
     if (!data) throw new AppError("Application not found.", 404);
-    res.json({ success: true, data });
+    res.json({ success: true, data: { ...data, id: data.id || data._id.toString() } });
   } catch (err) {
     next(err);
   }
@@ -242,11 +252,19 @@ export const createApplication = async (req, res, next) => {
 
 export const updateApplication = async (req, res, next) => {
   try {
-    const app = await ApplicationRecord.findOne({ id: req.params.id });
+    const app = await ApplicationRecord.findOne({
+      $or: [
+        { id: req.params.id },
+        ...(mongoose.Types.ObjectId.isValid(req.params.id) ? [{ _id: req.params.id }] : []),
+      ],
+    });
     if (!app) throw new AppError("Application not found.", 404);
     Object.assign(app, req.body);
+    if (!app.id) {
+      app.id = app._id.toString();
+    }
     await app.save();
-    res.json({ success: true, data: app.toObject() });
+    res.json({ success: true, data: { ...app.toObject(), id: app.id } });
   } catch (err) {
     next(err);
   }
@@ -254,7 +272,12 @@ export const updateApplication = async (req, res, next) => {
 
 export const updateApplicationStatus = async (req, res, next) => {
   try {
-    const app = await ApplicationRecord.findOne({ id: req.params.id });
+    const app = await ApplicationRecord.findOne({
+      $or: [
+        { id: req.params.id },
+        ...(mongoose.Types.ObjectId.isValid(req.params.id) ? [{ _id: req.params.id }] : []),
+      ],
+    });
     if (!app) throw new AppError("Application not found.", 404);
 
     app.status = req.body.status;
@@ -273,6 +296,9 @@ export const updateApplicationStatus = async (req, res, next) => {
       },
       ...(app.timeline || []),
     ];
+    if (!app.id) {
+      app.id = app._id.toString();
+    }
     await app.save();
 
     if (req.body.status === "Document Requested") {
