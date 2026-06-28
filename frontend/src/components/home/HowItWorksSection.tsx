@@ -98,10 +98,9 @@ export const HowItWorksSection: React.FC = () => {
   return (
     <section
       ref={sectionRef}
-      className="relative overflow-hidden bg-[#F8FAFC] py-16 sm:py-24"
+      className="relative overflow-hidden border-t border-slate-200 bg-[#F8FAFC] py-20 sm:py-28"
       id="how-it-works-section"
     >
-      <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(7,20,74,0.035)_1px,transparent_1px)] bg-[length:56px_56px]" />
       <div className="absolute left-[-12rem] top-20 h-96 w-96 rounded-full bg-[#FF6B00]/10 blur-3xl" />
       <div className="absolute right-[-10rem] bottom-0 h-[28rem] w-[28rem] rounded-full bg-[#07144A]/10 blur-3xl" />
 

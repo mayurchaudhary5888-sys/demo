@@ -81,9 +81,6 @@ export const CommunityBridgeSection: React.FC = () => {
       className="relative overflow-hidden bg-white pt-16 pb-24 sm:pt-24 sm:pb-32"
       id="community-bridge-section"
     >
-      {/* Background Grid Pattern */}
-      <div className="absolute inset-0 opacity-40 bg-[linear-gradient(90deg,rgba(11,42,91,0.03)_1px,transparent_1px)] bg-[length:64px_64px]" />
-
       {/* Decorative Blur glows in the background */}
       <div className="absolute left-1/4 top-10 h-72 w-72 rounded-full bg-[radial-gradient(circle,rgba(255,107,0,0.08)_0%,rgba(255,255,255,0)_70%)] blur-3xl" />
       <div className="absolute right-1/4 bottom-10 h-96 w-96 rounded-full bg-[radial-gradient(circle,rgba(7,20,74,0.06)_0%,rgba(255,255,255,0)_70%)] blur-3xl" />

@@ -106,10 +106,10 @@ export const EcosystemPathwaysSection: React.FC = () => {
       style={{ background: "linear-gradient(to right, white 50%, #07144A 50%)" }}
       id="ecosystem-pathways-section"
     >
-      <div className="relative overflow-hidden rounded-t-[56px] bg-[#07144A] px-4 pt-24 pb-16 text-white shadow-[0_-24px_70px_rgba(7,20,74,0.10)] sm:px-6 sm:pt-28 sm:pb-20 lg:rounded-t-[96px] lg:px-8 lg:pt-32 lg:pb-24">
+      <div className="relative overflow-hidden rounded-t-[56px] bg-[#07144A] px-4 pt-24 pb-24 text-white shadow-[0_-24px_70px_rgba(7,20,74,0.10)] sm:px-6 sm:pt-28 sm:pb-28 lg:rounded-t-[96px] lg:px-8 lg:pt-32 lg:pb-32">
         <div className="absolute left-[7%] top-10 z-10 h-32 w-32 rotate-[-18deg] rounded-[38px] bg-[#FF6B00]/70 blur-[1px]" />
         <div className="absolute left-[6%] top-20 z-10 h-28 w-28 rotate-[22deg] rounded-[32px] border border-white/70 bg-[#FF6B00]/35" />
-        <div className="absolute inset-x-0 bottom-0 h-16 rounded-tr-[100%] bg-white" />
+        <div className="absolute inset-x-0 bottom-0 h-px bg-white/10" />
         <div className="absolute right-[8%] top-[34%] select-none text-[18rem] font-black leading-none text-white/[0.055] sm:text-[24rem]">
           "
         </div>
