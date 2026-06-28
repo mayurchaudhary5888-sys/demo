@@ -130,10 +130,11 @@ export const VerifyOtp: React.FC = () => {
           <strong className="font-mono text-slate-700 select-all">{email}</strong>
         </>
       }
-      maxWidthClassName="max-w-2xl"
+      maxWidthClassName="max-w-3xl"
+      showFooterNote={false}
       aside={
-        <div className="flex items-center gap-3 rounded-2xl border border-[#FF6B00]/20 bg-[#FFF7ED] px-4 py-3 shadow-sm">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-[#FF6B00] to-[#F9B233] text-white shadow-[0_14px_28px_rgba(255,107,0,0.22)]">
+        <div className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-md bg-[#07184A] text-white">
             <ShieldCheck className="h-5 w-5" />
           </div>
           <div>
@@ -145,10 +146,10 @@ export const VerifyOtp: React.FC = () => {
     >
       <div className="space-y-6 text-sm text-slate-700">
 
-          <form onSubmit={handleSubmit} className="space-y-6" id="verify-otp-form">
+          <form onSubmit={handleSubmit} className="space-y-6 rounded-lg border border-slate-200 bg-white p-5 shadow-sm" id="verify-otp-form">
             
             {/* Split Input Grid */}
-            <div className="flex justify-between gap-2 max-w-xs mx-auto pt-2" id="segmented-digits-wrapper">
+            <div className="mx-auto flex max-w-sm justify-between gap-2 pt-2" id="segmented-digits-wrapper">
               {Array(6).fill(0).map((_, idx) => (
                 <input
                   key={idx}
@@ -159,14 +160,14 @@ export const VerifyOtp: React.FC = () => {
                   onChange={(e) => handleChange(idx, e.target.value)}
                   onKeyDown={(e) => handleKeyDown(idx, e)}
                   placeholder="-"
-                  className="h-12 w-11 rounded-xl border border-slate-300 bg-white text-center font-mono text-lg font-extrabold text-[#07184A] outline-none transition hover:border-[#FF6B00]/50 focus:border-[#FF6B00] focus:shadow-[0_0_0_4px_rgba(255,107,0,0.1)] focus:ring-0"
+                  className="h-12 w-11 rounded-md border border-slate-300 bg-white text-center font-mono text-lg font-extrabold text-[#07184A] outline-none transition hover:border-[#FF6B00]/50 focus:border-[#FF6B00] focus:shadow-[0_0_0_4px_rgba(255,107,0,0.08)] focus:ring-0 sm:h-14 sm:w-12"
                   id={`otp-digit-${idx}`}
                 />
               ))}
             </div>
 
             {/* OTP guidance */}
-            <div className="rounded-2xl border border-[#F9B233]/40 bg-gradient-to-br from-[#FFF7ED] to-white p-3 text-center text-[10.5px] leading-normal text-slate-600 shadow-[0_14px_30px_rgba(255,107,0,0.08)]">
+            <div className="rounded-lg border border-orange-100 bg-orange-50 p-3 text-center text-xs font-semibold leading-normal text-slate-600">
               Check your inbox for the 6-digit code and use it here to verify your account.
             </div>
 
@@ -180,7 +181,7 @@ export const VerifyOtp: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleResend}
-                  className="text-[#FF6B00] font-black hover:underline focus:outline-none"
+                  className="font-black text-[#FF6B00] hover:underline focus:outline-none"
                 >
                   Resend Verification OTP Code
                 </button>
@@ -192,7 +193,7 @@ export const VerifyOtp: React.FC = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full rounded-xl bg-gradient-to-r from-[#FF6B00] to-[#F9B233] py-3 text-xs font-black uppercase tracking-widest text-white shadow-[0_16px_32px_rgba(255,107,0,0.24)] transition-all hover:-translate-y-0.5 hover:shadow-[0_20px_40px_rgba(255,107,0,0.3)] disabled:opacity-50"
+                className="w-full rounded-md bg-[#FF6B00] py-3 text-xs font-black uppercase tracking-widest text-white transition hover:bg-[#e65f00] disabled:cursor-not-allowed disabled:opacity-50"
                 id="btn-otp-authorize"
               >
                 {loading ? "Validating security codes..." : "Authenticate Registration Token"}
