@@ -290,13 +290,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           selectedProgram: user?.selectedProgram || data.selectedProgram || data.programId,
           submittedByEmail: user?.email || data.submittedByEmail,
           submittedByName: user?.name || data.submittedByName,
-          problemStatement: data.problemStatement || data.focusArea || "Not specified",
+          problemStatement: data.problemStatement || data.focusArea || data.painPoint || "Not specified",
           solutionDescription:
             data.solutionDescription ||
             data.valueProposition ||
             data.startupDescription ||
             data.businessPitch ||
             data.impactApproach ||
+            data.productDescription ||
             "Not specified",
           currentStage: data.currentStage,
           teamSize: data.teamSize,

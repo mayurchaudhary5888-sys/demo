@@ -240,6 +240,35 @@ export const ApplicationDetailsModal: React.FC<ApplicationDetailsModalProps> = (
                     <ReadOnlyField label="Email Address" value={app.email} />
                   )}
 
+                  {/* MSME Specific Fields */}
+                  {hasField("name") && (
+                    <ReadOnlyField label="Full Name" value={app.name} />
+                  )}
+                  {hasField("gender") && (
+                    <ReadOnlyField label="Gender" value={app.gender} />
+                  )}
+                  {hasField("dateOfBirth") && (
+                    <ReadOnlyField label="Date of Birth" value={app.dateOfBirth} />
+                  )}
+                  {hasField("employmentStatus") && (
+                    <ReadOnlyField label="Employment Status" value={app.employmentStatus} />
+                  )}
+                  {hasField("currentCompany") && (
+                    <ReadOnlyField label="Current Company" value={app.currentCompany} />
+                  )}
+                  {hasField("highestEducation") && (
+                    <ReadOnlyField label="Highest Education" value={app.highestEducation} />
+                  )}
+                  {hasField("heardFrom") && (
+                    <ReadOnlyField label="Heard about iCreate" value={app.heardFrom} />
+                  )}
+                  {hasField("familyIncome") && (
+                    <ReadOnlyField label="Annual Family Income" value={app.familyIncome} />
+                  )}
+                  {hasField("linkedInUrl") && (
+                    <ReadOnlyField label="LinkedIn Profile URL" value={app.linkedInUrl} />
+                  )}
+
                   {/* Standard Fields */}
                   {hasField("teamSize") && (
                     <ReadOnlyField label="Total Team Size" value={app.teamSize} />
@@ -315,12 +344,35 @@ export const ApplicationDetailsModal: React.FC<ApplicationDetailsModalProps> = (
                     <ReadOnlyField label="Brand / Local Name" value={app.localBusinessName} />
                   )}
 
+                  {/* MSME Corporate Fields */}
+                  {hasField("registeredCompany") && (
+                    <ReadOnlyField label="Do you have a registered company?" value={app.registeredCompany} />
+                  )}
+                  {hasField("companyName") && (
+                    <ReadOnlyField label="Company Name" value={app.companyName} />
+                  )}
+                  {hasField("companyState") && (
+                    <ReadOnlyField label="Company registration State" value={app.companyState} />
+                  )}
+                  {hasField("companyCity") && (
+                    <ReadOnlyField label="Company registration City" value={app.companyCity} />
+                  )}
+                  {hasField("dpiitAvailable") && (
+                    <ReadOnlyField label="DPIIT Registration available?" value={app.dpiitAvailable} />
+                  )}
+
                   {/* Location Address */}
                   {hasField("state") && (
                     <ReadOnlyField label="State" value={app.state} />
                   )}
                   {hasField("city") && (
                     <ReadOnlyField label="City" value={app.city} />
+                  )}
+                  {hasField("pinCode") && (
+                    <ReadOnlyField label="Pin Code" value={app.pinCode} />
+                  )}
+                  {hasField("permanentAddress") && (
+                    <ReadOnlyField label="Permanent Address" value={app.permanentAddress} fullWidth />
                   )}
                   {hasField("address") && (
                     <ReadOnlyField label="Full Address" value={app.address} fullWidth />
@@ -355,12 +407,38 @@ export const ApplicationDetailsModal: React.FC<ApplicationDetailsModalProps> = (
                     <ReadOnlyField label="Sector / Industry" value={app.industry} />
                   )}
 
+                  {/* MSME Specific Product Fields */}
+                  {hasField("projectName") && (
+                    <ReadOnlyField label="Name of your project or product" value={app.projectName} />
+                  )}
+                  {hasField("applicationVertical") && (
+                    <ReadOnlyField label="Application vertical" value={app.applicationVertical} />
+                  )}
+                  {hasField("technologyUsed") && (
+                    <ReadOnlyField label="Technology being used" value={app.technologyUsed} />
+                  )}
+                  {hasField("productLevel") && (
+                    <ReadOnlyField label="Level of product" value={app.productLevel} />
+                  )}
+                  {hasField("ipFiled") && (
+                    <ReadOnlyField label="Is any IP filed?" value={app.ipFiled} />
+                  )}
+
                   {/* Core Descriptions */}
                   {hasField("problemStatement") && (
                     <ReadOnlyField label="Problem Statement" value={app.problemStatement} fullWidth />
                   )}
                   {hasField("solutionDescription") && (
                     <ReadOnlyField label="Proposed Solution Description" value={app.solutionDescription} fullWidth />
+                  )}
+                  {hasField("painPoint") && (
+                    <ReadOnlyField label="Pain point addressed" value={app.painPoint} fullWidth />
+                  )}
+                  {hasField("productDescription") && (
+                    <ReadOnlyField label="Product description with features" value={app.productDescription} fullWidth />
+                  )}
+                  {hasField("innovationDetails") && (
+                    <ReadOnlyField label="What is new/unique/innovative?" value={app.innovationDetails} fullWidth />
                   )}
                   {hasField("valueProposition") && (
                     <ReadOnlyField label="Value Proposition" value={app.valueProposition} fullWidth />
@@ -427,6 +505,17 @@ export const ApplicationDetailsModal: React.FC<ApplicationDetailsModalProps> = (
                   {/* Revenue Traction */}
                   {hasField("revenueTractionNote") && (
                     <ReadOnlyField label="Traction / Revenue Description" value={app.revenueTractionNote} fullWidth />
+                  )}
+
+                  {/* MSME Market / Funding Specifics */}
+                  {hasField("requestedFunding") && (
+                    <ReadOnlyField label="Requested Funding (INR)" value={app.requestedFunding} />
+                  )}
+                  {hasField("programsApplied") && (
+                    <ReadOnlyField label="Programs Applied For" value={app.programsApplied} />
+                  )}
+                  {hasField("supportRequired") && (
+                    <ReadOnlyField label="Support required from iCreate" value={app.supportRequired} fullWidth />
                   )}
 
                   {/* Global Impact Program Specifics */}
@@ -520,6 +609,9 @@ export const ApplicationDetailsModal: React.FC<ApplicationDetailsModalProps> = (
                   {hasField("videoUrl") && (
                     <ReadOnlyField label="Video Pitch Presentation Link" value={app.videoUrl} />
                   )}
+                  {hasField("videoLink") && (
+                    <ReadOnlyField label="Video Link of working prototype" value={app.videoLink} />
+                  )}
 
                   {/* Incubator preferences */}
                   {hasField("incubator1") && (
@@ -547,6 +639,32 @@ export const ApplicationDetailsModal: React.FC<ApplicationDetailsModalProps> = (
                         <p className="text-xs font-bold text-slate-800 truncate mt-0.5">{app.pitchDeckName || "PitchDeck.pdf"}</p>
                       </div>
                     </div>
+
+                    {/* Prototype Photos */}
+                    {hasField("prototypePhotosName") && (
+                      <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-4 flex items-center gap-3.5 shadow-sm">
+                        <div className="h-10 w-10 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600 shrink-0">
+                          <FileText className="h-5 w-5" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs font-black uppercase tracking-wider text-slate-400">Prototype / POC Photos</p>
+                          <p className="text-xs font-bold text-slate-800 truncate mt-0.5">{app.prototypePhotosName}</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Block Diagram */}
+                    {hasField("blockDiagramName") && (
+                      <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-4 flex items-center gap-3.5 shadow-sm">
+                        <div className="h-10 w-10 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600 shrink-0">
+                          <FileText className="h-5 w-5" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs font-black uppercase tracking-wider text-slate-400">Block Diagram</p>
+                          <p className="text-xs font-bold text-slate-800 truncate mt-0.5">{app.blockDiagramName}</p>
+                        </div>
+                      </div>
+                    )}
 
                     {/* Additional documents */}
                     {hasField("additionalDocumentsName") && (
