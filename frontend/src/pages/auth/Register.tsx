@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
@@ -32,9 +32,9 @@ type RegistrationForm = {
   logoName: string;
   startupName: string;
   startupBrief: string;
-  hasCompanyLogo: boolean;
-  fundingStatus: "Funded" | "Bootstrapped";
-  stage: "Ideation" | "Validation" | "Early Traction" | "Scaling";
+  hasCompanyLogo: boolean | null;
+  fundingStatus: string;
+  stage: string;
   email: string;
   mobile: string;
   password: string;
@@ -62,8 +62,8 @@ const steps = [
   { number: 4, title: "Your Interest" },
 ];
 
-const stageOptions: RegistrationForm["stage"][] = ["Ideation", "Validation", "Early Traction", "Scaling"];
-const fundingOptions: RegistrationForm["fundingStatus"][] = ["Funded", "Bootstrapped"];
+const stageOptions = ["Ideation", "Validation", "Early Traction", "Scaling"];
+const fundingOptions = ["Funded", "Bootstrapped"];
 const industryOptions = ["AI", "Fintech", "Healthtech", "Edtech", "Manufacturing", "Agri", "Climate", "Other"];
 const sectorOptions = ["SaaS", "D2C", "B2B", "B2C", "Marketplace", "Hardware", "Services", "Other"];
 const serviceOptions = ["Mobile", "Online Aggregator", "Platform", "Others", "SaaS"];
@@ -83,25 +83,25 @@ export const Register: React.FC = () => {
     logoName: "",
     startupName: "",
     startupBrief: "",
-    hasCompanyLogo: true,
-    fundingStatus: "Bootstrapped",
-    stage: "Validation",
+    hasCompanyLogo: null,
+    fundingStatus: "",
+    stage: "",
     email: "",
     mobile: "",
     password: "",
     confirmPassword: "",
-    state: "Punjab",
+    state: "",
     city: "",
     website: "",
     appLink: "",
-    industry: "AI",
-    sector: "Other",
-    services: ["Platform", "SaaS"],
+    industry: "",
+    sector: "",
+    services: [],
     udhyogAadhaar: "",
     cin: "",
-    nature: "Private Limited Company",
+    nature: "",
     legalName: "",
-    interests: ["All", "Investors", "Incubators"],
+    interests: [],
     selectedProgram: "",
     agreeTerms: false,
   });
@@ -291,13 +291,15 @@ export const Register: React.FC = () => {
       badge="startup registration"
       title="Register your startup in four steps"
       description="Share your startup profile, contact details, category information, and participation interests to move into verification."
+      maxWidthClassName="max-w-[86rem]"
+      showFooterNote={false}
       aside={
-        <div className="flex items-center gap-3 rounded-2xl border border-[#FF6B00]/20 bg-[#FFF7ED] px-4 py-3 shadow-sm">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-[#FF6B00] to-[#F9B233] text-white shadow-[0_14px_28px_rgba(255,107,0,0.22)]">
+        <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#07184A] text-white">
             <Building2 className="h-5 w-5" />
           </div>
           <div>
-            <div className="text-[11px] font-black uppercase tracking-[0.2em] text-[#D94F00]">Step</div>
+            <div className="text-[11px] font-black uppercase tracking-[0.2em] text-[#FF6B00]">Step</div>
             <div className="text-sm font-black text-[#07184A]">{steps[step - 1].title}</div>
           </div>
         </div>
@@ -305,11 +307,11 @@ export const Register: React.FC = () => {
     >
       <div className="space-y-8">
 
-          <div className="mb-10">
+          <div className="mb-8 rounded-[24px] border border-slate-200 bg-slate-50 p-4">
             <div className="relative mx-auto max-w-6xl">
-              <div className="absolute left-8 right-8 top-4 h-1 rounded-full bg-[#07184A]/10" />
+              <div className="absolute left-8 right-8 top-4 h-1 rounded-full bg-slate-200" />
               <div
-                className="absolute left-8 top-4 h-1 rounded-full bg-gradient-to-r from-[#FF6B00] via-[#F9B233] to-[#07184A] transition-all duration-500"
+                className="absolute left-8 top-4 h-1 rounded-full bg-[#FF6B00] transition-all duration-500"
                 style={{ width: `${((step - 1) / 3) * 100}%` }}
               />
               <div className="relative grid grid-cols-4 gap-3">
@@ -329,9 +331,9 @@ export const Register: React.FC = () => {
                       <div
                         className={`z-10 flex h-9 w-9 items-center justify-center rounded-full border-4 bg-white text-sm font-black transition-all ${
                           complete
-                            ? "border-[#F9B233] text-[#07184A] shadow-[0_10px_24px_rgba(249,178,51,0.18)]"
+                            ? "border-[#07184A] bg-[#07184A] text-white"
                             : active
-                              ? "border-[#FF6B00] text-[#07184A] shadow-[0_0_0_7px_rgba(255,107,0,0.14),0_14px_30px_rgba(255,107,0,0.22)]"
+                              ? "border-[#FF6B00] text-[#07184A]"
                               : "border-slate-300 text-slate-500"
                         }`}
                       >
@@ -356,7 +358,7 @@ export const Register: React.FC = () => {
                       Entity/company logo
                       <Info className="h-4 w-4 text-slate-300" />
                     </div>
-                    <label className="flex min-h-48 cursor-pointer items-center justify-center rounded-2xl border border-dashed border-[#FF6B00]/30 bg-gradient-to-br from-[#FFF7ED] to-white p-4 text-center transition hover:-translate-y-0.5 hover:border-[#FF6B00] hover:shadow-[0_18px_45px_rgba(255,107,0,0.13)]">
+                    <label className="flex min-h-48 cursor-pointer items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-4 text-center transition hover:border-[#FF6B00] hover:bg-white">
                       <div className="space-y-3">
                         {logoPreview ? (
                           <img
@@ -365,7 +367,7 @@ export const Register: React.FC = () => {
                             className="mx-auto max-h-28 rounded-lg object-contain"
                           />
                         ) : (
-                          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-[#FF6B00] shadow-[0_16px_35px_rgba(255,107,0,0.14)]">
+                          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-[#FF6B00] ring-1 ring-slate-200">
                             <Upload className="h-6 w-6" />
                           </div>
                         )}
@@ -389,24 +391,25 @@ export const Register: React.FC = () => {
                     <div className="mb-2 text-[13px] font-black uppercase tracking-wider text-slate-500">
                       Is this your company/institution logo
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => updateField("hasCompanyLogo", !form.hasCompanyLogo)}
-                        className={`inline-flex items-center gap-3 rounded-full border px-4 py-2 text-sm font-bold transition ${
-                        form.hasCompanyLogo
-                          ? "border-[#FF6B00] bg-gradient-to-r from-[#FF6B00] to-[#F9B233] text-white shadow-[0_12px_25px_rgba(255,107,0,0.18)]"
-                          : "border-slate-300 bg-white text-slate-600"
-                      }`}
-                    >
-                      <span className={`h-5 w-10 rounded-full bg-white/30 p-0.5 ${form.hasCompanyLogo ? "" : "bg-slate-200"}`}>
-                        <span
-                          className={`block h-4 w-4 rounded-full bg-white transition ${
-                            form.hasCompanyLogo ? "translate-x-5" : "translate-x-0"
+                    <div className="flex flex-wrap gap-3">
+                      {[
+                        { label: "Yes", value: true },
+                        { label: "No", value: false },
+                      ].map((option) => (
+                        <button
+                          key={option.label}
+                          type="button"
+                          onClick={() => updateField("hasCompanyLogo", option.value)}
+                          className={`rounded-full border px-5 py-2 text-sm font-bold transition ${
+                            form.hasCompanyLogo === option.value
+                              ? "border-[#FF6B00] bg-[#FF6B00] text-white"
+                              : "border-slate-300 bg-white text-slate-600 hover:border-[#FF6B00]/50 hover:text-[#07184A]"
                           }`}
-                        />
-                      </span>
-                      {form.hasCompanyLogo ? "Yes" : "No"}
-                    </button>
+                        >
+                          {option.label}
+                        </button>
+                      ))}
+                    </div>
                   </div>
 
                   <div>
@@ -421,7 +424,7 @@ export const Register: React.FC = () => {
                           onClick={() => updateField("fundingStatus", option)}
                           className={`rounded-full border px-4 py-2 text-sm font-bold transition ${
                             form.fundingStatus === option
-                              ? "border-[#07184A] bg-[#07184A] text-white shadow-[0_12px_24px_rgba(7,24,74,0.18)]"
+                              ? "border-[#07184A] bg-[#07184A] text-white"
                               : "border-slate-300 bg-white text-slate-600 hover:border-[#FF6B00]/50 hover:text-[#07184A]"
                           }`}
                         >
@@ -461,7 +464,7 @@ export const Register: React.FC = () => {
                           onClick={() => updateField("stage", option)}
                           className={`rounded-xl border px-3 py-3 text-sm font-bold transition ${
                             form.stage === option
-                              ? "border-[#FF6B00] bg-gradient-to-br from-[#FF6B00] to-[#F9B233] text-white shadow-[0_16px_32px_rgba(255,107,0,0.22)]"
+                              ? "border-[#FF6B00] bg-[#FF6B00] text-white"
                               : "border-slate-300 bg-white text-slate-600 hover:border-[#FF6B00]/50 hover:text-[#07184A]"
                           }`}
                         >
@@ -582,6 +585,9 @@ export const Register: React.FC = () => {
                       onChange={(e) => updateField("state", e.target.value)}
                       className="w-full appearance-none rounded-xl border border-slate-300 bg-white py-3 pl-11 pr-10 text-sm font-semibold text-slate-800 outline-none transition focus:border-[#FF6B00] focus:shadow-[0_0_0_4px_rgba(255,107,0,0.08)]"
                     >
+                      <option value="" disabled>
+                        Select state
+                      </option>
                       {stateOptions.map((option) => (
                         <option key={option} value={option}>
                           {option}
@@ -653,6 +659,9 @@ export const Register: React.FC = () => {
                         errors.industry ? "border-red-400 bg-red-50" : "border-slate-300"
                       }`}
                     >
+                      <option value="" disabled>
+                        Select industry
+                      </option>
                       {industryOptions.map((option) => (
                         <option key={option} value={option}>
                           {option}
@@ -676,6 +685,9 @@ export const Register: React.FC = () => {
                         errors.sector ? "border-red-400 bg-red-50" : "border-slate-300"
                       }`}
                     >
+                      <option value="" disabled>
+                        Select sector
+                      </option>
                       {sectorOptions.map((option) => (
                         <option key={option} value={option}>
                           {option}
@@ -724,7 +736,7 @@ export const Register: React.FC = () => {
                           type="button"
                           onClick={() => toggleListValue("services", option)}
                           className={`rounded-md px-3 py-2 text-xs font-bold transition ${
-                            active ? "bg-[#07184A] text-white shadow-[0_10px_18px_rgba(7,24,74,0.16)]" : "bg-[#FFF7ED] text-slate-700 hover:bg-[#FFE8D5] hover:text-[#07184A]"
+                            active ? "bg-[#07184A] text-white" : "bg-slate-100 text-slate-700 hover:bg-[#FFF4EC] hover:text-[#07184A]"
                           }`}
                         >
                           {option}
@@ -771,6 +783,9 @@ export const Register: React.FC = () => {
                       onChange={(e) => updateField("nature", e.target.value)}
                       className="w-full appearance-none rounded-xl border border-slate-300 bg-white py-3 pl-4 pr-10 text-sm font-semibold text-slate-800 outline-none transition focus:border-[#FF6B00] focus:shadow-[0_0_0_4px_rgba(255,107,0,0.08)]"
                     >
+                      <option value="" disabled>
+                        Select nature
+                      </option>
                       {natureOptions.map((option) => (
                         <option key={option} value={option}>
                           {option}
@@ -815,7 +830,7 @@ export const Register: React.FC = () => {
                           onClick={() => toggleListValue("interests", option)}
                           className={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-bold transition ${
                             active
-                              ? "border-[#FF6B00] bg-gradient-to-br from-[#FF6B00] to-[#F9B233] text-white shadow-[0_16px_32px_rgba(255,107,0,0.2)]"
+                              ? "border-[#FF6B00] bg-[#FF6B00] text-white"
                               : "border-slate-300 bg-white text-slate-600 hover:border-[#FF6B00]/50 hover:text-[#07184A]"
                           }`}
                         >
@@ -834,12 +849,12 @@ export const Register: React.FC = () => {
                   {errors.interests && <p className="mt-2 text-xs font-bold text-red-500">{errors.interests}</p>}
                 </div>
 
-                <div className="rounded-2xl border border-[#FF6B00]/20 bg-gradient-to-br from-[#FFF7ED] via-white to-white p-4 shadow-[0_18px_45px_rgba(7,24,74,0.08)]">
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                   <div className="mb-3 flex items-center gap-2 text-sm font-black uppercase tracking-wider text-slate-600">
                     <FileText className="h-4 w-4 text-[#FF6B00]" />
                     Terms of use
                   </div>
-                  <div className="max-h-64 overflow-auto rounded-xl border border-[#F9B233]/30 bg-white/90 p-4 text-sm leading-6 text-slate-600 shadow-inner">
+                  <div className="max-h-64 overflow-auto rounded-xl border border-slate-200 bg-white p-4 text-sm leading-6 text-slate-600">
                     <p className="mb-4">
                       This official registration form collects the information required to review your startup profile and determine scheme
                       eligibility. The data you provide is used for verification, contact, and program routing.
@@ -880,7 +895,7 @@ export const Register: React.FC = () => {
                   type="button"
                   onClick={handleBack}
                   disabled={step === 1}
-                  className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-5 py-3 text-xs font-black uppercase tracking-wider text-slate-600 transition disabled:cursor-not-allowed disabled:opacity-40"
+                  className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-5 py-3 text-xs font-black uppercase tracking-wider text-slate-600 transition hover:border-[#07184A] hover:text-[#07184A] disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   <ArrowLeft className="h-4 w-4" />
                   Back
@@ -890,7 +905,7 @@ export const Register: React.FC = () => {
                   <button
                     type="button"
                     onClick={handleNext}
-                    className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#FF6B00] to-[#F9B233] px-6 py-3 text-xs font-black uppercase tracking-wider text-white shadow-[0_16px_32px_rgba(255,107,0,0.22)] transition hover:-translate-y-0.5 hover:shadow-[0_20px_38px_rgba(255,107,0,0.28)]"
+                    className="inline-flex items-center gap-2 rounded-md bg-[#FF6B00] px-6 py-3 text-xs font-black uppercase tracking-wider text-white shadow-[0_14px_30px_rgba(255,107,0,0.18)] transition hover:bg-[#ef5f00]"
                   >
                     Next
                     <ArrowRight className="h-4 w-4" />
@@ -899,7 +914,7 @@ export const Register: React.FC = () => {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="inline-flex items-center gap-2 rounded-full bg-[#07184A] px-6 py-3 text-xs font-black uppercase tracking-wider text-white shadow-[0_16px_32px_rgba(7,24,74,0.22)] transition hover:-translate-y-0.5 hover:bg-[#0B2A5B] disabled:cursor-not-allowed disabled:opacity-60"
+                    className="inline-flex items-center gap-2 rounded-md bg-[#07184A] px-6 py-3 text-xs font-black uppercase tracking-wider text-white shadow-[0_14px_30px_rgba(7,24,74,0.18)] transition hover:bg-[#0B2A5B] disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {loading ? "Processing..." : "Register"}
                     <Check className="h-4 w-4" />
