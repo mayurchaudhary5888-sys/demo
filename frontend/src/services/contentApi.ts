@@ -70,4 +70,9 @@ export const contentApi = {
     unwrap(request<any>(`/notifications/${id}`, { method: "PATCH", body: JSON.stringify(payload) })),
   deleteNotification: (id: string) =>
     unwrap(request<any>(`/notifications/${id}`, { method: "DELETE" })),
+  uploadLogo: (payload: { imageData: string; filename?: string }) =>
+    unwrap(request<{ secureUrl: string; publicId: string; width?: number; height?: number; format?: string }>("/uploads/logo", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    })),
 };

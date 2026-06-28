@@ -12,6 +12,14 @@ const applicationRecordSchema = new mongoose.Schema(
     programName: String,
     startupId: String,
     startupName: String,
+    selectedProgram: String,
+    submittedByEmail: {
+      type: String,
+      lowercase: true,
+      trim: true,
+      index: true,
+    },
+    submittedByName: String,
     submittedDate: String,
     lastUpdated: String,
     status: String,
@@ -32,9 +40,8 @@ const applicationRecordSchema = new mongoose.Schema(
       },
     ],
   },
-  { strict: false, timestamps: true, collection: "applications" }
+  { timestamps: true, collection: "applications", strict: false }
 );
 
 export const ApplicationRecord = mongoose.models.ApplicationRecord || mongoose.model("ApplicationRecord", applicationRecordSchema);
-
 

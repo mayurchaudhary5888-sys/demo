@@ -3,8 +3,22 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React from "react";
-import { X, FileText, CalendarDays, Building2, CheckCircle2 } from "lucide-react";
+import React, { useState } from "react";
+import {
+  X,
+  FileText,
+  CalendarDays,
+  Building2,
+  CheckCircle2,
+  Users,
+  Compass,
+  FileCode,
+  DollarSign,
+  Paperclip,
+  Activity,
+  AlertCircle,
+  Briefcase
+} from "lucide-react";
 import { Application } from "../../types";
 import { StatusBadge } from "./StatusBadge";
 
@@ -14,213 +28,557 @@ type ApplicationDetailsModalProps = {
   onClose: () => void;
 };
 
-const META_KEYS = new Set([
-  "id",
-  "programId",
-  "programName",
-  "startupId",
-  "startupName",
-  "submittedDate",
-  "lastUpdated",
-  "status",
-  "adminRemarks",
-  "rejectedAt",
-  "selectedProgram",
-  "submittedByEmail",
-  "submittedByName",
-  "updatedAt",
-  "createdAt",
-  "timeline",
-]);
-
-const CORE_KEYS = [
-  "problemStatement",
-  "solutionDescription",
-  "currentStage",
-  "teamSize",
-  "fundingStatus",
-  "pitchDeckName",
-  "additionalDocumentsName",
-];
-
 const formatLabel = (key: string) =>
   key
     .replace(/([a-z])([A-Z])/g, "$1 $2")
     .replace(/[_-]/g, " ")
     .replace(/\b\w/g, (char) => char.toUpperCase());
 
-const isPlainObject = (value: unknown): value is Record<string, unknown> =>
-  Boolean(value) && typeof value === "object" && !Array.isArray(value);
-
-const formatPrimitive = (value: unknown) => {
-  if (value === null || value === undefined || value === "") return "Not provided";
+const formatValue = (value: unknown) => {
+  if (value === null || value === undefined || value === "") return "—";
   if (typeof value === "boolean") return value ? "Yes" : "No";
-  if (typeof value === "number") return String(value);
   return String(value);
 };
 
-const ValueRenderer: React.FC<{ value: unknown }> = ({ value }) => {
-  if (Array.isArray(value)) {
-    if (!value.length) return <p className="text-slate-500">Not provided</p>;
-    return (
-      <div className="flex flex-wrap gap-2">
-        {value.map((item, index) => (
-          <span key={`${String(item)}-${index}`} className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700">
-            {formatPrimitive(item)}
-          </span>
-        ))}
+const ReadOnlyField: React.FC<{
+  label: string;
+  value: unknown;
+  fullWidth?: boolean;
+}> = ({ label, value, fullWidth = false }) => {
+  const displayVal = formatValue(value);
+  return (
+    <div className={`space-y-1.5 ${fullWidth ? "col-span-full" : ""}`}>
+      <label className="block text-[11px] font-black uppercase tracking-[0.15em] text-[#0B2A5B]">
+        {label}
+      </label>
+      <div className="w-full rounded-xl border border-slate-200 bg-slate-50/50 p-3.5 text-sm font-semibold text-slate-800 shadow-sm leading-relaxed whitespace-pre-wrap">
+        {displayVal}
       </div>
-    );
-  }
-
-  if (isPlainObject(value)) {
-    const entries = Object.entries(value);
-    if (!entries.length) return <p className="text-slate-500">Not provided</p>;
-    return (
-      <div className="space-y-2 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-        {entries.map(([key, item]) => (
-          <div key={key} className="grid grid-cols-1 gap-1 sm:grid-cols-[180px_minmax(0,1fr)] sm:gap-4">
-            <span className="text-[10px] font-black uppercase tracking-[0.22em] text-slate-500">{formatLabel(key)}</span>
-            <div className="text-sm font-medium text-slate-700">
-              <ValueRenderer value={item} />
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  }
-
-  return <span>{formatPrimitive(value)}</span>;
+    </div>
+  );
 };
 
-const SectionCard: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
-  <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-    <h3 className="text-[11px] font-black uppercase tracking-[0.24em] text-[#5B64A8]">{title}</h3>
-    <div className="mt-4">{children}</div>
-  </section>
-);
+export const ApplicationDetailsModal: React.FC<ApplicationDetailsModalProps> = ({
+  open,
+  application,
+  onClose
+}) => {
+  const [activeTab, setActiveTab] = useState<string>("overview");
 
-export const ApplicationDetailsModal: React.FC<ApplicationDetailsModalProps> = ({ open, application, onClose }) => {
   if (!open || !application) return null;
 
-  const app = application as Application & Record<string, unknown>;
-  const detailEntries = Object.entries(app).filter(([key, value]) => {
-    if (META_KEYS.has(key) || CORE_KEYS.includes(key)) return false;
-    if (value === undefined || value === null || value === "") return false;
-    if (Array.isArray(value) && !value.length) return false;
-    return true;
-  });
+  const app = application as Application & Record<string, any>;
+
+  // Detect which custom fields are present in the submitted application
+  const hasField = (key: string) => app[key] !== undefined && app[key] !== null && app[key] !== "";
+
+  // Team members parser
+  const teamMembersList = Array.isArray(app.teamMembers)
+    ? app.teamMembers
+    : [];
+
+  // Financial statements parser
+  const financialOne = app.financialOne || null;
+  const financialTwo = app.financialTwo || null;
+
+  // Tabs definitions
+  const tabs = [
+    { id: "overview", label: "Overview & Status", icon: Activity },
+    { id: "contact", label: "Contact & Team", icon: Users },
+    { id: "entity", label: "Entity Profile", icon: Building2 },
+    { id: "innovation", label: "Innovation & Product", icon: Compass },
+    { id: "market", label: "Market & Traction", icon: DollarSign },
+    { id: "files", label: "Files & Preferences", icon: Paperclip }
+  ];
 
   return (
     <div className="fixed inset-0 z-[1200] flex items-center justify-center bg-slate-950/60 px-4 py-6 backdrop-blur-sm">
-      <div className="relative w-full max-w-6xl overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_30px_120px_rgba(15,23,42,0.35)]">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(248,250,252,0.98),_rgba(255,255,255,1)_55%)]" aria-hidden="true" />
-
-        <button
-          type="button"
-          onClick={onClose}
-          className="absolute right-4 top-4 z-10 rounded-full border border-slate-200 bg-white p-2 text-slate-400 transition hover:text-slate-700"
-          aria-label="Close application details"
-        >
-          <X className="h-4 w-4" />
-        </button>
-
-        <div className="relative max-h-[90vh] overflow-y-auto px-6 py-8 sm:px-8">
-          <div className="flex flex-col gap-4 border-b border-slate-200 pb-5 md:flex-row md:items-end md:justify-between">
-            <div>
-              <p className="text-[11px] font-black uppercase tracking-[0.28em] text-[#F05A28]">View Application</p>
-              <h2 className="mt-2 text-2xl font-black tracking-tight text-[#0B2A5B]">
-                {application.programName}
-              </h2>
-              <p className="mt-2 text-sm text-slate-600">
-                Read-only copy of the exact details submitted by the founder.
-              </p>
-            </div>
-            <div className="flex flex-wrap items-center gap-3">
-              <StatusBadge status={application.status} />
-              <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-600">
-                <CalendarDays className="h-3.5 w-3.5 text-[#F05A28]" />
-                {application.submittedDate}
+      <div className="relative w-full max-w-6xl overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-[0_30px_120px_rgba(15,23,42,0.35)] flex flex-col max-h-[90vh]">
+        
+        {/* Header */}
+        <div className="relative border-b border-slate-100 bg-slate-50/50 px-6 py-5 md:px-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2.5">
+              <span className="text-[10px] font-black uppercase tracking-[0.28em] text-[#FF6B00] bg-[#FF6B00]/10 px-2.5 py-1 rounded-full">
+                Application Review
+              </span>
+              <span className="text-xs text-slate-500 font-bold">
+                ID: {app.id || app._id}
               </span>
             </div>
+            <h2 className="mt-2 text-xl font-black tracking-tight text-[#0B2A5B]">
+              {app.programName}
+            </h2>
           </div>
 
-          <div className="mt-6 grid gap-4 lg:grid-cols-2">
-            <SectionCard title="Application Summary">
-              <div className="grid gap-4 sm:grid-cols-2">
-                {[
-                  ["Application ID", application.id],
-                  ["Startup Name", application.startupName],
-                  ["Program Name", application.programName],
-                  ["Program ID", application.programId],
-                  ["Selected Program", application.selectedProgram],
-                  ["Submitted By", application.submittedByName],
-                  ["Submitted Email", application.submittedByEmail],
-                  ["Last Updated", application.lastUpdated || application.updatedAt || application.submittedDate],
-                ].map(([label, value]) => (
-                  <div key={label} className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-                    <p className="text-[10px] font-black uppercase tracking-[0.22em] text-slate-500">{label}</p>
-                    <p className="mt-1 text-sm font-semibold text-slate-800">{formatPrimitive(value)}</p>
-                  </div>
-                ))}
-              </div>
-            </SectionCard>
-
-            <SectionCard title="Timeline">
-              <div className="space-y-3">
-                {application.timeline?.length ? (
-                  application.timeline.map((step) => (
-                    <div key={`${step.status}-${step.timestamp}`} className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-                      <div className="flex items-center justify-between gap-3">
-                        <p className="text-sm font-bold text-[#0B2A5B]">{step.status}</p>
-                        <span className="text-[11px] font-semibold text-slate-400">{step.timestamp}</span>
-                      </div>
-                      {step.remarks && <p className="mt-1 text-sm text-slate-600">{step.remarks}</p>}
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-sm text-slate-500">No timeline entries available.</p>
-                )}
-              </div>
-            </SectionCard>
-          </div>
-
-          <div className="mt-4">
-            <SectionCard title="Core Form Fields">
-              <div className="space-y-3">
-                {CORE_KEYS.map((key) => {
-                  const value = app[key];
-                  if (value === undefined || value === null || value === "") return null;
-                  return (
-                    <div key={key} className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-                      <p className="text-[10px] font-black uppercase tracking-[0.22em] text-slate-500">{formatLabel(key)}</p>
-                      <div className="mt-1 text-sm font-medium text-slate-700">
-                        <ValueRenderer value={value} />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </SectionCard>
-          </div>
-
-          {application.adminRemarks && (
-            <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4">
-              <p className="text-[11px] font-black uppercase tracking-[0.24em] text-amber-700">Admin Remarks</p>
-              <p className="mt-2 text-sm leading-7 text-slate-700">{application.adminRemarks}</p>
-            </div>
-          )}
-
-          <div className="mt-6 flex justify-end">
+          <div className="flex flex-wrap items-center gap-3">
+            <StatusBadge status={app.status} />
+            <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 shadow-sm">
+              <CalendarDays className="h-3.5 w-3.5 text-[#FF6B00]" />
+              Submitted: {app.submittedDate || "N/A"}
+            </span>
             <button
               type="button"
               onClick={onClose}
-              className="rounded-full bg-[#0B2A5B] px-5 py-3 text-xs font-black uppercase tracking-wider text-white transition hover:bg-[#102e68]"
+              className="rounded-full border border-slate-200 bg-white p-2 text-slate-400 hover:text-slate-700 hover:border-slate-300 transition-colors shadow-sm"
+              aria-label="Close modal"
             >
-              Close
+              <X className="h-4 w-4" />
             </button>
           </div>
         </div>
+
+        {/* Workspace Body */}
+        <div className="flex flex-1 flex-col md:flex-row overflow-hidden min-h-0">
+          
+          {/* Navigation Sidebar */}
+          <nav className="w-full md:w-64 border-r border-slate-100 bg-slate-50/20 p-4 space-y-1.5 overflow-y-auto shrink-0 md:block flex gap-2 md:flex-col pb-3 md:pb-4 border-b md:border-b-0">
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-xs font-extrabold tracking-wider uppercase transition-all ${
+                    isActive
+                      ? "bg-[#0B2A5B] text-white shadow-md shadow-[#0B2A5B]/10"
+                      : "text-slate-600 hover:bg-slate-100/80 hover:text-slate-900"
+                  }`}
+                >
+                  <Icon className={`h-4 w-4 shrink-0 ${isActive ? "text-[#FF6B00]" : "text-slate-400"}`} />
+                  <span className="truncate">{tab.label}</span>
+                </button>
+              );
+            })}
+          </nav>
+
+          {/* Content Pane */}
+          <div className="flex-1 overflow-y-auto p-6 md:p-8 bg-white">
+            
+            {/* TAB: Overview & Timeline */}
+            {activeTab === "overview" && (
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-base font-black text-[#0B2A5B]">Application Status & Activity</h3>
+                  <p className="text-xs text-slate-500 mt-1">Review the overall status changes and remarks for this application.</p>
+                </div>
+
+                {app.adminRemarks && (
+                  <div className="rounded-2xl border border-amber-200 bg-amber-50/60 p-5 flex items-start gap-4">
+                    <AlertCircle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+                    <div>
+                      <h4 className="text-sm font-black text-amber-900">Official Feedback / Remarks</h4>
+                      <p className="mt-1.5 text-sm text-slate-700 leading-relaxed font-medium">{app.adminRemarks}</p>
+                    </div>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <ReadOnlyField label="Program ID" value={app.programId} />
+                  <ReadOnlyField label="Startup Profile ID" value={app.startupId} />
+                  <ReadOnlyField label="Primary Contact Email" value={app.submittedByEmail} />
+                  <ReadOnlyField label="Authorized Name" value={app.submittedByName} />
+                </div>
+
+                <div className="border-t border-slate-100 pt-6">
+                  <h4 className="text-xs font-black uppercase tracking-[0.2em] text-[#0B2A5B] mb-4">Application History Timeline</h4>
+                  <div className="relative border-l-2 border-slate-100 ml-3 pl-6 space-y-6">
+                    {app.timeline && app.timeline.length > 0 ? (
+                      app.timeline.map((step: any, idx: number) => (
+                        <div key={idx} className="relative">
+                          <span className="absolute -left-[31px] top-0 flex h-4 w-4 items-center justify-center rounded-full bg-white border-2 border-[#0B2A5B]">
+                            <span className="h-1.5 w-1.5 rounded-full bg-[#FF6B00]" />
+                          </span>
+                          <div className="bg-slate-50 rounded-xl p-4 border border-slate-100 shadow-sm max-w-2xl">
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                              <span className="text-xs font-extrabold uppercase tracking-wider text-[#0B2A5B] bg-[#0B2A5B]/10 px-2 py-0.5 rounded-md">
+                                {step.status}
+                              </span>
+                              <span className="text-[11px] font-bold text-slate-400">{step.timestamp}</span>
+                            </div>
+                            {step.remarks && (
+                              <p className="mt-2 text-xs font-semibold text-slate-600 leading-relaxed">
+                                {step.remarks}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-xs text-slate-500 italic">No historical timeline milestones registered.</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB: Contact & Team */}
+            {activeTab === "contact" && (
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-base font-black text-[#0B2A5B]">Authorized Applicant & Core Team</h3>
+                  <p className="text-xs text-slate-500 mt-1">Founding member representative and total human resources.</p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Startup Application fields */}
+                  {hasField("authorFirstName") && (
+                    <ReadOnlyField label="First Name" value={app.authorFirstName} />
+                  )}
+                  {hasField("authorLastName") && (
+                    <ReadOnlyField label="Last Name" value={app.authorLastName} />
+                  )}
+                  {hasField("designation") && (
+                    <ReadOnlyField label="Designation" value={app.designation} />
+                  )}
+                  {hasField("mobile") && (
+                    <ReadOnlyField label="Mobile Number" value={app.mobile} />
+                  )}
+                  {hasField("email") && (
+                    <ReadOnlyField label="Email Address" value={app.email} />
+                  )}
+
+                  {/* Standard Fields */}
+                  {hasField("teamSize") && (
+                    <ReadOnlyField label="Total Team Size" value={app.teamSize} />
+                  )}
+                  {hasField("fullTimeEmployees") && (
+                    <ReadOnlyField label="Full-Time Employees" value={app.fullTimeEmployees} />
+                  )}
+                </div>
+
+                {/* Team Members List */}
+                {teamMembersList.length > 0 && (
+                  <div className="border-t border-slate-100 pt-6">
+                    <h4 className="text-xs font-black uppercase tracking-[0.2em] text-[#0B2A5B] mb-4">Promoter Details</h4>
+                    <div className="overflow-hidden rounded-xl border border-slate-200 shadow-sm">
+                      <table className="min-w-full divide-y divide-slate-200">
+                        <thead className="bg-slate-50">
+                          <tr>
+                            <th className="px-4 py-3 text-left text-[10px] font-black uppercase tracking-wider text-slate-500">Name</th>
+                            <th className="px-4 py-3 text-left text-[10px] font-black uppercase tracking-wider text-slate-500">Role</th>
+                            <th className="px-4 py-3 text-left text-[10px] font-black uppercase tracking-wider text-slate-500">Email</th>
+                            <th className="px-4 py-3 text-left text-[10px] font-black uppercase tracking-wider text-slate-500">Mobile</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-200 bg-white">
+                          {teamMembersList.map((m: any, idx: number) => (
+                            <tr key={idx} className="hover:bg-slate-50/50">
+                              <td className="whitespace-nowrap px-4 py-3 text-xs font-bold text-slate-800">{m.name || "—"}</td>
+                              <td className="whitespace-nowrap px-4 py-3 text-xs font-semibold text-slate-600">{m.role || "—"}</td>
+                              <td className="whitespace-nowrap px-4 py-3 text-xs font-semibold text-slate-600">{m.email || "—"}</td>
+                              <td className="whitespace-nowrap px-4 py-3 text-xs font-semibold text-slate-600">{m.mobile || "—"}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* TAB: Entity Profile */}
+            {activeTab === "entity" && (
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-base font-black text-[#0B2A5B]">Company Identification & Identity</h3>
+                  <p className="text-xs text-slate-500 mt-1">Official registry numbers, corporate entity type, and location details.</p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Entity Identity */}
+                  <ReadOnlyField label="Registered Startup Name" value={app.startupName} />
+                  {hasField("dpiitNumber") && (
+                    <ReadOnlyField label="DPIIT Recognition Number" value={app.dpiitNumber} />
+                  )}
+                  {hasField("natureOfEntity") && (
+                    <ReadOnlyField label="Nature of Entity" value={app.natureOfEntity} />
+                  )}
+                  {hasField("incorporationDate") && (
+                    <ReadOnlyField label="Date of Incorporation" value={app.incorporationDate} />
+                  )}
+                  {hasField("panNumber") && (
+                    <ReadOnlyField label="PAN Number" value={app.panNumber} />
+                  )}
+
+                  {/* Legal Entity type for Global Impact */}
+                  {hasField("legalEntity") && (
+                    <ReadOnlyField label="Legal Entity Type" value={app.legalEntity} />
+                  )}
+                  {hasField("registeredBusinessName") && (
+                    <ReadOnlyField label="Registered Corporate Name" value={app.registeredBusinessName} />
+                  )}
+                  {hasField("localBusinessName") && (
+                    <ReadOnlyField label="Brand / Local Name" value={app.localBusinessName} />
+                  )}
+
+                  {/* Location Address */}
+                  {hasField("state") && (
+                    <ReadOnlyField label="State" value={app.state} />
+                  )}
+                  {hasField("city") && (
+                    <ReadOnlyField label="City" value={app.city} />
+                  )}
+                  {hasField("address") && (
+                    <ReadOnlyField label="Full Address" value={app.address} fullWidth />
+                  )}
+                  {hasField("placeOfOperations") && (
+                    <ReadOnlyField label="Place of Operations" value={app.placeOfOperations} fullWidth />
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* TAB: Innovation & Product */}
+            {activeTab === "innovation" && (
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-base font-black text-[#0B2A5B]">Innovation & Solution Details</h3>
+                  <p className="text-xs text-slate-500 mt-1">Elevator pitch, core problems, unique selling points, and target market.</p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Category Info */}
+                  {hasField("technologyStartup") && (
+                    <ReadOnlyField label="Technology Startup?" value={app.technologyStartup} />
+                  )}
+                  {hasField("currentStage") && (
+                    <ReadOnlyField label="Product / Business Stage" value={app.currentStage} />
+                  )}
+                  {hasField("businessStage") && (
+                    <ReadOnlyField label="Current Business Stage" value={app.businessStage} />
+                  )}
+                  {hasField("industry") && (
+                    <ReadOnlyField label="Sector / Industry" value={app.industry} />
+                  )}
+
+                  {/* Core Descriptions */}
+                  {hasField("problemStatement") && (
+                    <ReadOnlyField label="Problem Statement" value={app.problemStatement} fullWidth />
+                  )}
+                  {hasField("solutionDescription") && (
+                    <ReadOnlyField label="Proposed Solution Description" value={app.solutionDescription} fullWidth />
+                  )}
+                  {hasField("valueProposition") && (
+                    <ReadOnlyField label="Value Proposition" value={app.valueProposition} fullWidth />
+                  )}
+                  {hasField("uniqueSellingPoint") && (
+                    <ReadOnlyField label="Unique Selling Point (USP)" value={app.uniqueSellingPoint} fullWidth />
+                  )}
+                  {hasField("businessPitch") && (
+                    <ReadOnlyField label="Business Elevator Pitch" value={app.businessPitch} fullWidth />
+                  )}
+                  {hasField("theoryOfChange") && (
+                    <ReadOnlyField label="Theory of Change / Impact Model" value={app.theoryOfChange} fullWidth />
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* TAB: Market & Traction */}
+            {activeTab === "market" && (
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-base font-black text-[#0B2A5B]">Market Opportunity & Financial Health</h3>
+                  <p className="text-xs text-slate-500 mt-1">Competitors, revenue notes, capital raised, and financial statements.</p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Target segment */}
+                  {hasField("targetCustomer") && (
+                    <ReadOnlyField label="Target Customer Segment" value={app.targetCustomer} />
+                  )}
+                  {hasField("customerProfile") && (
+                    <ReadOnlyField label="Target Customer Profile" value={app.customerProfile} />
+                  )}
+                  {hasField("marketSize") && (
+                    <ReadOnlyField label="Total Addressable Market Size" value={app.marketSize} />
+                  )}
+                  {hasField("scalePlan") && (
+                    <ReadOnlyField label="Scale-Up Strategy" value={app.scalePlan} fullWidth />
+                  )}
+                  {hasField("revenueModel") && (
+                    <ReadOnlyField label="Revenue Model" value={app.revenueModel} />
+                  )}
+                  {hasField("competitors") && (
+                    <ReadOnlyField label="Key Competitors" value={app.competitors} />
+                  )}
+
+                  {/* Funding Info */}
+                  {hasField("fundingStatus") && (
+                    <ReadOnlyField label="Current Funding Status" value={app.fundingStatus} />
+                  )}
+                  {hasField("raisedFunding") && (
+                    <ReadOnlyField label="Has Raised Prior Funding?" value={app.raisedFunding} />
+                  )}
+                  {hasField("fundingAmount") && (
+                    <ReadOnlyField label="Current Funding Requirement" value={app.fundingAmount} />
+                  )}
+                  {hasField("fundingInstrument") && (
+                    <ReadOnlyField label="Preferred Funding Instrument" value={app.fundingInstrument} />
+                  )}
+                  {hasField("grantRequestAmount") && (
+                    <ReadOnlyField label="Requested Grant Amount" value={app.grantRequestAmount} />
+                  )}
+                  
+                  {/* Revenue Traction */}
+                  {hasField("revenueTractionNote") && (
+                    <ReadOnlyField label="Traction / Revenue Description" value={app.revenueTractionNote} fullWidth />
+                  )}
+
+                  {/* Global Impact Program Specifics */}
+                  {hasField("individualsImpacted") && (
+                    <ReadOnlyField label="Individuals Impacted to Date" value={app.individualsImpacted} />
+                  )}
+                  {hasField("estimatedReach") && (
+                    <ReadOnlyField label="Estimated Future Reach" value={app.estimatedReach} />
+                  )}
+                  {hasField("grantUsage") && (
+                    <ReadOnlyField label="Proposed Support/Grant Usage" value={app.grantUsage} fullWidth />
+                  )}
+                  {hasField("businessPlans") && (
+                    <ReadOnlyField label="Business Plans (Next 2 Years)" value={app.businessPlans} fullWidth />
+                  )}
+                  {hasField("awardsRecognition") && (
+                    <ReadOnlyField label="Accreditations & Awards" value={app.awardsRecognition} fullWidth />
+                  )}
+                </div>
+
+                {/* Financial Statement 1 & 2 (Global Impact) */}
+                {(financialOne || financialTwo) && (
+                  <div className="border-t border-slate-100 pt-6 space-y-4">
+                    <h4 className="text-xs font-black uppercase tracking-[0.2em] text-[#0B2A5B]">Historical Annual Financial Statements</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {financialOne && (
+                        <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-4 space-y-2">
+                          <h5 className="text-xs font-extrabold text-slate-800 uppercase tracking-wider">Statement 1 (FY Ending {financialOne.yearEnding || "—"})</h5>
+                          <p className="text-xs text-slate-500 font-semibold">Currency: {financialOne.currency || "—"}</p>
+                          <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100">
+                            <div>
+                              <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Total Revenue</p>
+                              <p className="text-xs font-bold text-slate-800">{financialOne.totalRevenue || "—"}</p>
+                            </div>
+                            <div>
+                              <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Operating Revenue</p>
+                              <p className="text-xs font-bold text-slate-800">{financialOne.operatingRevenue || "—"}</p>
+                            </div>
+                            <div className="col-span-2 pt-2">
+                              <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Net Profit / Loss</p>
+                              <p className="text-xs font-bold text-[#0B2A5B]">{financialOne.netProfit || "—"}</p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      {financialTwo && (
+                        <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-4 space-y-2">
+                          <h5 className="text-xs font-extrabold text-slate-800 uppercase tracking-wider">Statement 2 (FY Ending {financialTwo.yearEnding || "—"})</h5>
+                          <p className="text-xs text-slate-500 font-semibold">Currency: {financialTwo.currency || "—"}</p>
+                          <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100">
+                            <div>
+                              <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Total Revenue</p>
+                              <p className="text-xs font-bold text-slate-800">{financialTwo.totalRevenue || "—"}</p>
+                            </div>
+                            <div>
+                              <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Operating Revenue</p>
+                              <p className="text-xs font-bold text-slate-800">{financialTwo.operatingRevenue || "—"}</p>
+                            </div>
+                            <div className="col-span-2 pt-2">
+                              <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Net Profit / Loss</p>
+                              <p className="text-xs font-bold text-[#0B2A5B]">{financialTwo.netProfit || "—"}</p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* TAB: Files & Preferences */}
+            {activeTab === "files" && (
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-base font-black text-[#0B2A5B]">Preferences & Supporting Files</h3>
+                  <p className="text-xs text-slate-500 mt-1">Uploaded document files, presentation pitches, and incubator tags.</p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Website & Socials */}
+                  {hasField("websiteUrl") && (
+                    <ReadOnlyField label="Website URL" value={app.websiteUrl} />
+                  )}
+                  {hasField("website") && (
+                    <ReadOnlyField label="Business Website" value={app.website} />
+                  )}
+                  {hasField("linkedInUrl") && (
+                    <ReadOnlyField label="LinkedIn Profile" value={app.linkedInUrl} />
+                  )}
+                  {hasField("videoUrl") && (
+                    <ReadOnlyField label="Video Pitch Presentation Link" value={app.videoUrl} />
+                  )}
+
+                  {/* Incubator preferences */}
+                  {hasField("incubator1") && (
+                    <ReadOnlyField label="Incubator Preference #1" value={app.incubator1} />
+                  )}
+                  {hasField("incubator2") && (
+                    <ReadOnlyField label="Incubator Preference #2" value={app.incubator2} />
+                  )}
+                  {hasField("incubator3") && (
+                    <ReadOnlyField label="Incubator Preference #3" value={app.incubator3} />
+                  )}
+                </div>
+
+                {/* Uploaded Documents display */}
+                <div className="border-t border-slate-100 pt-6 space-y-4">
+                  <h4 className="text-xs font-black uppercase tracking-[0.2em] text-[#0B2A5B]">Attached Files</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Pitch deck */}
+                    <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-4 flex items-center gap-3.5 shadow-sm">
+                      <div className="h-10 w-10 rounded-xl bg-red-100 flex items-center justify-center text-red-600 shrink-0">
+                        <FileText className="h-5 w-5" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs font-black uppercase tracking-wider text-slate-400">Pitch Deck Presentation</p>
+                        <p className="text-xs font-bold text-slate-800 truncate mt-0.5">{app.pitchDeckName || "PitchDeck.pdf"}</p>
+                      </div>
+                    </div>
+
+                    {/* Additional documents */}
+                    {hasField("additionalDocumentsName") && (
+                      <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-4 flex items-center gap-3.5 shadow-sm">
+                        <div className="h-10 w-10 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 shrink-0">
+                          <FileCode className="h-5 w-5" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs font-black uppercase tracking-wider text-slate-400">Supporting Attachment</p>
+                          <p className="text-xs font-bold text-slate-800 truncate mt-0.5">{app.additionalDocumentsName}</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+          </div>
+        </div>
+
+        {/* Footer actions */}
+        <div className="border-t border-slate-100 bg-slate-50/50 px-6 py-4 flex justify-end gap-3 shrink-0">
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-xl bg-[#0B2A5B] px-6 py-3 text-xs font-black uppercase tracking-widest text-white transition hover:bg-[#102e68]"
+          >
+            Close view
+          </button>
+        </div>
+
       </div>
     </div>
   );

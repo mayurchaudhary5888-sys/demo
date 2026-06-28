@@ -26,6 +26,7 @@ import { AuthShell } from "../../components/auth/AuthShell";
 import { useAppState } from "../../context/AppContext";
 import { programCatalog } from "../../data/programCatalog";
 import { authApi } from "../../services/authApi";
+import { contentApi } from "../../services/contentApi";
 
 type RegistrationForm = {
   logoName: string;
@@ -192,6 +193,10 @@ export const Register: React.FC = () => {
 
   const handleLogoUpload = (file: File | null) => {
     if (!file) return;
+    if (file.size > 4 * 1024 * 1024) {
+      showToast("Logo image must be smaller than 4MB.", "error");
+      return;
+    }
 
     const reader = new FileReader();
     reader.onload = () => {
@@ -225,10 +230,27 @@ export const Register: React.FC = () => {
     try {
       const startupId = `startup-${Date.now()}`;
       const { password, confirmPassword, ...startupProfileFields } = form;
+      let uploadedLogoUrl = "";
+
+      if (logoPreview.startsWith("data:image/")) {
+        try {
+          const uploadedLogo = await contentApi.uploadLogo({
+            imageData: logoPreview,
+            filename: form.logoName,
+          });
+          uploadedLogoUrl = uploadedLogo.secureUrl;
+        } catch (uploadError) {
+          console.warn("Logo upload failed. Using local/fallback preview.", uploadError);
+          showToast("Logo upload skipped (Cloudinary is not configured). Continuing registration.", "warning");
+          uploadedLogoUrl = logoPreview;
+        }
+      }
+
       const payload = {
         ...startupProfileFields,
         id: startupId,
-        logoPreview,
+        logoPreview: uploadedLogoUrl,
+        logoUrl: uploadedLogoUrl,
         registeredAt: Date.now(),
       };
 

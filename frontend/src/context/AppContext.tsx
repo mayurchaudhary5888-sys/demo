@@ -98,25 +98,44 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     const hydrate = async () => {
       try {
-        const [remoteStartups, remotePrograms, remoteApplications, remoteQueries] = await Promise.all([
+        const [remoteStartups, remotePrograms] = await Promise.all([
           contentApi.getStartups(),
           contentApi.getPrograms(),
-          contentApi.getApplications(),
-          contentApi.getQueries(),
         ]);
 
         setStartups(remoteStartups.map((profile) => normalizeStartupProfile(profile as Record<string, unknown>)));
         setPrograms(remotePrograms);
-        setApplications(remoteApplications);
-        setQueries(remoteQueries);
       } catch {
         // Backend is the source of truth; remain empty if the API is unavailable.
+      }
+
+      if (!user) {
+        setApplications([]);
+        setQueries([]);
+        return;
+      }
+
+      try {
+        const remoteApplications = await contentApi.getApplications();
+        setApplications(remoteApplications);
+      } catch {
+        setApplications([]);
+      }
+
+      if (user.role === "admin") {
+        try {
+          const remoteQueries = await contentApi.getQueries();
+          setQueries(remoteQueries);
+        } catch {
+          setQueries([]);
+        }
+      } else {
+        setQueries([]);
       }
     };
 
     hydrate();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [user]);
 
   // ── Toast helpers ──
   const showToast = useCallback((message: string, type: Toast["type"] = "info") => {
@@ -271,8 +290,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           selectedProgram: user?.selectedProgram || data.selectedProgram || data.programId,
           submittedByEmail: user?.email || data.submittedByEmail,
           submittedByName: user?.name || data.submittedByName,
-          problemStatement: data.problemStatement,
-          solutionDescription: data.solutionDescription,
+          problemStatement: data.problemStatement || data.focusArea || "Not specified",
+          solutionDescription:
+            data.solutionDescription ||
+            data.valueProposition ||
+            data.startupDescription ||
+            data.businessPitch ||
+            data.impactApproach ||
+            "Not specified",
           currentStage: data.currentStage,
           teamSize: data.teamSize,
           fundingStatus: data.fundingStatus,
