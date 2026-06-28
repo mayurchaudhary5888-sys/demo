@@ -189,7 +189,6 @@ export const Home: React.FC = () => {
       
       {/* 1. HERO SECTION INSPIRED BY THE BHASKAR OPENING ANIMATION */}
       <section ref={heroRootRef} className="relative min-h-[calc(100vh-8rem)] overflow-hidden bg-white rounded-br-[120px] lg:rounded-br-[220px] border-b border-slate-100" id="home-animated-hero">
-        <div className="absolute inset-0 opacity-[0.35] bg-[linear-gradient(90deg,rgba(11,42,91,0.035)_1px,transparent_1px)] bg-[length:56px_56px]" />
         <div className="absolute bottom-0 right-0 h-[38%] w-[70%] rounded-tl-full bg-slate-50" />
         <div className="absolute inset-0 overflow-hidden">
           <div className="gsap-hero-glow gsap-hero-glow-left absolute -left-24 top-1/2 h-[42rem] w-[42rem] -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(255,107,0,0.24)_0%,rgba(255,107,0,0.08)_24%,rgba(255,255,255,0)_72%)] blur-3xl" />
@@ -233,7 +232,6 @@ export const Home: React.FC = () => {
 
         <div className="gsap-hero-frame gsap-hero-frame-3 absolute inset-0 z-10">
           <div className="gsap-orange-panel absolute inset-x-0 top-[14%] h-[56%] overflow-hidden rounded-br-[64px] bg-[#FF6B00]">
-            <div className="absolute inset-0 opacity-20 bg-[linear-gradient(90deg,rgba(255,255,255,0.18)_1px,transparent_1px)] bg-[length:42px_42px]" />
             <h2 className="gsap-orange-text absolute inset-0 flex items-center justify-center px-8 text-center text-2xl sm:text-4xl lg:text-5xl font-medium tracking-normal text-white">
               community for <span className="mx-2 font-black">every stakeholder</span> of the ecosystem
             </h2>
@@ -258,7 +256,6 @@ export const Home: React.FC = () => {
 
         <div className="gsap-hero-frame gsap-hero-frame-5 absolute inset-0 z-10">
           <div className="gsap-final-panel absolute inset-x-0 top-0 h-[82%] overflow-hidden rounded-br-[120px] bg-[#07144A]">
-            <div className="absolute inset-0 opacity-[0.18] bg-[linear-gradient(90deg,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[length:48px_48px]" />
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-10 px-6 text-center">
               <h2 className="gsap-final-copy text-4xl sm:text-5xl lg:text-6xl font-medium tracking-normal text-white">
                 Innovate. Connect. Thrive.

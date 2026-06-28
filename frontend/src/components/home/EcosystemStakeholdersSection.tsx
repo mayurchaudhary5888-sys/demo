@@ -163,14 +163,10 @@ export const EcosystemStakeholdersSection: React.FC = () => {
   return (
     <section
       ref={sectionRef}
-      className="relative overflow-hidden bg-[#07144A] px-4 py-20 text-white sm:px-6 lg:px-8 lg:py-28"
-      style={{
-        borderRadius: "120px 0px 0px 0px",
-      }}
+      className="relative overflow-hidden rounded-t-[72px] bg-[#07144A] px-4 py-20 text-white sm:px-6 lg:rounded-t-[120px] lg:px-8 lg:py-28"
       id="ecosystem-stakeholders-section"
     >
       {/* Visual background elements */}
-      <div className="absolute inset-0 opacity-[0.05] bg-[linear-gradient(90deg,rgba(255,255,255,1)_1px,transparent_1px)] bg-[length:54px_54px] pointer-events-none" />
       <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-white/5 to-transparent pointer-events-none" />
       <div className="stakeholder-accent absolute right-[-10%] top-[-8%] h-[30rem] w-[30rem] rounded-full bg-[radial-gradient(circle,rgba(255,107,0,0.16)_0%,rgba(255,255,255,0)_72%)] blur-3xl pointer-events-none" />
       <div className="stakeholder-accent absolute left-[-14%] bottom-[-12%] h-[42rem] w-[42rem] rounded-full bg-[radial-gradient(circle,rgba(249,178,51,0.08)_0%,rgba(255,255,255,0)_72%)] blur-3xl pointer-events-none" />
