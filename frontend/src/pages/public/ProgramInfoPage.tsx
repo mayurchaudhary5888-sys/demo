@@ -11,11 +11,18 @@ const requestLogin = () => {
 export const ProgramInfoPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const program = getCatalogProgram(slug);
-  const { user, showToast } = useAppState();
+  const { user, showToast, startups } = useAppState();
   const navigate = useNavigate();
+
+  const myStartup = user?.startupId ? startups.find((s) => s.id === user.startupId) : null;
+  const userProgramId = myStartup?.selectedProgram || user?.selectedProgram;
 
   if (!program) {
     return <Navigate to="/support" replace />;
+  }
+
+  if (user && user.role === "founder" && userProgramId && program.id !== userProgramId && program.slug !== userProgramId) {
+    return <Navigate to={`/support/${userProgramId}`} replace />;
   }
 
   const Icon = program.icon;

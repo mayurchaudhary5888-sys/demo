@@ -185,7 +185,7 @@ export const ApplicationDetailsModal: React.FC<ApplicationDetailsModalProps> = (
             </SectionCard>
           </div>
 
-          <div className="mt-4 grid gap-4 lg:grid-cols-2">
+          <div className="mt-4">
             <SectionCard title="Core Form Fields">
               <div className="space-y-3">
                 {CORE_KEYS.map((key) => {
@@ -201,26 +201,6 @@ export const ApplicationDetailsModal: React.FC<ApplicationDetailsModalProps> = (
                   );
                 })}
               </div>
-            </SectionCard>
-
-            <SectionCard title="Additional Submitted Details">
-              {detailEntries.length ? (
-                <div className="space-y-3">
-                  {detailEntries.map(([key, value]) => (
-                    <div key={key} className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-                      <p className="text-[10px] font-black uppercase tracking-[0.22em] text-slate-500">{formatLabel(key)}</p>
-                      <div className="mt-1 text-sm font-medium text-slate-700">
-                        <ValueRenderer value={value} />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-4 text-sm font-semibold text-emerald-800">
-                  <CheckCircle2 className="h-5 w-5 shrink-0" />
-                  No extra fields were stored for this application.
-                </div>
-              )}
             </SectionCard>
           </div>
 

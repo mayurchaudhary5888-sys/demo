@@ -63,7 +63,7 @@ interface AppContextValue {
 
   // Application actions
   applyToProgram: (data: any) => Promise<Application>;
-  updateApplicationStatus: (appId: string, status: ApplicationStatus, remarks?: string) => void;
+  updateApplicationStatus: (appId: string, status: ApplicationStatus, remarks?: string) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextValue | undefined>(undefined);
@@ -292,32 +292,37 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   );
 
   const updateApplicationStatus = useCallback(
-    (appId: string, status: ApplicationStatus, remarks?: string) => {
-      setApplications((prev) =>
-        prev.map((app) => {
-          if (app.id === appId) {
-            const updatedTimeline = [
-              {
+    async (appId: string, status: ApplicationStatus, remarks?: string) => {
+      try {
+        await contentApi.updateApplicationStatus(appId, { status, remarks });
+        setApplications((prev) =>
+          prev.map((app) => {
+            if (app.id === appId) {
+              const updatedTimeline = [
+                {
+                  status,
+                  timestamp: new Date().toLocaleString(),
+                  remarks: remarks || `Status updated to ${status}.`,
+                },
+                ...app.timeline,
+              ];
+              return {
+                ...app,
                 status,
-                timestamp: new Date().toLocaleString(),
-                remarks: remarks || `Status updated to ${status}.`,
-              },
-              ...app.timeline,
-            ];
-            return {
-              ...app,
-              status,
-              lastUpdated: new Date().toISOString().split("T")[0],
-              adminRemarks: remarks || app.adminRemarks,
-              timeline: updatedTimeline,
-            };
-          }
-          return app;
-        })
-      );
-      contentApi.updateApplicationStatus(appId, { status, remarks }).catch(() => {});
+                lastUpdated: new Date().toISOString().split("T")[0],
+                adminRemarks: remarks || app.adminRemarks,
+                timeline: updatedTimeline,
+              };
+            }
+            return app;
+          })
+        );
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Failed to update application status.";
+        showToast(message, "error");
+      }
     },
-    []
+    [showToast]
   );
 
   const value: AppContextValue = {
