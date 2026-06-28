@@ -39,7 +39,6 @@ const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard").then((m
 const AdminUserManagement = lazy(() => import("./pages/admin/AdminUserManagement").then((mod) => ({ default: mod.AdminUserManagement })));
 const AdminStartupManagement = lazy(() => import("./pages/admin/AdminStartupManagement").then((mod) => ({ default: mod.AdminStartupManagement })));
 const AdminApplicationManagement = lazy(() => import("./pages/admin/AdminApplicationManagement").then((mod) => ({ default: mod.AdminApplicationManagement })));
-const AdminProgramManagement = lazy(() => import("./pages/admin/AdminProgramManagement").then((mod) => ({ default: mod.AdminProgramManagement })));
 
 // Inner Layout wrappers
 const DashboardLayout = lazy(() => import("./components/layout/DashboardLayout").then((mod) => ({ default: mod.DashboardLayout })));
@@ -156,7 +155,6 @@ const AppContent: React.FC = () => {
               <Route path="users" element={<AdminUserManagement />} />
               <Route path="startups" element={<AdminStartupManagement />} />
               <Route path="applications" element={<AdminApplicationManagement />} />
-              <Route path="programs" element={<AdminProgramManagement />} />
             </Route>
 
             {/* Fallback route */}

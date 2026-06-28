@@ -9,8 +9,15 @@ const requestLogin = () => {
 };
 
 export const ProgramsListing: React.FC = () => {
-  const { user, showToast } = useAppState();
+  const { user, showToast, startups } = useAppState();
   const navigate = useNavigate();
+
+  const myStartup = user?.startupId ? startups.find((s) => s.id === user.startupId) : null;
+  const userProgramId = myStartup?.selectedProgram || user?.selectedProgram;
+
+  const displayedPrograms = (user && user.role === "founder" && userProgramId)
+    ? programCatalog.filter((p) => p.id === userProgramId || p.slug === userProgramId)
+    : programCatalog;
 
   const handleApply = (programSlug: string) => {
     if (!user) {
@@ -46,7 +53,7 @@ export const ProgramsListing: React.FC = () => {
       </section>
 
       <section className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-6" id="programs-listing-grid">
-        {programCatalog.map((program) => {
+        {displayedPrograms.map((program) => {
           const Icon = program.icon;
 
           return (

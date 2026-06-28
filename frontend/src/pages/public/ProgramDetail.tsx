@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from "react";
-import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
+import { useParams, Link, useNavigate, useLocation, Navigate } from "react-router-dom";
 import { 
   Award, ArrowLeft, CheckCircle, FileText, UploadCloud, CheckCircle2, ShieldAlert, 
   HelpCircle, Sparkles, UserCheck, CalendarDays, Workflow, BookOpen, Cpu, Globe, TrendingUp
@@ -53,6 +53,14 @@ export const ProgramDetail: React.FC = () => {
 
   const prog = programs.find((p) => p.id === id) || getCatalogProgram(id);
   const userStartup = startups.find((s) => s.id === user?.startupId);
+  const userProgramId = userStartup?.selectedProgram || user?.selectedProgram;
+
+  if (user && user.role === "founder" && userProgramId && prog && prog.id !== userProgramId && (prog as any).slug !== userProgramId) {
+    const targetPath = location.pathname.endsWith("/apply") 
+      ? `/support/${userProgramId}/apply` 
+      : `/support/${userProgramId}`;
+    return <Navigate to={targetPath} replace />;
+  }
 
   useEffect(() => {
     // Reset states if program changes
