@@ -27,21 +27,19 @@ export const AuthShell: React.FC<AuthShellProps> = ({
 }) => {
   return (
     <div
-      className="relative min-h-[calc(100vh-7rem)] overflow-hidden bg-[#07184A] px-4 py-10 text-slate-900 sm:px-6 lg:px-8"
+      className="relative min-h-[calc(100vh-7rem)] overflow-hidden bg-[#F8FAFC] px-4 py-8 text-slate-900 sm:px-6 lg:px-8"
       id="auth-shell"
     >
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 bg-[linear-gradient(135deg,_rgba(7,24,74,0.98),_rgba(11,42,91,0.96)_48%,_rgba(13,31,71,0.98))]" />
-        <div className="absolute -left-32 top-10 h-72 w-72 rounded-full bg-[#FF6B00]/30 blur-3xl" />
-        <div className="absolute right-0 top-0 h-96 w-96 rounded-full bg-[#F9B233]/20 blur-3xl" />
-        <div className="absolute bottom-0 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-white/10 blur-3xl" />
-        <div className="absolute inset-0 opacity-[0.08] bg-[linear-gradient(90deg,_rgba(255,255,255,0.12)_1px,_transparent_1px),linear-gradient(0deg,_rgba(255,255,255,0.12)_1px,_transparent_1px)] bg-[size:56px_56px]" />
+        <div className="absolute inset-x-0 top-0 h-72 bg-[#07184A]" />
+        <div className="absolute right-[-8rem] top-[-8rem] h-96 w-96 rounded-full bg-[#FF6B00]/18 blur-3xl" />
+        <div className="absolute left-[-10rem] top-20 h-80 w-80 rounded-full bg-[#07184A]/8 blur-3xl" />
       </div>
 
       <div
-        className={`relative mx-auto ${maxWidthClassName} rounded-[2rem] border border-white/45 bg-white/95 shadow-[0_30px_100px_rgba(0,0,0,0.32)] backdrop-blur-xl`}
+        className={`relative mx-auto ${maxWidthClassName} overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_28px_90px_rgba(7,20,74,0.14)]`}
       >
-        <div className="h-2 rounded-t-[2rem] bg-gradient-to-r from-[#FF6B00] via-[#F9B233] to-[#0B2A5B]" />
+        <div className="h-1.5 bg-[#FF6B00]" />
 
         <div className="px-5 py-6 sm:px-8 sm:py-8 lg:px-10">
           <div className="mb-8 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
