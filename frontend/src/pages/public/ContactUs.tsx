@@ -62,7 +62,7 @@ export const ContactUs: React.FC = () => {
     if (formFields.state) {
       const list = CITIES_BY_STATE[formFields.state] || ["Regional Block", "Capital City"];
       setCities(list);
-      setFormFields((f) => ({ ...f, city: list[0] }));
+      setFormFields((f) => ({ ...f, city: "" }));
     } else {
       setCities([]);
       setFormFields((f) => ({ ...f, city: "" }));
@@ -118,12 +118,13 @@ export const ContactUs: React.FC = () => {
       badge="dpiit helpdesk"
       title="Contact & Query Facilitation"
       description="Reach the official nodal desk for seed fund questions, startup registration support, incubator coordination, and other program queries."
-      maxWidthClassName="max-w-7xl"
+      maxWidthClassName="max-w-[88rem]"
       showFooterNote={false}
+      decorated={false}
       aside={
         <div className="grid gap-3 sm:grid-cols-3">
-          <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-[#0B2A5B] shadow-sm">
+          <div className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-md bg-white text-[#0B2A5B]">
               <Phone className="h-5 w-5" />
             </div>
             <div>
@@ -131,8 +132,8 @@ export const ContactUs: React.FC = () => {
               <div className="text-sm font-black text-slate-800">1800-115-565</div>
             </div>
           </div>
-          <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-[#0B2A5B] shadow-sm">
+          <div className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-md bg-white text-[#0B2A5B]">
               <Mail className="h-5 w-5" />
             </div>
             <div>
@@ -140,8 +141,8 @@ export const ContactUs: React.FC = () => {
               <div className="text-sm font-black text-slate-800">nodal-desk.bhaskar@nic.in</div>
             </div>
           </div>
-          <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-[#0B2A5B] shadow-sm">
+          <div className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-md bg-white text-[#0B2A5B]">
               <Landmark className="h-5 w-5" />
             </div>
             <div>
@@ -152,26 +153,26 @@ export const ContactUs: React.FC = () => {
         </div>
       }
     >
-      <div className="grid gap-8 lg:grid-cols-12">
-        <div className="lg:col-span-8 space-y-6">
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:p-5">
+      <div className="grid gap-6 lg:grid-cols-12">
+        <div className="space-y-5 lg:col-span-8">
+          <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 sm:p-5">
             <div className="grid gap-3 sm:grid-cols-3">
-              <div className="flex items-center gap-3 rounded-xl bg-white p-3 shadow-sm">
-                <ShieldCheck className="h-5 w-5 text-[#0B2A5B]" />
+              <div className="flex items-center gap-3 rounded-md border border-slate-200 bg-white p-3">
+                <ShieldCheck className="h-5 w-5 text-[#FF6B00]" />
                 <div>
                   <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Support Type</div>
                   <div className="text-sm font-black text-slate-800">Official helpdesk</div>
                 </div>
               </div>
-              <div className="flex items-center gap-3 rounded-xl bg-white p-3 shadow-sm">
-                <Clock className="h-5 w-5 text-[#0B2A5B]" />
+              <div className="flex items-center gap-3 rounded-md border border-slate-200 bg-white p-3">
+                <Clock className="h-5 w-5 text-[#FF6B00]" />
                 <div>
                   <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Hours</div>
                   <div className="text-sm font-black text-slate-800">Mon-Sat, 10 AM - 6 PM</div>
                 </div>
               </div>
-              <div className="flex items-center gap-3 rounded-xl bg-white p-3 shadow-sm">
-                <MapPin className="h-5 w-5 text-[#0B2A5B]" />
+              <div className="flex items-center gap-3 rounded-md border border-slate-200 bg-white p-3">
+                <MapPin className="h-5 w-5 text-[#FF6B00]" />
                 <div>
                   <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Coverage</div>
                   <div className="text-sm font-black text-slate-800">PAN India</div>
@@ -182,10 +183,9 @@ export const ContactUs: React.FC = () => {
 
           {!ticketDetails ? (
             <form onSubmit={handleFormSubmit} className="space-y-5" id="query-intake-form">
-              <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-5">
+              <div className="space-y-5 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
                 <div className="border-b border-slate-100 pb-3">
                   <h3 className="text-sm font-black uppercase tracking-wider text-[#0B2A5B]">Query intake form</h3>
-                  <p className="mt-1 text-[11px] text-slate-500">Use the same premium profile style as login and registration.</p>
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2">
@@ -194,9 +194,9 @@ export const ContactUs: React.FC = () => {
                     <select
                       value={formFields.entityType}
                       onChange={(e) => updateField("entityType", e.target.value)}
-                      className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition focus:border-[#0B2A5B]"
+                      className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition focus:border-[#FF6B00]"
                     >
-                      <option value="">Individual Inventor</option>
+                      <option value="">Select entity type</option>
                       <option value="DPIIT Recognized Startup">DPIIT Recognized Startup</option>
                       <option value="Registered Incubator partner">Registered Incubator partner</option>
                       <option value="Institutional Investor Syndicate">Institutional Investor</option>
@@ -212,7 +212,7 @@ export const ContactUs: React.FC = () => {
                         value={formFields.entityName}
                         onChange={(e) => updateField("entityName", e.target.value)}
                         placeholder="e.g. KisanBot Agrotech"
-                        className={`w-full rounded-xl border py-3 pl-11 pr-4 text-sm font-semibold text-slate-800 outline-none transition focus:border-[#0B2A5B] ${
+                        className={`w-full rounded-lg border py-3 pl-11 pr-4 text-sm font-semibold text-slate-800 outline-none transition focus:border-[#FF6B00] ${
                           formErrors.entityName ? "border-red-400 bg-red-50" : "border-slate-300 bg-white"
                         }`}
                       />
@@ -227,7 +227,7 @@ export const ContactUs: React.FC = () => {
                       value={formFields.name}
                       onChange={(e) => updateField("name", e.target.value)}
                       placeholder="e.g. Bhaskar Sharma"
-                      className={`w-full rounded-xl border px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition focus:border-[#0B2A5B] ${
+                      className={`w-full rounded-lg border px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition focus:border-[#FF6B00] ${
                         formErrors.name ? "border-red-400 bg-red-50" : "border-slate-300 bg-white"
                       }`}
                     />
@@ -243,7 +243,7 @@ export const ContactUs: React.FC = () => {
                         value={formFields.email}
                         onChange={(e) => updateField("email", e.target.value)}
                         placeholder="e.g. bhaskar@kisanbot.in"
-                        className={`w-full rounded-xl border py-3 pl-11 pr-4 text-sm font-semibold text-slate-800 outline-none transition focus:border-[#0B2A5B] ${
+                        className={`w-full rounded-lg border py-3 pl-11 pr-4 text-sm font-semibold text-slate-800 outline-none transition focus:border-[#FF6B00] ${
                           formErrors.email ? "border-red-400 bg-red-50" : "border-slate-300 bg-white"
                         }`}
                       />
@@ -258,7 +258,7 @@ export const ContactUs: React.FC = () => {
                       <select
                         value={formFields.state}
                         onChange={(e) => updateField("state", e.target.value)}
-                        className={`w-full appearance-none rounded-xl border bg-white py-3 pl-11 pr-10 text-sm font-semibold text-slate-800 outline-none transition focus:border-[#0B2A5B] ${
+                        className={`w-full appearance-none rounded-lg border bg-white py-3 pl-11 pr-10 text-sm font-semibold text-slate-800 outline-none transition focus:border-[#FF6B00] ${
                           formErrors.state ? "border-red-400 bg-red-50" : "border-slate-300"
                         }`}
                       >
@@ -281,7 +281,7 @@ export const ContactUs: React.FC = () => {
                         value={formFields.city}
                         onChange={(e) => updateField("city", e.target.value)}
                         disabled={!formFields.state}
-                        className="w-full appearance-none rounded-xl border border-slate-300 bg-white py-3 pl-11 pr-10 text-sm font-semibold text-slate-800 outline-none transition disabled:cursor-not-allowed disabled:bg-slate-100 focus:border-[#0B2A5B]"
+                        className="w-full appearance-none rounded-lg border border-slate-300 bg-white py-3 pl-11 pr-10 text-sm font-semibold text-slate-800 outline-none transition disabled:cursor-not-allowed disabled:bg-slate-100 focus:border-[#FF6B00]"
                       >
                         <option value="">Select City...</option>
                         {cities.map((city) => (
@@ -299,7 +299,7 @@ export const ContactUs: React.FC = () => {
                     <select
                       value={formFields.queryType}
                       onChange={(e) => updateField("queryType", e.target.value)}
-                      className={`w-full rounded-xl border bg-white px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition focus:border-[#0B2A5B] ${
+                      className={`w-full rounded-lg border bg-white px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition focus:border-[#FF6B00] ${
                         formErrors.queryType ? "border-red-400 bg-red-50" : "border-slate-300"
                       }`}
                     >
@@ -322,7 +322,7 @@ export const ContactUs: React.FC = () => {
                         onChange={(e) => updateField("message", e.target.value)}
                         placeholder="Describe your query in a few lines."
                         rows={5}
-                        className={`w-full rounded-2xl border py-3 pl-11 pr-4 text-sm font-semibold text-slate-800 outline-none transition focus:border-[#0B2A5B] ${
+                        className={`w-full rounded-lg border py-3 pl-11 pr-4 text-sm font-semibold text-slate-800 outline-none transition focus:border-[#FF6B00] ${
                           formErrors.message ? "border-red-400 bg-red-50" : "border-slate-300 bg-white"
                         }`}
                       />
@@ -337,7 +337,7 @@ export const ContactUs: React.FC = () => {
                   </p>
                   <button
                     type="submit"
-                    className="inline-flex items-center gap-2 rounded-full bg-[#0B2A5B] px-6 py-3 text-xs font-black uppercase tracking-widest text-white transition hover:bg-[#082045]"
+                    className="inline-flex items-center gap-2 rounded-md bg-[#FF6B00] px-6 py-3 text-xs font-black uppercase tracking-widest text-white transition hover:bg-[#e65f00]"
                   >
                     Submit Query
                     <ArrowRight className="h-4 w-4" />
@@ -346,9 +346,9 @@ export const ContactUs: React.FC = () => {
               </div>
             </form>
           ) : (
-            <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-6 shadow-sm">
+            <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-6 shadow-sm">
               <div className="flex items-start gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-emerald-600 shadow-sm">
+                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-white text-emerald-600 shadow-sm">
                   <CheckCircle className="h-6 w-6" />
                 </div>
                 <div className="space-y-2">
@@ -372,8 +372,8 @@ export const ContactUs: React.FC = () => {
           )}
         </div>
 
-        <div className="lg:col-span-4 space-y-4">
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="space-y-4 lg:col-span-4">
+          <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
             <div className="border-b border-slate-100 pb-3">
               <h3 className="text-sm font-black uppercase tracking-wider text-[#0B2A5B]">Helpdesk</h3>
             </div>
@@ -402,7 +402,7 @@ export const ContactUs: React.FC = () => {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 shadow-sm">
+          <div className="rounded-lg border border-slate-200 bg-slate-50 p-5 shadow-sm">
             <h3 className="text-sm font-black uppercase tracking-wider text-[#0B2A5B]">What to include</h3>
             <ul className="mt-4 space-y-3 text-sm text-slate-600">
               <li className="flex gap-3">
