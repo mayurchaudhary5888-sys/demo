@@ -1,4 +1,5 @@
 import nodemailer from "nodemailer";
+import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { env } from "../config/env.js";
@@ -7,6 +8,15 @@ import { AppError } from "./errors.js";
 let cachedTransporter;
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const bhaskarLogoPath = path.resolve(__dirname, "../../../frontend/public/logos/bhaskar.jpeg");
+let logoExists = false;
+
+try {
+  if (fs.existsSync(bhaskarLogoPath)) {
+    logoExists = true;
+  }
+} catch (err) {
+  logoExists = false;
+}
 
 const hasSmtpConfig = () => Boolean(env.smtpHost && env.smtpUser && env.smtpPass);
 
@@ -38,11 +48,73 @@ const escapeHtml = (value = "") =>
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
 
+/* ── Shared email wrapper ── */
+const emailWrapper = (innerContent) => `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BHASKAR</title>
+</head>
+<body style="margin:0;padding:0;background:#1a1a1d;font-family:'Segoe UI',Arial,Helvetica,sans-serif;color:#ffffff;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#1a1a1d;">
+    <tr>
+      <td align="center" style="padding:36px 16px 48px;">
+        <table role="presentation" width="520" cellspacing="0" cellpadding="0" style="max-width:520px;width:100%;">
+
+          <!-- Logo Section -->
+          <tr>
+            <td align="center" style="padding-bottom:28px;">
+              ${
+                logoExists
+                  ? `
+                    <div style="display:inline-block;background:#ffffff;border-radius:12px;padding:10px 16px;">
+                      <img src="cid:bhaskarlogo" alt="BHASKAR - Bharat Startup Knowledge Access Registry" width="220" style="display:block;width:220px;max-width:100%;height:auto;" />
+                    </div>`
+                  : `
+                  <div style="display:inline-block;background:#ffffff;border-radius:12px;padding:14px 24px;">
+                    <span style="font-size:26px;font-weight:900;color:#0B2A5B;letter-spacing:0.06em;">BHASKAR</span>
+                  </div>`
+              }
+            </td>
+          </tr>
+
+          <!-- Content Card -->
+          <tr>
+            <td>
+              <div style="background:#242529;border-radius:18px;padding:36px 28px 40px;box-shadow:0 20px 50px rgba(0,0,0,0.35);">
+                ${innerContent}
+              </div>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td align="center" style="padding-top:24px;">
+              <p style="margin:0;font-size:12px;color:#6b7280;line-height:1.6;">
+                © ${new Date().getFullYear()} BHASKAR — Bharat Startup Knowledge Access Registry
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+`;
+
+/* ─────────────────────────────────────────────
+   OTP Email
+   ───────────────────────────────────────────── */
 export const sendOtpEmail = async ({ to, otp, name }) => {
   const subject = "Your BHASKAR verification code";
   const displayName = escapeHtml(name || "there");
   const otpDigits = String(otp).split("");
   const otpExpirySeconds = env.otpTtlMinutes * 60;
+
   const text = [
     `Hello ${name || "there"},`,
     "",
@@ -50,52 +122,63 @@ export const sendOtpEmail = async ({ to, otp, name }) => {
     `It expires in ${otpExpirySeconds} seconds.`,
     "",
     "If you did not request this code, you can safely ignore this message.",
+    "",
+    "Contact: nodal-desk.bhaskar@nic.in",
   ].join("\n");
 
-  const html = `
-    <div style="margin:0;padding:0;background:#252728;font-family:Arial,Helvetica,sans-serif;color:#ffffff;">
-      <div style="max-width:520px;margin:0 auto;padding:28px 18px 36px;">
-        <div style="text-align:center;margin-bottom:22px;">
-          <img src="cid:bhaskar-logo" alt="BHASKAR" style="display:inline-block;width:190px;max-width:72%;height:auto;border-radius:8px;background:#ffffff;padding:6px;" />
-        </div>
+  const otpDigitsHtml = otpDigits
+    .map(
+      (digit) =>
+        `<td align="center" width="44" style="width:44px;height:52px;font-size:30px;font-weight:800;color:#5B9BFF;letter-spacing:0;font-family:'Courier New',Courier,monospace;">${escapeHtml(digit)}</td>`
+    )
+    .join(`<td width="8" style="width:8px;"></td>`);
 
-        <div style="background:#1f2024;border-radius:14px;padding:26px 22px 30px;text-align:center;box-shadow:0 18px 42px rgba(0,0,0,0.26);">
-          <h1 style="margin:0 0 22px;font-size:18px;line-height:1.35;font-weight:800;color:#ffffff;">
-            Hi ${displayName},
-          </h1>
+  const innerHtml = `
+    <!-- Greeting -->
+    <h1 style="margin:0 0 20px;font-size:22px;line-height:1.35;font-weight:800;color:#ffffff;text-align:center;">
+      Hi ${displayName},
+    </h1>
 
-          <p style="margin:0 0 14px;font-size:14px;line-height:1.6;color:#f4f4f5;">
-            Complete your registration using the below OTP
-          </p>
+    <p style="margin:0 0 24px;font-size:15px;line-height:1.65;color:#d1d5db;text-align:center;">
+      Complete your registration using the below OTP
+    </p>
 
-          <p style="margin:0 0 14px;font-size:18px;line-height:1.4;color:#ffffff;">
-            One Time Passcode :
-          </p>
+    <!-- OTP Label -->
+    <p style="margin:0 0 16px;font-size:16px;line-height:1.4;font-weight:700;color:#ffffff;text-align:center;">
+      One Time Passcode :
+    </p>
 
-          <div style="margin:0 auto 14px;text-align:center;font-size:0;">
-            ${otpDigits
-              .map(
-                (digit) =>
-                  `<span style="display:inline-block;margin:0 9px;font-size:28px;line-height:1;font-weight:800;letter-spacing:0;color:#76A7FF;">${escapeHtml(digit)}</span>`
-              )
-              .join("")}
-          </div>
+    <!-- OTP Digits -->
+    <table role="presentation" cellspacing="0" cellpadding="0" align="center" style="margin:0 auto 18px;">
+      <tr>
+        ${otpDigitsHtml}
+      </tr>
+    </table>
 
-          <p style="margin:0 0 30px;font-size:14px;line-height:1.6;color:#e5e7eb;">
-            OTP will expire in <strong style="color:#ffffff;">${otpExpirySeconds} seconds</strong>
-          </p>
+    <!-- Expiry -->
+    <p style="margin:0 0 32px;font-size:14px;line-height:1.6;color:#9ca3af;text-align:center;">
+      OTP will expire in <strong style="color:#ffffff;">${otpExpirySeconds} seconds</strong>
+    </p>
 
-          <p style="margin:0 auto 24px;max-width:330px;font-family:Georgia,'Times New Roman',serif;font-size:15px;line-height:1.45;color:#f1f5f9;">
-            Please feel free to contact us in case of any queries or if you didn't request this, you can ignore this or let us know
-          </p>
+    <!-- Divider -->
+    <div style="border-top:1px solid #3c3f46;margin:0 auto 28px;max-width:360px;"></div>
 
-          <a href="mailto:nodal-desk.bhaskar@nic.in" style="color:#ff756a;text-decoration:none;font-size:16px;font-weight:700;">
-            nodal-desk.bhaskar@nic.in
-          </a>
-        </div>
-      </div>
-    </div>
+    <!-- Contact Note -->
+    <p style="margin:0 auto 20px;max-width:340px;font-family:Georgia,'Times New Roman',serif;font-size:14px;line-height:1.55;color:#e2e8f0;text-align:center;font-style:italic;">
+      Please feel free to contact us in case of any queries
+      or if you didn't request this, you can ignore this or
+      let us know
+    </p>
+
+    <!-- Contact Link -->
+    <p style="text-align:center;margin:0;">
+      <a href="mailto:nodal-desk.bhaskar@nic.in" style="color:#FF6B6B;text-decoration:none;font-size:15px;font-weight:700;">
+        nodal-desk.bhaskar@nic.in
+      </a>
+    </p>
   `;
+
+  const html = emailWrapper(innerHtml);
 
   const transporter = getTransporter();
 
@@ -111,24 +194,30 @@ export const sendOtpEmail = async ({ to, otp, name }) => {
     return { delivered: false, fallback: true };
   }
 
+  const attachments = [];
+  if (logoExists) {
+    attachments.push({
+      filename: "bhaskar.jpeg",
+      path: bhaskarLogoPath,
+      cid: "bhaskarlogo",
+    });
+  }
+
   await transporter.sendMail({
     from: env.smtpFrom,
     to,
     subject,
     text,
     html,
-    attachments: [
-      {
-        filename: "bhaskar.jpeg",
-        path: bhaskarLogoPath,
-        cid: "bhaskar-logo",
-      },
-    ],
+    attachments,
   });
 
   return { delivered: true };
 };
 
+/* ─────────────────────────────────────────────
+   Application Status / Document Request Email
+   ───────────────────────────────────────────── */
 const extractDocumentList = (value = "") =>
   String(value)
     .split(/[\n,•;-]+/)
@@ -163,51 +252,99 @@ export const sendApplicationStatusEmail = async ({
     requestedDocs.length ? `Requested documents: ${requestedDocs.join(", ")}` : "",
     "",
     "Please reply to this email with the listed documents attached.",
+    "",
+    "Contact: nodal-desk.bhaskar@nic.in",
   ]
     .filter(Boolean)
     .join("\n");
 
-  const html = `
-    <div style="margin:0;padding:0;background:#f8fafc;font-family:Arial,Helvetica,sans-serif;color:#0f172a;">
-      <div style="max-width:640px;margin:0 auto;padding:28px 18px 36px;">
-        <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:18px;padding:28px 24px;box-shadow:0 12px 30px rgba(15,23,42,0.08);">
-          <p style="margin:0 0 10px;font-size:11px;font-weight:800;letter-spacing:0.24em;text-transform:uppercase;color:#f05a28;">
-            ${escapeHtml(title || "Application Update")}
-          </p>
-          <h1 style="margin:0 0 14px;font-size:24px;line-height:1.3;font-weight:900;color:#0b2a5b;">
-            ${escapeHtml(headline || "We have an update on your application")}
-          </h1>
-          <p style="margin:0 0 18px;font-size:14px;line-height:1.75;color:#334155;">
-            ${statusBody}
-          </p>
-          <div style="margin:0 0 20px;padding:14px 16px;border-radius:14px;background:#f8fafc;border:1px solid #e2e8f0;">
-            <p style="margin:0 0 6px;font-size:12px;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:0.18em;">Application</p>
-            <p style="margin:0;font-size:14px;font-weight:700;color:#0f172a;">${programName}</p>
-            ${appId ? `<p style="margin:6px 0 0;font-size:13px;color:#475569;font-family:monospace;">${appId}</p>` : ""}
-          </div>
-          ${
-            requestedDocs.length
-              ? `
-                <div style="margin:0 0 20px;padding:16px;border-radius:14px;background:#fff7ed;border:1px solid #fdba74;">
-                  <p style="margin:0 0 10px;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:0.18em;color:#c2410c;">
-                    ${escapeHtml(actionLabel || "Requested documents")}
-                  </p>
-                  <ul style="margin:0;padding-left:18px;color:#334155;font-size:14px;line-height:1.8;">
-                    ${requestedDocs.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}
-                  </ul>
+  const docsListHtml = requestedDocs.length
+    ? `
+      <!-- Document Request Card -->
+      <div style="margin:0 0 24px;padding:18px 20px;border-radius:14px;background:#2a2118;border:1px solid rgba(255,138,76,0.4);text-align:left;">
+        <p style="margin:0 0 12px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.22em;color:#FF9A62;">
+          ${escapeHtml(actionLabel || "Requested Documents")}
+        </p>
+        <table role="presentation" cellspacing="0" cellpadding="0" width="100%">
+          ${requestedDocs
+            .map(
+              (item, index) => `
+            <tr>
+              <td width="28" valign="top" style="padding:5px 0;">
+                <div style="width:22px;height:22px;border-radius:50%;background:#FF8A4C;color:#1a1a1d;font-size:11px;font-weight:800;text-align:center;line-height:22px;">
+                  ${index + 1}
                 </div>
-              `
-              : ""
-          }
-          <div style="padding:16px;border-radius:14px;background:#ecfdf5;border:1px solid #a7f3d0;">
-            <p style="margin:0;font-size:14px;line-height:1.75;color:#065f46;">
-              Reply to this email with the above documents attached. Our review team will continue processing after we receive them.
-            </p>
-          </div>
-        </div>
+              </td>
+              <td style="padding:5px 0;font-size:14px;line-height:1.6;color:#f4f4f5;font-weight:600;">
+                ${escapeHtml(item)}
+              </td>
+            </tr>`
+            )
+            .join("")}
+        </table>
       </div>
+    `
+    : "";
+
+  const innerHtml = `
+    <!-- Category Label -->
+    <p style="margin:0 0 14px;font-size:11px;line-height:1.4;font-weight:800;letter-spacing:0.22em;text-transform:uppercase;color:#FF6B6B;text-align:center;">
+      ${escapeHtml(title || "Application Update")}
+    </p>
+
+    <!-- Headline -->
+    <h1 style="margin:0 0 20px;font-size:22px;line-height:1.35;font-weight:800;color:#ffffff;text-align:center;">
+      ${escapeHtml(headline || "We have an update on your application")}
+    </h1>
+
+    <!-- Body Text -->
+    <p style="margin:0 auto 24px;max-width:420px;font-size:15px;line-height:1.65;color:#d1d5db;text-align:center;">
+      ${statusBody}
+    </p>
+
+    <!-- Application Info Card -->
+    <div style="margin:0 0 22px;padding:16px 20px;border-radius:14px;background:#2b2d32;border:1px solid #3c4047;text-align:left;">
+      <table role="presentation" cellspacing="0" cellpadding="0" width="100%">
+        <tr>
+          <td>
+            <p style="margin:0 0 6px;font-size:10px;font-weight:800;color:#9ca3af;text-transform:uppercase;letter-spacing:0.2em;">Program</p>
+            <p style="margin:0;font-size:15px;font-weight:800;color:#ffffff;">${programName}</p>
+          </td>
+        </tr>
+        ${appId ? `
+        <tr>
+          <td style="padding-top:10px;">
+            <p style="margin:0 0 4px;font-size:10px;font-weight:800;color:#9ca3af;text-transform:uppercase;letter-spacing:0.2em;">Application ID</p>
+            <p style="margin:0;font-size:14px;color:#d8dee9;font-family:'Courier New',Courier,monospace;font-weight:600;">${appId}</p>
+          </td>
+        </tr>
+        ` : ""}
+      </table>
     </div>
+
+    ${docsListHtml}
+
+    <!-- Divider -->
+    <div style="border-top:1px solid #3c3f46;margin:0 auto 28px;max-width:360px;"></div>
+
+    <!-- Contact Note -->
+    <p style="margin:0 auto 20px;max-width:360px;font-family:Georgia,'Times New Roman',serif;font-size:14px;line-height:1.55;color:#e2e8f0;text-align:center;font-style:italic;">
+      ${
+        requestedDocs.length
+          ? "Reply to this email with the above documents attached. Our review team will continue processing after we receive them."
+          : "Please feel free to contact us in case of any queries or if you need further assistance."
+      }
+    </p>
+
+    <!-- Contact Link -->
+    <p style="text-align:center;margin:0;">
+      <a href="mailto:nodal-desk.bhaskar@nic.in" style="color:#FF6B6B;text-decoration:none;font-size:15px;font-weight:700;">
+        nodal-desk.bhaskar@nic.in
+      </a>
+    </p>
   `;
+
+  const html = emailWrapper(innerHtml);
 
   if (!transporter) {
     if (env.nodeEnv === "production") {
@@ -217,6 +354,15 @@ export const sendApplicationStatusEmail = async ({
     return { delivered: false, fallback: true };
   }
 
+  const attachments = [];
+  if (logoExists) {
+    attachments.push({
+      filename: "bhaskar.jpeg",
+      path: bhaskarLogoPath,
+      cid: "bhaskarlogo",
+    });
+  }
+
   await transporter.sendMail({
     from: env.smtpFrom,
     to,
@@ -224,13 +370,7 @@ export const sendApplicationStatusEmail = async ({
     text,
     html,
     replyTo: env.smtpFrom,
-    attachments: [
-      {
-        filename: "bhaskar.jpeg",
-        path: bhaskarLogoPath,
-        cid: "bhaskar-logo",
-      },
-    ],
+    attachments,
   });
 
   return { delivered: true };

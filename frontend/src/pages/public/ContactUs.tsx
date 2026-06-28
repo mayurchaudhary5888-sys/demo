@@ -20,6 +20,7 @@ import {
 import { useAppState } from "../../context/AppContext";
 import { INDIAN_STATES } from "../../constants/options";
 import { AuthShell } from "../../components/auth/AuthShell";
+import { contentApi } from "../../services/contentApi";
 
 const CITIES_BY_STATE: Record<string, string[]> = {
   Delhi: ["New Delhi", "Connaught Place", "Dwarka"],
@@ -87,24 +88,29 @@ export const ContactUs: React.FC = () => {
     return Object.keys(errs).length === 0;
   };
 
-  const handleFormSubmit = (e: React.FormEvent) => {
+  const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) {
       showToast("Please fix the validation markings before submitting.", "error");
       return;
     }
 
-    const randomTicketNo = `TKT-${new Date().getFullYear()}-${Math.floor(10000 + Math.random() * 90000)}`;
-    const formattedDate = new Date().toLocaleDateString("en-IN", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    try {
+      const created = await contentApi.createQuery(formFields);
+      const formattedDate = new Date(created.submittedDate || Date.now()).toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
 
-    setTicketDetails({ id: randomTicketNo, date: formattedDate });
-    showToast("Query ticket created successfully.", "success");
+      setTicketDetails({ id: created.id, date: formattedDate });
+      showToast("Query ticket created successfully.", "success");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unable to submit query right now.";
+      showToast(message, "error");
+    }
   };
 
   return (

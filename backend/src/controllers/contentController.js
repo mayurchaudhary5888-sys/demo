@@ -16,6 +16,76 @@ import mongoose from "mongoose";
 const sortNewestFirst = { createdAt: -1, updatedAt: -1 };
 const isPlaceholderStartupId = (value) => !value || value === "temp-id" || String(value).startsWith("temp-");
 
+const toPlainWithId = (doc) => {
+  const item = typeof doc?.toObject === "function" ? doc.toObject() : doc;
+  if (!item) return item;
+  return { ...item, id: item.id || item._id?.toString() };
+};
+
+const getUserAccount = async (req) => {
+  if (!req.user?.email) return null;
+  return User.findOne({ email: req.user.email }).lean();
+};
+
+const canAccessStartup = (req, startup) => {
+  if (!startup) return false;
+  if (req.user?.role === "admin") return true;
+  if (startup.isApproved) return true;
+  return Boolean(req.user?.email && (startup.email === req.user.email || startup.id === req.user.startupId));
+};
+
+const assertStartupOwnerOrAdmin = async (req, startupId) => {
+  if (req.user?.role === "admin") return;
+  const account = await getUserAccount(req);
+  if (!account || account.startupId !== startupId) {
+    throw new AppError("You can update only your own startup profile.", 403);
+  }
+};
+
+const stripFounderControlledFields = (body) => {
+  const {
+    isApproved,
+    approvedAt,
+    approvedBy,
+    role,
+    status,
+    adminRemarks,
+    submittedByEmail,
+    submittedByName,
+    timeline,
+    rejectedAt,
+    ...safe
+  } = body;
+  return safe;
+};
+
+const applicationLookup = (id) => ({
+  $or: [
+    { id },
+    ...(mongoose.Types.ObjectId.isValid(id) ? [{ _id: id }] : []),
+  ],
+});
+
+const assertApplicationOwnerOrAdmin = async (req, app) => {
+  if (req.user?.role === "admin") return;
+  const account = await getUserAccount(req);
+  if (!account) throw new AppError("Account not found.", 404);
+  if (app.startupId !== account.startupId && app.submittedByEmail !== account.email) {
+    throw new AppError("You can access only your own applications.", 403);
+  }
+};
+
+const notificationScopeQuery = (req) => {
+  if (req.user?.role === "admin") return {};
+  return {
+    $or: [
+      { recipientEmail: req.user?.email },
+      { email: req.user?.email },
+      { startupId: req.user?.startupId },
+    ].filter((condition) => Object.values(condition)[0]),
+  };
+};
+
 const upsertById = async (Model, req, res, next, transform = (item) => item) => {
   try {
     const id = req.params.id;
@@ -89,7 +159,18 @@ export const toggleProgram = async (req, res, next) => {
 
 export const listStartups = async (req, res, next) => {
   try {
-    const query = req.query.approvedOnly === "true" ? { isApproved: true } : {};
+    let query = { isApproved: true };
+    if (req.user?.role === "admin" && req.query.approvedOnly !== "true") {
+      query = {};
+    } else if (req.user?.email) {
+      query = {
+        $or: [
+          { isApproved: true },
+          { email: req.user.email },
+          { id: req.user.startupId },
+        ].filter((condition) => Object.values(condition)[0]),
+      };
+    }
     const data = await StartupProfile.find(query).sort(sortNewestFirst).lean();
     res.json({ success: true, data });
   } catch (err) {
@@ -100,7 +181,14 @@ export const listStartups = async (req, res, next) => {
 export const listUsers = async (_req, res, next) => {
   try {
     const data = await User.find().select("-passwordHash").sort(sortNewestFirst).lean();
-    res.json({ success: true, data });
+    res.json({
+      success: true,
+      data: data.map((user) => ({
+        ...user,
+        id: user._id.toString(),
+        selectedProgram: user.startupProfile?.selectedProgram || user.selectedProgram || null,
+      })),
+    });
   } catch (err) {
     next(err);
   }
@@ -108,13 +196,17 @@ export const listUsers = async (_req, res, next) => {
 
 export const updateUserStatus = async (req, res, next) => {
   try {
-    const user = await User.findOne({ id: req.params.id });
+    const user = mongoose.Types.ObjectId.isValid(req.params.id)
+      ? await User.findById(req.params.id)
+      : await User.findOne({ email: req.params.id });
     if (!user) throw new AppError("User not found.", 404);
 
-    user.isActive = req.body.isActive ?? !user.isActive;
+    user.isActive = req.body.isActive;
     await user.save();
 
-    res.json({ success: true, data: user.toObject() });
+    const plain = user.toObject();
+    delete plain.passwordHash;
+    res.json({ success: true, data: { ...plain, id: plain._id.toString() } });
   } catch (err) {
     next(err);
   }
@@ -124,6 +216,9 @@ export const getStartup = async (req, res, next) => {
   try {
     const data = await StartupProfile.findOne({ id: req.params.id }).lean();
     if (!data) throw new AppError("Startup not found.", 404);
+    if (!canAccessStartup(req, data)) {
+      throw new AppError("Startup profile is not publicly available.", 403);
+    }
     res.json({ success: true, data });
   } catch (err) {
     next(err);
@@ -132,12 +227,19 @@ export const getStartup = async (req, res, next) => {
 
 export const createOrUpdateStartup = async (req, res, next) => {
   try {
-    const id = req.body.id || `startup-${Date.now()}`;
+    const account = await getUserAccount(req);
+    if (req.user?.role !== "admin" && !account) {
+      throw new AppError("Account not found.", 404);
+    }
+    const id = req.user?.role === "admin" ? req.body.id || `startup-${Date.now()}` : account.startupId;
+    const safeBody = req.user?.role === "admin" ? req.body : stripFounderControlledFields(req.body);
     const payload = {
-      ...req.body,
+      ...safeBody,
       id,
       registrationDate: req.body.registrationDate || new Date().toISOString().split("T")[0],
-      isApproved: req.body.isApproved ?? false,
+      isApproved: req.user?.role === "admin" ? req.body.isApproved ?? false : false,
+      email: req.user?.role === "admin" ? req.body.email : account.email,
+      founderName: req.user?.role === "admin" ? req.body.founderName : account.name,
     };
     const updated = await StartupProfile.findOneAndUpdate({ id }, payload, { upsert: true, new: true, setDefaultsOnInsert: true });
     res.status(201).json({ success: true, data: updated.toObject() });
@@ -146,7 +248,20 @@ export const createOrUpdateStartup = async (req, res, next) => {
   }
 };
 
-export const updateStartup = async (req, res, next) => upsertById(StartupProfile, req, res, next, (body) => body);
+export const updateStartup = async (req, res, next) => {
+  try {
+    await assertStartupOwnerOrAdmin(req, req.params.id);
+    const startup = await StartupProfile.findOne({ id: req.params.id });
+    if (!startup) throw new AppError("Startup not found.", 404);
+
+    const safeBody = req.user?.role === "admin" ? req.body : stripFounderControlledFields(req.body);
+    Object.assign(startup, safeBody, { id: startup.id });
+    await startup.save();
+    res.json({ success: true, data: startup.toObject() });
+  } catch (err) {
+    next(err);
+  }
+};
 
 export const toggleStartupApproval = async (req, res, next) => {
   try {
@@ -171,7 +286,14 @@ export const listInvestors = async (_req, res, next) => {
 
 export const listApplications = async (req, res, next) => {
   try {
-    const query = req.query.startupId ? { startupId: req.query.startupId } : {};
+    let query = {};
+    if (req.user?.role !== "admin") {
+      const account = await getUserAccount(req);
+      if (!account) throw new AppError("Account not found.", 404);
+      query = { $or: [{ startupId: account.startupId }, { submittedByEmail: account.email }] };
+    } else if (req.query.startupId) {
+      query = { startupId: req.query.startupId };
+    }
     const data = await ApplicationRecord.find(query).sort(sortNewestFirst).lean();
     const normalized = data.map((app) => ({
       ...app,
@@ -185,13 +307,9 @@ export const listApplications = async (req, res, next) => {
 
 export const getApplication = async (req, res, next) => {
   try {
-    const data = await ApplicationRecord.findOne({
-      $or: [
-        { id: req.params.id },
-        ...(mongoose.Types.ObjectId.isValid(req.params.id) ? [{ _id: req.params.id }] : []),
-      ],
-    }).lean();
+    const data = await ApplicationRecord.findOne(applicationLookup(req.params.id)).lean();
     if (!data) throw new AppError("Application not found.", 404);
+    await assertApplicationOwnerOrAdmin(req, data);
     res.json({ success: true, data: { ...data, id: data.id || data._id.toString() } });
   } catch (err) {
     next(err);
@@ -201,10 +319,9 @@ export const getApplication = async (req, res, next) => {
 export const createApplication = async (req, res, next) => {
   try {
     let selectedProgram = req.body.selectedProgram || null;
-    let submittedByEmail = req.body.submittedByEmail || null;
-    let submittedByName = req.body.submittedByName || null;
-    let startupId = req.body.startupId || null;
-    const programId = req.body.programId || null;
+    let submittedByEmail = req.user?.role === "admin" ? req.body.submittedByEmail || null : null;
+    let submittedByName = req.user?.role === "admin" ? req.body.submittedByName || null : null;
+    let startupId = req.user?.role === "admin" ? req.body.startupId || null : null;
 
     if (req.user?.role !== "admin") {
       const user = await User.findOne({ email: req.user?.email }).lean();
@@ -217,9 +334,9 @@ export const createApplication = async (req, res, next) => {
       }
 
       selectedProgram = selectedProgram || user.startupProfile?.selectedProgram || user.selectedProgram || null;
-      submittedByEmail = submittedByEmail || user.email || null;
-      submittedByName = submittedByName || user.name || null;
-      startupId = startupId || user.startupId || null;
+      submittedByEmail = user.email || null;
+      submittedByName = user.name || null;
+      startupId = user.startupId || null;
     }
 
     if (req.user?.role !== "admin" && isPlaceholderStartupId(startupId)) {
@@ -228,10 +345,11 @@ export const createApplication = async (req, res, next) => {
 
     const payload = {
       ...req.body,
+      startupId,
       selectedProgram,
       submittedByEmail: submittedByEmail ? String(submittedByEmail).trim().toLowerCase() : null,
       submittedByName,
-      id: req.body.id || generateApplicationId(),
+      id: req.user?.role === "admin" && req.body.id ? req.body.id : generateApplicationId(),
       submittedDate: req.body.submittedDate || new Date().toISOString().split("T")[0],
       lastUpdated: req.body.lastUpdated || new Date().toISOString().split("T")[0],
       status: req.body.status || "Submitted",
@@ -252,13 +370,9 @@ export const createApplication = async (req, res, next) => {
 
 export const updateApplication = async (req, res, next) => {
   try {
-    const app = await ApplicationRecord.findOne({
-      $or: [
-        { id: req.params.id },
-        ...(mongoose.Types.ObjectId.isValid(req.params.id) ? [{ _id: req.params.id }] : []),
-      ],
-    });
+    const app = await ApplicationRecord.findOne(applicationLookup(req.params.id));
     if (!app) throw new AppError("Application not found.", 404);
+    await assertApplicationOwnerOrAdmin(req, app);
     Object.assign(app, req.body);
     if (!app.id) {
       app.id = app._id.toString();
@@ -272,12 +386,7 @@ export const updateApplication = async (req, res, next) => {
 
 export const updateApplicationStatus = async (req, res, next) => {
   try {
-    const app = await ApplicationRecord.findOne({
-      $or: [
-        { id: req.params.id },
-        ...(mongoose.Types.ObjectId.isValid(req.params.id) ? [{ _id: req.params.id }] : []),
-      ],
-    });
+    const app = await ApplicationRecord.findOne(applicationLookup(req.params.id));
     if (!app) throw new AppError("Application not found.", 404);
 
     app.status = req.body.status;
@@ -322,28 +431,40 @@ export const updateApplicationStatus = async (req, res, next) => {
 
 export const listNotifications = async (_req, res, next) => {
   try {
-    const data = await Notification.find().sort(sortNewestFirst).lean();
+    const data = await Notification.find(notificationScopeQuery(_req)).sort(sortNewestFirst).lean();
     res.json({ success: true, data });
   } catch (err) {
     next(err);
   }
 };
 
-export const upsertNotification = async (req, res, next) => upsertById(Notification, req, res, next, (body) => body);
+export const upsertNotification = async (req, res, next) => {
+  try {
+    const notification = await Notification.findOne({ id: req.params.id, ...notificationScopeQuery(req) });
+    if (!notification) throw new AppError("Notification not found.", 404);
+    notification.isRead = req.body.isRead;
+    await notification.save();
+    res.json({ success: true, data: notification.toObject() });
+  } catch (err) {
+    next(err);
+  }
+};
 
 export const deleteNotification = async (req, res, next) => {
   try {
-    await Notification.deleteOne({ id: req.params.id });
+    const result = await Notification.deleteOne({ id: req.params.id, ...notificationScopeQuery(req) });
+    if (!result.deletedCount) throw new AppError("Notification not found.", 404);
     res.json({ success: true });
   } catch (err) {
     next(err);
   }
 };
 
-export const markAllNotificationsRead = async (_req, res, next) => {
+export const markAllNotificationsRead = async (req, res, next) => {
   try {
-    await Notification.updateMany({}, { $set: { isRead: true } });
-    const data = await Notification.find().sort(sortNewestFirst).lean();
+    const scope = notificationScopeQuery(req);
+    await Notification.updateMany(scope, { $set: { isRead: true } });
+    const data = await Notification.find(scope).sort(sortNewestFirst).lean();
     res.json({ success: true, data });
   } catch (err) {
     next(err);
@@ -363,7 +484,10 @@ export const createQuery = async (req, res, next) => {
   try {
     const payload = {
       ...req.body,
-      id: req.body.id || `TKT-${Date.now()}`,
+      id: `TKT-${Date.now()}`,
+      name: req.body.name,
+      contactName: req.body.name,
+      subject: req.body.subject || req.body.queryType || "General query",
       submittedDate: req.body.submittedDate || new Date().toISOString().split("T")[0],
       isResolved: false,
     };

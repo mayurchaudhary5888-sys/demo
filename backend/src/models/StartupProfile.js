@@ -1,5 +1,49 @@
 import mongoose from "mongoose";
 
-const startupProfileSchema = new mongoose.Schema({}, { strict: false, timestamps: true, collection: "startups" });
+const startupProfileSchema = new mongoose.Schema(
+  {
+    id: { type: String, required: true, unique: true, index: true },
+    name: String,
+    founderName: String,
+    startupName: String,
+    legalName: String,
+    logoUrl: String,
+    logoPreview: String,
+    logoName: String,
+    hasCompanyLogo: Boolean,
+    stage: String,
+    fundingType: String,
+    fundingStatus: String,
+    description: String,
+    startupBrief: String,
+    email: { type: String, lowercase: true, trim: true, index: true },
+    mobile: String,
+    state: String,
+    city: String,
+    website: String,
+    appLink: String,
+    sector: String,
+    industry: String,
+    startupType: String,
+    nature: String,
+    services: [String],
+    supportRequired: [String],
+    interestedPrograms: [String],
+    interests: [String],
+    selectedProgram: String,
+    isDpiitRecognized: Boolean,
+    dpiitNumber: String,
+    isMsmeRegistered: Boolean,
+    msmeNumber: String,
+    udhyogAadhaar: String,
+    cin: String,
+    registrationNumber: String,
+    registrationDate: String,
+    registeredAt: Number,
+    agreeTerms: Boolean,
+    isApproved: { type: Boolean, default: false, index: true },
+  },
+  { timestamps: true, collection: "startups" }
+);
 
 export const StartupProfile = mongoose.models.StartupProfile || mongoose.model("StartupProfile", startupProfileSchema);
