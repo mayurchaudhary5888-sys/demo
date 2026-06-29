@@ -17,6 +17,7 @@ import { MsmeApplication } from "../models/MsmeApplication.js";
 import { FoundationApplication } from "../models/FoundationApplication.js";
 import { StartupApplication } from "../models/StartupApplication.js";
 import { GlobalImpactApplication } from "../models/GlobalImpactApplication.js";
+import { sendContactQueryEmail } from "../services/emailService.js";
 
 const sortNewestFirst = { createdAt: -1, updatedAt: -1 };
 const isPlaceholderStartupId = (value) => !value || value === "temp-id" || String(value).startsWith("temp-");
@@ -638,6 +639,12 @@ export const createQuery = async (req, res, next) => {
       isResolved: false,
     };
     const created = await ContactQuery.create(payload);
+    
+    // Send query details via email
+    sendContactQueryEmail(created.toObject()).catch((err) => {
+      console.error("Failed to send contact query email:", err);
+    });
+
     res.status(201).json({ success: true, data: created.toObject() });
   } catch (err) {
     next(err);
