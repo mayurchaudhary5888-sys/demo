@@ -1,12 +1,16 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAppState } from "../../../../context/AppContext";
 import type { Program } from "../../../../types";
 import { ApplicationSuccessModal } from "../../../../components/common/ApplicationSuccessModal";
+import { FileText } from "lucide-react";
+import { downloadStoredFile } from "../../../../utils/documentStorage";
 
 type IdeaValidationProgramProps = {
   program: Program;
   onCancel: () => void;
+  application?: any;
+  mode?: "edit" | "view";
 };
 
 type IdeaValidationFields = {
@@ -52,7 +56,7 @@ const stageOptions = [
   "My startup idea has been in business for some time and we are ready for scaling this rapidly",
 ];
 
-export const IdeaValidationProgram: React.FC<IdeaValidationProgramProps> = ({ program, onCancel }) => {
+export const IdeaValidationProgram: React.FC<IdeaValidationProgramProps> = ({ program, onCancel, application, mode }) => {
   const { user, startups, applyToProgram, showToast } = useAppState();
   const navigate = useNavigate();
   const userStartup = startups.find((startup) => startup.id === user?.startupId);
@@ -62,6 +66,35 @@ export const IdeaValidationProgram: React.FC<IdeaValidationProgramProps> = ({ pr
   const [submitting, setSubmitting] = useState(false);
   const [successModalOpen, setSuccessModalOpen] = useState(false);
   const [successApplication, setSuccessApplication] = useState<{ id: string; programName: string } | null>(null);
+
+  useEffect(() => {
+    if (mode === "view" && application) {
+      setFields({
+        applicantName: application.applicantName || "",
+        email: application.email || "",
+        mobile: application.mobile || "",
+        residenceCity: application.residenceCity || "",
+        ideaName: application.ideaName || "",
+        problemStatement: application.problemStatement || "",
+        startupDescription: application.startupDescription || "",
+        sector: application.sector || "",
+        entityType: application.entityType || "",
+        startupStage: application.startupStage || "",
+        revenue: application.revenue || "",
+        priorIncubatorSupport: application.priorIncubatorSupport || "",
+        termsAccepted: application.termsAccepted || false,
+      });
+    }
+  }, [mode, application]);
+
+  const handleDownloadFile = (fieldKey: string, filename: string) => {
+    const success = downloadStoredFile(application.id || application._id, fieldKey, filename);
+    if (!success) {
+      showToast(`Simulated download of ${filename}`, "info");
+    } else {
+      showToast(`Downloading ${filename}`, "success");
+    }
+  };
 
   const updateField = <K extends keyof IdeaValidationFields>(field: K, value: IdeaValidationFields[K]) => {
     setFields((prev) => ({ ...prev, [field]: value }));
@@ -142,89 +175,116 @@ export const IdeaValidationProgram: React.FC<IdeaValidationProgramProps> = ({ pr
   };
 
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm" id="idea-validation-application-form">
-      <div className="border-b border-slate-100 bg-slate-50 px-6 py-8 md:px-8">
-        <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[#FF6B00]">Idea Validation Support</p>
-        <h3 className="mt-3 text-2xl font-black tracking-tight text-[#0B2A5B]">Apply for Idea Validation Support</h3>
-        <h4 className="mt-3 text-base font-extrabold text-slate-900">First Step to Getting Started</h4>
-        <p className="mt-3 max-w-4xl text-sm leading-7 text-slate-600">
-          Welcome to your first step towards getting idea validation and incubation support. We know you are working hard on your startup, and we will be glad if this program can be a part of your success story.
-        </p>
+    <FormModeContext.Provider value={{ disabled: mode === "view" }}>
+      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm" id="idea-validation-application-form">
+        <div className="border-b border-slate-100 bg-slate-50 px-6 py-8 md:px-8">
+          <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[#FF6B00]">Idea Validation Support</p>
+          <h3 className="mt-3 text-2xl font-black tracking-tight text-[#0B2A5B]">Apply for Idea Validation Support</h3>
+          <h4 className="mt-3 text-base font-extrabold text-slate-900">First Step to Getting Started</h4>
+          <p className="mt-3 max-w-4xl text-sm leading-7 text-slate-600">
+            Welcome to your first step towards getting idea validation and incubation support. We know you are working hard on your startup, and we will be glad if this program can be a part of your success story.
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-8 p-6 text-sm text-slate-800 md:p-8">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <TextField label="Your Name *" value={fields.applicantName} error={errors.applicantName} placeholder="Full Name" onChange={(value) => updateField("applicantName", value)} />
+            <TextField label="Email *" type="email" value={fields.email} error={errors.email} placeholder="Email" onChange={(value) => updateField("email", value)} />
+            <TextField label="Mobile *" type="tel" value={fields.mobile} error={errors.mobile} placeholder="Mobile" onChange={(value) => updateField("mobile", value)} />
+            <SelectField label="City of Present Residence *" value={fields.residenceCity} error={errors.residenceCity} options={cityOptions} onChange={(value) => updateField("residenceCity", value)} />
+          </div>
+
+          <TextField label="Startup Name / Idea Name *" value={fields.ideaName} error={errors.ideaName} onChange={(value) => updateField("ideaName", value)} />
+          <TextAreaField label="What problem are you solving? *" value={fields.problemStatement} error={errors.problemStatement} onChange={(value) => updateField("problemStatement", value)} />
+          <TextAreaField label="Brief Description of your Startup *" value={fields.startupDescription} error={errors.startupDescription} onChange={(value) => updateField("startupDescription", value)} />
+          <SelectField label="Which sector best suits your startup? *" value={fields.sector} error={errors.sector} options={sectorOptions} onChange={(value) => updateField("sector", value)} />
+
+          <RadioGroup label="Have you registered a company/entity for your startup? *" name="entityType" value={fields.entityType} error={errors.entityType} options={entityOptions} onChange={(value) => updateField("entityType", value)} columns />
+          <RadioGroup label="Stage of the startup? *" name="startupStage" value={fields.startupStage} error={errors.startupStage} options={stageOptions} onChange={(value) => updateField("startupStage", value)} />
+
+          <TextField
+            label="If you have made any revenue, please mention the revenue for the past 6/12 months? *"
+            value={fields.revenue}
+            error={errors.revenue}
+            onChange={(value) => updateField("revenue", value)}
+          />
+
+          <RadioGroup
+            label="Has your idea been supported by any incubator in the past? *"
+            name="priorIncubatorSupport"
+            value={fields.priorIncubatorSupport}
+            error={errors.priorIncubatorSupport}
+            options={["Yes", "No"]}
+            onChange={(value) => updateField("priorIncubatorSupport", value)}
+            inline
+          />
+
+          <div className="space-y-2">
+            <label className="block font-bold text-[#0B2A5B]">
+              Attach a pitch deck or presentation, if you already have one (only pdf / pptx files, please) *
+            </label>
+            {mode === "view" ? (
+              <div 
+                onClick={() => handleDownloadFile("pitchDeck", application?.pitchDeckName || "PitchDeck.pdf")}
+                className="flex flex-col items-center justify-center border-2 border-slate-200 rounded-xl bg-slate-50 p-4 transition-colors hover:bg-slate-100 cursor-pointer shadow-xs max-w-md"
+              >
+                <FileText className="h-8 w-8 text-[#FF6B00]" />
+                <span className="mt-2 text-xs font-bold text-slate-600 text-center truncate w-full">
+                  {application?.pitchDeckName || "PitchDeck.pdf"}
+                </span>
+                <span className="text-[10px] text-slate-400 font-bold mt-1 uppercase tracking-wider">Click to Download</span>
+              </div>
+            ) : (
+              <>
+                <input type="file" onChange={handleFileChange} accept=".pdf,.pptx" className="block w-full rounded-lg border border-slate-300 p-3 text-sm" />
+                {pitchDeck && <p className="text-xs font-bold text-[#FF6B00]">Selected: {pitchDeck.name}</p>}
+              </>
+            )}
+            {errors.pitchDeck && <p className="text-xs font-bold text-red-500">{errors.pitchDeck}</p>}
+          </div>
+
+          <div className="space-y-2 border-t border-slate-200 pt-6">
+            <label className="flex items-start gap-3 font-semibold text-slate-700">
+              <input type="checkbox" disabled={mode === "view"} checked={fields.termsAccepted} onChange={(event) => updateField("termsAccepted", event.target.checked)} className="mt-1" />
+              <span>I accept the terms and condition as a founder of the above mentioned startup.</span>
+            </label>
+            {errors.termsAccepted && <p className="text-xs font-bold text-red-500">{errors.termsAccepted}</p>}
+          </div>
+
+          <div className="flex justify-end gap-3 border-t border-slate-100 pt-6">
+            {mode === "view" ? (
+              <button type="button" onClick={onCancel} className="rounded-lg border border-[#0B2A5B] bg-white px-8 py-3 font-bold text-[#0B2A5B] transition-colors hover:bg-slate-50">
+                Go Back
+              </button>
+            ) : (
+              <>
+                <button type="button" onClick={onCancel} className="rounded-lg border border-slate-200 bg-slate-50 px-6 py-3 font-bold text-[#0B2A5B] transition-colors hover:bg-slate-100">
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="rounded-lg bg-[#FF6B00] px-8 py-3 font-extrabold uppercase tracking-widest text-white shadow transition-all hover:bg-[#E65F00] disabled:opacity-50"
+                >
+                  {submitting ? "Submitting..." : "Submit Application"}
+                </button>
+              </>
+            )}
+          </div>
+        </form>
+        <ApplicationSuccessModal
+          open={successModalOpen}
+          applicationId={successApplication?.id}
+          programName={successApplication?.programName}
+          onClose={() => setSuccessModalOpen(false)}
+          onContinue={handleContinue}
+        />
       </div>
-
-      <form onSubmit={handleSubmit} className="space-y-8 p-6 text-sm text-slate-800 md:p-8">
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          <TextField label="Your Name *" value={fields.applicantName} error={errors.applicantName} placeholder="Full Name" onChange={(value) => updateField("applicantName", value)} />
-          <TextField label="Email *" type="email" value={fields.email} error={errors.email} placeholder="Email" onChange={(value) => updateField("email", value)} />
-          <TextField label="Mobile *" type="tel" value={fields.mobile} error={errors.mobile} placeholder="Mobile" onChange={(value) => updateField("mobile", value)} />
-          <SelectField label="City of Present Residence *" value={fields.residenceCity} error={errors.residenceCity} options={cityOptions} onChange={(value) => updateField("residenceCity", value)} />
-        </div>
-
-        <TextField label="Startup Name / Idea Name *" value={fields.ideaName} error={errors.ideaName} onChange={(value) => updateField("ideaName", value)} />
-        <TextAreaField label="What problem are you solving? *" value={fields.problemStatement} error={errors.problemStatement} onChange={(value) => updateField("problemStatement", value)} />
-        <TextAreaField label="Brief Description of your Startup *" value={fields.startupDescription} error={errors.startupDescription} onChange={(value) => updateField("startupDescription", value)} />
-        <SelectField label="Which sector best suits your startup? *" value={fields.sector} error={errors.sector} options={sectorOptions} onChange={(value) => updateField("sector", value)} />
-
-        <RadioGroup label="Have you registered a company/entity for your startup? *" name="entityType" value={fields.entityType} error={errors.entityType} options={entityOptions} onChange={(value) => updateField("entityType", value)} columns />
-        <RadioGroup label="Stage of the startup? *" name="startupStage" value={fields.startupStage} error={errors.startupStage} options={stageOptions} onChange={(value) => updateField("startupStage", value)} />
-
-        <TextField
-          label="If you have made any revenue, please mention the revenue for the past 6/12 months? *"
-          value={fields.revenue}
-          error={errors.revenue}
-          onChange={(value) => updateField("revenue", value)}
-        />
-
-        <RadioGroup
-          label="Has your idea been supported by any incubator in the past? *"
-          name="priorIncubatorSupport"
-          value={fields.priorIncubatorSupport}
-          error={errors.priorIncubatorSupport}
-          options={["Yes", "No"]}
-          onChange={(value) => updateField("priorIncubatorSupport", value)}
-          inline
-        />
-
-        <div className="space-y-2">
-          <label className="block font-bold text-[#0B2A5B]">
-            Attach a pitch deck or presentation, if you already have one (only pdf / pptx files, please) *
-          </label>
-          <input type="file" onChange={handleFileChange} accept=".pdf,.pptx" className="block w-full rounded-lg border border-slate-300 p-3 text-sm" />
-          {pitchDeck && <p className="text-xs font-bold text-[#FF6B00]">Selected: {pitchDeck.name}</p>}
-          {errors.pitchDeck && <p className="text-xs font-bold text-red-500">{errors.pitchDeck}</p>}
-        </div>
-
-        <div className="space-y-2 border-t border-slate-200 pt-6">
-          <label className="flex items-start gap-3 font-semibold text-slate-700">
-            <input type="checkbox" checked={fields.termsAccepted} onChange={(event) => updateField("termsAccepted", event.target.checked)} className="mt-1" />
-            <span>I accept the terms and condition as a founder of the above mentioned startup.</span>
-          </label>
-          {errors.termsAccepted && <p className="text-xs font-bold text-red-500">{errors.termsAccepted}</p>}
-        </div>
-
-        <div className="flex justify-end gap-3 border-t border-slate-100 pt-6">
-          <button type="button" onClick={onCancel} className="rounded-lg border border-slate-200 bg-slate-50 px-6 py-3 font-bold text-[#0B2A5B] transition-colors hover:bg-slate-100">
-            Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={submitting}
-            className="rounded-lg bg-[#FF6B00] px-8 py-3 font-extrabold uppercase tracking-widest text-white shadow transition-all hover:bg-[#E65F00] disabled:opacity-50"
-          >
-            {submitting ? "Submitting..." : "Submit Application"}
-          </button>
-        </div>
-      </form>
-      <ApplicationSuccessModal
-        open={successModalOpen}
-        applicationId={successApplication?.id}
-        programName={successApplication?.programName}
-        onClose={() => setSuccessModalOpen(false)}
-        onContinue={handleContinue}
-      />
-    </div>
+    </FormModeContext.Provider>
   );
 };
+
+const FormModeContext = React.createContext({ disabled: false });
 
 type BaseFieldProps = {
   label: string;
@@ -233,49 +293,67 @@ type BaseFieldProps = {
   onChange: (value: string) => void;
 };
 
-const TextField: React.FC<BaseFieldProps & { type?: string; placeholder?: string }> = ({ label, value, error, onChange, type = "text", placeholder }) => (
-  <div className="space-y-1.5">
-    <label className="block font-bold text-[#0B2A5B]">{label}</label>
-    <input
-      type={type}
-      value={value}
-      onChange={(event) => onChange(event.target.value)}
-      placeholder={placeholder}
-      className={`w-full rounded-lg border p-3 outline-none ${error ? "border-red-500 bg-red-50/30" : "border-slate-300 focus:border-[#0B2A5B]"}`}
-    />
-    {error && <p className="text-xs font-bold text-red-500">{error}</p>}
-  </div>
-);
+const TextField: React.FC<BaseFieldProps & { type?: string; placeholder?: string }> = ({ label, value, error, onChange, type = "text", placeholder }) => {
+  const { disabled: contextDisabled } = React.useContext(FormModeContext);
+  return (
+    <div className="space-y-1.5">
+      <label className="block font-bold text-[#0B2A5B]">{label}</label>
+      <input
+        type={type}
+        value={value}
+        disabled={contextDisabled}
+        onChange={(event) => onChange(event.target.value)}
+        placeholder={placeholder}
+        className={`w-full rounded-lg border p-3 outline-none ${
+          contextDisabled ? "bg-slate-100 text-slate-500 cursor-not-allowed" : ""
+        } ${error ? "border-red-500 bg-red-50/30" : "border-slate-300 focus:border-[#0B2A5B]"}`}
+      />
+      {error && <p className="text-xs font-bold text-red-500">{error}</p>}
+    </div>
+  );
+};
 
-const TextAreaField: React.FC<BaseFieldProps> = ({ label, value, error, onChange }) => (
-  <div className="space-y-1.5">
-    <label className="block font-bold text-[#0B2A5B]">{label}</label>
-    <textarea
-      rows={7}
-      value={value}
-      onChange={(event) => onChange(event.target.value)}
-      className={`w-full rounded-lg border p-3 outline-none ${error ? "border-red-500 bg-red-50/30" : "border-slate-300 focus:border-[#0B2A5B]"}`}
-    />
-    {error && <p className="text-xs font-bold text-red-500">{error}</p>}
-  </div>
-);
+const TextAreaField: React.FC<BaseFieldProps> = ({ label, value, error, onChange }) => {
+  const { disabled: contextDisabled } = React.useContext(FormModeContext);
+  return (
+    <div className="space-y-1.5">
+      <label className="block font-bold text-[#0B2A5B]">{label}</label>
+      <textarea
+        rows={7}
+        value={value}
+        disabled={contextDisabled}
+        onChange={(event) => onChange(event.target.value)}
+        className={`w-full rounded-lg border p-3 outline-none ${
+          contextDisabled ? "bg-slate-100 text-slate-500 cursor-not-allowed" : ""
+        } ${error ? "border-red-500 bg-red-50/30" : "border-slate-300 focus:border-[#0B2A5B]"}`}
+      />
+      {error && <p className="text-xs font-bold text-red-500">{error}</p>}
+    </div>
+  );
+};
 
-const SelectField: React.FC<BaseFieldProps & { options: string[] }> = ({ label, value, error, options, onChange }) => (
-  <div className="space-y-1.5">
-    <label className="block font-bold text-[#0B2A5B]">{label}</label>
-    <select
-      value={value}
-      onChange={(event) => onChange(event.target.value)}
-      className={`w-full rounded-lg border bg-white p-3 outline-none ${error ? "border-red-500 bg-red-50/30" : "border-slate-300 focus:border-[#0B2A5B]"}`}
-    >
-      <option value="">--Select--</option>
-      {options.map((option) => (
-        <option key={option} value={option}>{option}</option>
-      ))}
-    </select>
-    {error && <p className="text-xs font-bold text-red-500">{error}</p>}
-  </div>
-);
+const SelectField: React.FC<BaseFieldProps & { options: string[] }> = ({ label, value, error, options, onChange }) => {
+  const { disabled: contextDisabled } = React.useContext(FormModeContext);
+  return (
+    <div className="space-y-1.5">
+      <label className="block font-bold text-[#0B2A5B]">{label}</label>
+      <select
+        value={value}
+        disabled={contextDisabled}
+        onChange={(event) => onChange(event.target.value)}
+        className={`w-full rounded-lg border bg-white p-3 outline-none ${
+          contextDisabled ? "bg-slate-100 text-slate-500 cursor-not-allowed" : ""
+        } ${error ? "border-red-500 bg-red-50/30" : "border-slate-300 focus:border-[#0B2A5B]"}`}
+      >
+        <option value="">--Select--</option>
+        {options.map((option) => (
+          <option key={option} value={option}>{option}</option>
+        ))}
+      </select>
+      {error && <p className="text-xs font-bold text-red-500">{error}</p>}
+    </div>
+  );
+};
 
 const RadioGroup: React.FC<BaseFieldProps & { name: string; options: string[]; columns?: boolean; inline?: boolean }> = ({
   label,
@@ -286,17 +364,20 @@ const RadioGroup: React.FC<BaseFieldProps & { name: string; options: string[]; c
   columns = false,
   inline = false,
   onChange,
-}) => (
-  <fieldset className="space-y-3">
-    <legend className="font-bold text-[#0B2A5B]">{label}</legend>
-    <div className={inline ? "flex gap-8" : columns ? "grid gap-3 sm:grid-cols-2" : "space-y-3"}>
-      {options.map((option) => (
-        <label key={option} className={`${inline ? "flex items-center gap-3" : "flex items-start gap-3 rounded-lg border border-slate-200 p-3"} font-semibold`}>
-          <input type="radio" name={name} value={option} checked={value === option} onChange={(event) => onChange(event.target.value)} className={inline ? "" : "mt-1"} />
-          {option}
-        </label>
-      ))}
-    </div>
-    {error && <p className="text-xs font-bold text-red-500">{error}</p>}
-  </fieldset>
-);
+}) => {
+  const { disabled: contextDisabled } = React.useContext(FormModeContext);
+  return (
+    <fieldset className="space-y-3">
+      <legend className="font-bold text-[#0B2A5B]">{label}</legend>
+      <div className={inline ? "flex gap-8" : columns ? "grid gap-3 sm:grid-cols-2" : "space-y-3"}>
+        {options.map((option) => (
+          <label key={option} className={`${inline ? "flex items-center gap-3" : "flex items-start gap-3 rounded-lg border border-slate-200 p-3"} font-semibold ${contextDisabled ? "opacity-75 cursor-not-allowed" : ""}`}>
+            <input type="radio" name={name} value={option} checked={value === option} disabled={contextDisabled} onChange={(event) => onChange(event.target.value)} className={inline ? "" : "mt-1"} />
+            {option}
+          </label>
+        ))}
+      </div>
+      {error && <p className="text-xs font-bold text-red-500">{error}</p>}
+    </fieldset>
+  );
+};
