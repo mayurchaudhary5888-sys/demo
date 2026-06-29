@@ -143,3 +143,19 @@ export const notificationPatchSchema = z.object({
 export const userStatusSchema = z.object({
   isActive: z.boolean(),
 });
+
+export const investorProfileSchema = z.object({
+  name: cleanString.min(2).max(120),
+  designation: cleanString.min(2).max(120),
+  email: cleanString.email().max(160),
+  phone: cleanString.min(10).max(30),
+  firmName: cleanString.min(2).max(180),
+  website: optionalString,
+  linkedin: cleanString.min(5).max(300),
+  investorType: cleanString.min(2).max(120),
+  investmentStages: z.array(cleanString).optional(),
+  sectors: z.array(cleanString).optional(),
+  ticketSize: cleanString.min(2).max(120),
+  investmentThesis: cleanString.min(5).max(5000),
+  portfolioCompanies: optionalString,
+});

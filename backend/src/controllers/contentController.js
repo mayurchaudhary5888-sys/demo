@@ -17,7 +17,7 @@ import { MsmeApplication } from "../models/MsmeApplication.js";
 import { FoundationApplication } from "../models/FoundationApplication.js";
 import { StartupApplication } from "../models/StartupApplication.js";
 import { GlobalImpactApplication } from "../models/GlobalImpactApplication.js";
-import { sendContactQueryEmail } from "../services/emailService.js";
+import { sendContactQueryEmail, sendInvestorProfileEmail } from "../services/emailService.js";
 
 const sortNewestFirst = { createdAt: -1, updatedAt: -1 };
 const isPlaceholderStartupId = (value) => !value || value === "temp-id" || String(value).startsWith("temp-");
@@ -286,6 +286,25 @@ export const listInvestors = async (_req, res, next) => {
   try {
     const data = await InvestorProfile.find().sort(sortNewestFirst).lean();
     res.json({ success: true, data });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const createInvestor = async (req, res, next) => {
+  try {
+    const payload = {
+      ...req.body,
+      id: `INV-${Date.now()}`,
+    };
+    const created = await InvestorProfile.create(payload);
+
+    // Send investor details via email
+    sendInvestorProfileEmail(created.toObject()).catch((err) => {
+      console.error("Failed to send investor profile email:", err);
+    });
+
+    res.status(201).json({ success: true, data: created.toObject() });
   } catch (err) {
     next(err);
   }

@@ -113,4 +113,6 @@ export const contentApi = {
       method: "POST",
       body: JSON.stringify(payload),
     })),
+  submitInvestorProfile: (payload: Record<string, unknown>) =>
+    unwrap(request<any>("/investors", { method: "POST", body: JSON.stringify(payload) })),
 };
