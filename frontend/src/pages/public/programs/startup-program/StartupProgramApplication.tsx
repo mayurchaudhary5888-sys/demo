@@ -5,12 +5,13 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { UploadCloud, ArrowRight, Circle, CircleCheckBig } from "lucide-react";
+import { UploadCloud, ArrowRight, Circle, CircleCheckBig, FileText } from "lucide-react";
 import { useAppState } from "../../../../context/AppContext";
 import type { Application, Program } from "../../../../types";
 import { ApplicationSuccessModal } from "../../../../components/common/ApplicationSuccessModal";
 import { ProfileUnderReviewModal } from "../../../../components/common/ProfileUnderReviewModal";
 import incubatorPreferences from "../../../../data/incubatorPreferences.json";
+import { downloadStoredFile } from "../../../../utils/documentStorage";
 
 type StartupProgramApplicationProps = {
   program: Program;
@@ -181,6 +182,16 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
     });
   };
 
+  const handleDownloadFile = (fieldKey: string, filename: string) => {
+    if (!applicationRecord) return;
+    const success = downloadStoredFile(applicationRecord.id || applicationRecord._id, fieldKey, filename);
+    if (!success) {
+      showToast(`Simulated download of ${filename}`, "info");
+    } else {
+      showToast(`Downloading ${filename}`, "success");
+    }
+  };
+
   const addTeamMember = () => {
     if (isViewMode) return;
     updateField("teamMembers", [...fields.teamMembers, { name: "", role: "", email: "", mobile: "" }]);
@@ -188,87 +199,100 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
 
   const updateTeamMember = (index: number, field: keyof TeamMember, value: string) => {
     if (isViewMode) return;
-    const nextMembers = fields.teamMembers.map((member, idx) => (idx === index ? { ...member, [field]: value } : member));
-    updateField("teamMembers", nextMembers);
-  };
-
-  const setIncubatorPreference = (index: 1 | 2 | 3, value: string) => {
-    if (isViewMode) return;
-    const key = `incubator${index}` as const;
-    const nextFields = { ...fields, [key]: value } as StartupWizardFields;
-    (["incubator1", "incubator2", "incubator3"] as const).forEach((otherKey) => {
-      if (otherKey !== key && nextFields[otherKey] === value) {
-        nextFields[otherKey] = "";
-      }
-    });
-    setFields(nextFields);
-    setErrors((prev) => {
-      const next = { ...prev };
-      delete next.incubator1;
-      delete next.incubator2;
-      delete next.incubator3;
-      return next;
-    });
-  };
-
-  const incubatorChoices = (currentIndex: 1 | 2 | 3) => {
-    const currentValue =
-      currentIndex === 1 ? fields.incubator1 : currentIndex === 2 ? fields.incubator2 : fields.incubator3;
-    const excluded = [fields.incubator1, fields.incubator2, fields.incubator3].filter(
-      (item) => item && item !== currentValue
-    );
-    return incubatorOptions.filter((option) => option === currentValue || !excluded.includes(option));
+    const next = [...fields.teamMembers];
+    next[index] = { ...next[index], [field]: value };
+    updateField("teamMembers", next);
   };
 
   const removeTeamMember = (index: number) => {
     if (isViewMode) return;
-    const nextMembers = fields.teamMembers.filter((_, idx) => idx !== index);
-    updateField("teamMembers", nextMembers.length ? nextMembers : [{ name: "", role: "", email: "", mobile: "" }]);
+    const next = fields.teamMembers.filter((_, i) => i !== index);
+    updateField("teamMembers", next.length ? next : [{ name: "", role: "", email: "", mobile: "" }]);
+  };
+
+  const setIncubatorPreference = (preferenceOrder: number, incubatorName: string) => {
+    if (isViewMode) return;
+    if (preferenceOrder === 1) {
+      setFields((prev) => ({
+        ...prev,
+        incubator1: incubatorName,
+        incubator2: prev.incubator2 === incubatorName ? "" : prev.incubator2,
+        incubator3: prev.incubator3 === incubatorName ? "" : prev.incubator3,
+      }));
+    } else if (preferenceOrder === 2) {
+      setFields((prev) => ({
+        ...prev,
+        incubator2: incubatorName,
+        incubator1: prev.incubator1 === incubatorName ? "" : prev.incubator1,
+        incubator3: prev.incubator3 === incubatorName ? "" : prev.incubator3,
+      }));
+    } else {
+      setFields((prev) => ({
+        ...prev,
+        incubator3: incubatorName,
+        incubator1: prev.incubator1 === incubatorName ? "" : prev.incubator1,
+        incubator2: prev.incubator2 === incubatorName ? "" : prev.incubator2,
+      }));
+    }
+    setErrors((prev) => {
+      const next = { ...prev };
+      delete next[`incubator${preferenceOrder}`];
+      return next;
+    });
+  };
+
+  const incubatorChoices = (preferenceOrder: number) => {
+    const selected = [fields.incubator1, fields.incubator2, fields.incubator3];
+    return incubatorOptions.filter((name) => {
+      const currentVal = preferenceOrder === 1 ? fields.incubator1 : preferenceOrder === 2 ? fields.incubator2 : fields.incubator3;
+      if (name === currentVal) return true;
+      return !selected.includes(name);
+    });
   };
 
   const validateCurrentStep = () => {
     const nextErrors: Record<string, string> = {};
-
     if (step === 0) {
       if (!fields.authorFirstName.trim()) nextErrors.authorFirstName = "First name is required.";
       if (!fields.authorLastName.trim()) nextErrors.authorLastName = "Last name is required.";
       if (!fields.designation.trim()) nextErrors.designation = "Designation is required.";
       if (!fields.mobile.trim()) nextErrors.mobile = "Mobile number is required.";
       if (!fields.email.trim()) nextErrors.email = "Email is required.";
-    } else if (step === 1) {
+    }
+    if (step === 1) {
       if (!fields.entityName.trim()) nextErrors.entityName = "Entity name is required.";
-      if (!fields.natureOfEntity) nextErrors.natureOfEntity = "Select entity type.";
+      if (!fields.natureOfEntity) nextErrors.natureOfEntity = "Nature of entity is required.";
       if (!fields.incorporationDate) nextErrors.incorporationDate = "Incorporation date is required.";
       if (!fields.panNumber.trim()) nextErrors.panNumber = "PAN number is required.";
       if (!fields.state.trim()) nextErrors.state = "State is required.";
       if (!fields.city.trim()) nextErrors.city = "City is required.";
       if (!fields.address.trim()) nextErrors.address = "Address is required.";
-    } else if (step === 2) {
-      if (!fields.problemStatement.trim()) nextErrors.problemStatement = "Problem statement is required.";
+    }
+    if (step === 2) {
+      if (!fields.problemStatement.trim()) nextErrors.problemStatement = "Problem description is required.";
       if (!fields.valueProposition.trim()) nextErrors.valueProposition = "Value proposition is required.";
-      if (!fields.uniqueSellingPoint.trim()) nextErrors.uniqueSellingPoint = "Unique selling point is required.";
+      if (!fields.uniqueSellingPoint.trim()) nextErrors.uniqueSellingPoint = "USP is required.";
       if (!fields.targetCustomer.trim()) nextErrors.targetCustomer = "Target customer is required.";
       if (!fields.marketSize.trim()) nextErrors.marketSize = "Market size is required.";
       if (!fields.scalePlan.trim()) nextErrors.scalePlan = "Scale plan is required.";
       if (!fields.revenueModel.trim()) nextErrors.revenueModel = "Revenue model is required.";
-    } else if (step === 3) {
-      if (!fields.teamMembers.some((member) => member.name.trim() || member.role.trim() || member.email.trim() || member.mobile.trim())) {
-        nextErrors.teamMembers = "Add at least one team member.";
+    }
+    if (step === 3) {
+      const hasMember = fields.teamMembers.some((member) => member.name.trim());
+      if (!hasMember) nextErrors.teamMembers = "Add at least one promoter name.";
+    }
+    if (step === 4) {
+      if (fields.raisedFunding === "Yes" && !fields.fundingAmount.trim()) {
+        nextErrors.fundingAmount = "Funding amount is required.";
       }
-      if (fields.teamMembers.some((member) => !member.name.trim() || !member.role.trim())) {
-        nextErrors.teamMembers = "Each team member needs a name and role.";
+      if (fields.raisedFunding === "Yes" && !fields.fundingInstrument) {
+        nextErrors.fundingInstrument = "Funding instrument is required.";
       }
-    } else if (step === 4) {
-      if (!fields.raisedFunding) nextErrors.raisedFunding = "Select funding status.";
-      if (fields.raisedFunding === "Yes" && !fields.fundingAmount.trim()) nextErrors.fundingAmount = "Funding amount is required.";
-      if (fields.raisedFunding === "Yes" && !fields.fundingInstrument) nextErrors.fundingInstrument = "Select funding instrument.";
-    } else if (step === 5) {
+    }
+    if (step === 5) {
       if (!fields.incubator1) nextErrors.incubator1 = "Select incubator preference 1.";
       if (!fields.incubator2) nextErrors.incubator2 = "Select incubator preference 2.";
       if (!fields.incubator3) nextErrors.incubator3 = "Select incubator preference 3.";
-    } else if (step === 6) {
-      if (!pitchDeckFile) nextErrors.pitchDeck = "Upload a pitch deck.";
-      if (!fields.declarationAccepted) nextErrors.declarationAccepted = "Declaration is required.";
     }
 
     setErrors(nextErrors);
@@ -277,14 +301,13 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
 
   const validateAllSteps = () => {
     const nextErrors: Record<string, string> = {};
-
     if (!fields.authorFirstName.trim()) nextErrors.authorFirstName = "First name is required.";
     if (!fields.authorLastName.trim()) nextErrors.authorLastName = "Last name is required.";
     if (!fields.designation.trim()) nextErrors.designation = "Designation is required.";
     if (!fields.mobile.trim()) nextErrors.mobile = "Mobile number is required.";
     if (!fields.email.trim()) nextErrors.email = "Email is required.";
     if (!fields.entityName.trim()) nextErrors.entityName = "Entity name is required.";
-    if (!fields.natureOfEntity) nextErrors.natureOfEntity = "Select entity type.";
+    if (!fields.natureOfEntity) nextErrors.natureOfEntity = "Nature of entity is required.";
     if (!fields.incorporationDate) nextErrors.incorporationDate = "Incorporation date is required.";
     if (!fields.panNumber.trim()) nextErrors.panNumber = "PAN number is required.";
     if (!fields.state.trim()) nextErrors.state = "State is required.";
@@ -306,7 +329,7 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
     if (!fields.incubator1) nextErrors.incubator1 = "Select incubator preference 1.";
     if (!fields.incubator2) nextErrors.incubator2 = "Select incubator preference 2.";
     if (!fields.incubator3) nextErrors.incubator3 = "Select incubator preference 3.";
-    if (!pitchDeckFile) nextErrors.pitchDeck = "Upload a pitch deck.";
+    if (!pitchDeckFile && !fields.pitchDeckName) nextErrors.pitchDeck = "Upload a pitch deck.";
     if (!fields.declarationAccepted) nextErrors.declarationAccepted = "Declaration is required.";
 
     return nextErrors;
@@ -400,216 +423,570 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
   const currentTitle = steps[step];
 
   return (
-    <div className="min-h-screen bg-[linear-gradient(180deg,#f8fbff_0%,#eef4ff_100%)] px-4 py-6 sm:px-6 lg:px-8" id="startup-program-application">
-      <div className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-7xl flex-col overflow-hidden rounded-[28px] border border-[#E4EAF7] bg-white shadow-[0_24px_60px_rgba(69,84,155,0.14)]">
-        <div className="border-b border-[#E4EAF7] bg-[linear-gradient(135deg,rgba(11,42,91,0.98),rgba(43,47,134,0.98))] px-5 py-5 sm:px-8">
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-            <div>
-              <p className="text-[11px] font-black uppercase tracking-[0.28em] text-white/60">Startup Support</p>
-              <h1 className="mt-2 text-2xl font-black tracking-tight text-white sm:text-3xl">{program.name}</h1>
-              <p className="mt-2 max-w-3xl text-sm leading-7 text-white/75">
-                {isViewMode
-                  ? "Review the submitted 7-step application. Details are locked for view-only access."
-                  : "Complete the 7-step application wizard. The form is full-screen, orange-accented, and saved as a single application on submit."}
-              </p>
-            </div>
-            <div className="rounded-2xl border border-white/10 bg-white/8 px-4 py-3 text-white">
-              <p className="text-[10px] font-black uppercase tracking-[0.24em] text-white/60">Current Step</p>
-              <p className="mt-1 text-sm font-bold">
-                Step {step + 1} / {steps.length}
-              </p>
-            </div>
-          </div>
+    <div className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8" id="startup-program-application">
+      <div className="max-w-4xl mx-auto bg-white rounded-3xl border border-slate-200/80 shadow-[0_12px_40px_rgba(15,23,42,0.06)] overflow-hidden">
+        
+        {/* Header Block */}
+        <div className="text-center py-10 bg-slate-50 border-b border-slate-200">
+          <h1 className="text-3xl font-black text-[#0B2A5B] tracking-tight">Startup Application</h1>
+          <p className="mt-2 text-sm font-semibold text-slate-700">
+            All form fields are <span className="font-extrabold text-[#0B2A5B]">mandatory</span>, unless mentioned as <span className="italic font-extrabold">'optional'</span>
+          </p>
+          <p className="mt-1 text-xs font-semibold text-slate-400">Application form to be filled in English language</p>
         </div>
 
-        <div className="border-b border-[#E4EAF7] px-5 py-4 sm:px-8">
-          <div className="grid gap-4 md:grid-cols-7">
-            {steps.map((label, index) => {
-              const active = index === step;
-              const done = index < step;
-              return (
-                <button
-                  key={label}
-                  type="button"
-                  onClick={() => setStep(index)}
-                  className="flex flex-col items-center gap-2 text-center"
-                >
-                  <span
-                    className={`flex h-5 w-5 items-center justify-center rounded-full border-2 ${
-                      done || active ? "border-[#F05A28] bg-[#F05A28] text-white" : "border-[#FDBA74] bg-white text-[#FDBA74]"
-                    }`}
+        {/* Horizontal Stepper */}
+        <div className="border-b border-slate-200 bg-white py-8 px-4 relative">
+          <div className="max-w-3xl mx-auto relative">
+            {/* Connecting line */}
+            <div className="absolute top-[10px] left-[5%] right-[5%] h-[1.5px] bg-[#FCE5B2] z-0" />
+            <div 
+              className="absolute top-[10px] left-[5%] h-[1.5px] bg-[#FDBA74] z-0 transition-all duration-300"
+              style={{ width: `${(step / (steps.length - 1)) * 90}%` }}
+            />
+            
+            <div className="relative z-10 flex justify-between">
+              {steps.map((label, index) => {
+                const active = index === step;
+                const done = index < step;
+                return (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={() => setStep(index)}
+                    className="flex flex-col items-center flex-1 group focus:outline-none"
                   >
-                    {done ? <CircleCheckBig className="h-3 w-3" /> : <Circle className="h-2.5 w-2.5" />}
-                  </span>
-                  <span className={`text-[11px] font-bold leading-4 ${active ? "text-[#0B2A5B]" : "text-slate-500"}`}>
-                    {label}
-                  </span>
-                </button>
-              );
-            })}
+                    <div
+                      className={`w-[22px] h-[22px] rounded-full flex items-center justify-center border-2 transition-all duration-300 ${
+                        active 
+                          ? "border-[#F05A28] bg-[#FCD88C] shadow-sm"
+                          : done
+                            ? "border-[#F05A28] bg-[#F05A28]"
+                            : "border-[#FCD88C] bg-white"
+                      }`}
+                    >
+                      {active && <div className="w-[10px] h-[10px] rounded-full bg-[#F05A28]" />}
+                      {done && <CircleCheckBig className="h-3.5 w-3.5 text-white" />}
+                    </div>
+                    
+                    <span 
+                      className={`mt-3 text-[10px] font-extrabold max-w-[110px] text-center transition-all duration-300 leading-tight ${
+                        active 
+                          ? "text-[#0B2A5B] font-black underline decoration-2 underline-offset-4" 
+                          : "text-slate-400 group-hover:text-slate-600"
+                      }`}
+                    >
+                      {label}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex-1 px-5 py-6 sm:px-8">
-          <div className="grid gap-8 lg:grid-cols-[minmax(0,220px)_minmax(0,1fr)]">
-            <aside className="rounded-[24px] border border-[#E8ECF6] bg-[linear-gradient(180deg,#fff_0%,#fff8ef_100%)] p-5">
-              <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[#F05A28]">Step {step + 1}</p>
-              <h2 className="mt-2 text-xl font-black text-[#0B2A5B]">{currentTitle}</h2>
-              <p className="mt-3 text-sm leading-7 text-slate-600">
-                Follow the section below. You can move back and forth before submitting the final application.
-              </p>
-              <div className="mt-6 rounded-2xl border border-dashed border-[#FDBA74] bg-white px-4 py-4 text-sm text-slate-600">
-                <p className="font-bold text-[#0B2A5B]">Need to leave?</p>
-                <p className="mt-1">Your data stays in the form until you submit or refresh the page.</p>
-              </div>
-            </aside>
-
-            <div className="space-y-6">
-              {step === 0 && (
-                <StepSection title="Authorized Representative" subtitle="Who is filing this application?">
-                  <div className="grid gap-5 md:grid-cols-2">
-                    <Input label="First Name *" value={fields.authorFirstName} onChange={(value) => updateField("authorFirstName", value)} error={errors.authorFirstName} readOnly={isViewMode} />
-                    <Input label="Last Name *" value={fields.authorLastName} onChange={(value) => updateField("authorLastName", value)} error={errors.authorLastName} readOnly={isViewMode} />
-                    <Input label="Designation *" value={fields.designation} onChange={(value) => updateField("designation", value)} error={errors.designation} readOnly={isViewMode} />
-                    <Input label="Mobile No. *" value={fields.mobile} onChange={(value) => updateField("mobile", value)} error={errors.mobile} readOnly={isViewMode} />
-                    <Input label="Email ID *" value={fields.email} onChange={(value) => updateField("email", value)} error={errors.email} className="md:col-span-2" readOnly={isViewMode} />
-                  </div>
-                </StepSection>
-              )}
-
-              {step === 1 && (
-                <StepSection title="Entity Details" subtitle="Capture your company identity and registration details.">
-                  <div className="grid gap-5 md:grid-cols-2">
-                    <Input label="DPIIT Recognition Number" value={fields.dpiitNumber} onChange={(value) => updateField("dpiitNumber", value)} readOnly={isViewMode} />
-                    <Input label="Name of the Entity *" value={fields.entityName} onChange={(value) => updateField("entityName", value)} error={errors.entityName} readOnly={isViewMode} />
-                    <Select label="Nature of Entity *" value={fields.natureOfEntity} onChange={(value) => updateField("natureOfEntity", value)} error={errors.natureOfEntity} options={entityOptions} disabled={isViewMode} />
-                    <Input label="Incorporation / Registration Date *" type="date" value={fields.incorporationDate} onChange={(value) => updateField("incorporationDate", value)} error={errors.incorporationDate} readOnly={isViewMode} />
-                    <Input label="PAN Number *" value={fields.panNumber} onChange={(value) => updateField("panNumber", value)} error={errors.panNumber} readOnly={isViewMode} />
-                    <Input label="State *" value={fields.state} onChange={(value) => updateField("state", value)} error={errors.state} readOnly={isViewMode} />
-                    <Input label="City *" value={fields.city} onChange={(value) => updateField("city", value)} error={errors.city} readOnly={isViewMode} />
-                    <Input label="Startup Address *" value={fields.address} onChange={(value) => updateField("address", value)} error={errors.address} readOnly={isViewMode} />
-                  </div>
-                </StepSection>
-              )}
-
-              {step === 2 && (
-                <StepSection title="Startup Details" subtitle="Summarize what you build, for whom, and why it matters.">
-                  <div className="grid gap-5">
-                    <Toggle label="Is it a Technology Startup? *" value={fields.technologyStartup} onChange={(value) => updateField("technologyStartup", value)} disabled={isViewMode} />
-                    <TextArea label="What is the problem you are solving? *" value={fields.problemStatement} onChange={(value) => updateField("problemStatement", value)} error={errors.problemStatement} readOnly={isViewMode} />
-                    <TextArea label="What is your value proposition? *" value={fields.valueProposition} onChange={(value) => updateField("valueProposition", value)} error={errors.valueProposition} readOnly={isViewMode} />
-                    <TextArea label="What is your unique selling point? *" value={fields.uniqueSellingPoint} onChange={(value) => updateField("uniqueSellingPoint", value)} error={errors.uniqueSellingPoint} readOnly={isViewMode} />
-                    <TextArea label="What is your target customer segment? *" value={fields.targetCustomer} onChange={(value) => updateField("targetCustomer", value)} error={errors.targetCustomer} readOnly={isViewMode} />
-                    <Input label="What is the market size of the opportunity? *" value={fields.marketSize} onChange={(value) => updateField("marketSize", value)} error={errors.marketSize} readOnly={isViewMode} />
-                    <TextArea label="How do you aim to scale-up? *" value={fields.scalePlan} onChange={(value) => updateField("scalePlan", value)} error={errors.scalePlan} readOnly={isViewMode} />
-                    <TextArea label="What will be the revenue model? *" value={fields.revenueModel} onChange={(value) => updateField("revenueModel", value)} error={errors.revenueModel} readOnly={isViewMode} />
-                    <Input label="Who are your key competitors?" value={fields.competitors} onChange={(value) => updateField("competitors", value)} readOnly={isViewMode} />
-                    <Input label="Website URL (Optional)" value={fields.websiteUrl} onChange={(value) => updateField("websiteUrl", value)} readOnly={isViewMode} />
-                  </div>
-                </StepSection>
-              )}
-
-              {step === 3 && (
-                <StepSection title="Startup Team" subtitle="List the core people working on the startup.">
-                  <div className="space-y-4">
-                    <div className="grid gap-5 md:grid-cols-2">
-                      <Input label="Name & Background of the CEO *" value={fields.authorFirstName ? `${fields.authorFirstName} ${fields.authorLastName}`.trim() : ""} onChange={() => {}} readOnly />
-                      <Input label="LinkedIn Profile (Optional)" value={fields.linkedInUrl} onChange={(value) => updateField("linkedInUrl", value)} readOnly={isViewMode} />
+        {/* Wizard Form */}
+        <form onSubmit={handleSubmit} className="p-8 space-y-8 bg-white">
+          <div className="space-y-6">
+            
+            {step === 0 && (
+              <StepSection title="Authorized Representative" subtitle="Who is filing this application?">
+                <div className="space-y-1">
+                  
+                  {/* Name of Authorised representative */}
+                  <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start py-4 border-b border-slate-100">
+                    <div className="md:col-span-4 pt-2">
+                      <label className="text-sm font-extrabold text-[#0B2A5B]">
+                        Name of Authorised representative<span className="text-red-500">*</span>
+                      </label>
                     </div>
-                    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                      <div className="flex items-center justify-between gap-3">
-                        <div>
-                          <p className="text-sm font-black text-[#0B2A5B]">Promoter Details</p>
-                          <p className="text-xs text-slate-500">Add at least one promoter or founding member.</p>
-                        </div>
-                        {!isViewMode && (
-                          <button type="button" onClick={addTeamMember} className="rounded-full border border-[#F05A28] px-4 py-2 text-xs font-black uppercase tracking-wider text-[#F05A28]">
-                            Add Promoter
-                          </button>
-                        )}
+                    <div className="md:col-span-8 grid grid-cols-2 gap-4">
+                      <div>
+                        <input
+                          type="text"
+                          placeholder="First Name"
+                          value={fields.authorFirstName}
+                          onChange={(e) => updateField("authorFirstName", e.target.value)}
+                          readOnly={isViewMode}
+                          className={`w-full rounded-lg border bg-[#EDF0F5] px-4 py-2.5 text-sm text-slate-800 outline-none transition-all font-semibold ${
+                            errors.authorFirstName ? "border-red-500 bg-red-50/30" : "border-slate-200 focus:border-[#F05A28] focus:bg-white"
+                          } ${isViewMode ? "opacity-75 cursor-not-allowed" : ""}`}
+                        />
+                        {errors.authorFirstName && <p className="text-red-500 font-bold text-xs mt-1">{errors.authorFirstName}</p>}
                       </div>
-                      <div className="mt-4 space-y-3">
-                        {fields.teamMembers.map((member, index) => (
-                          <div key={index} className="grid gap-3 md:grid-cols-[1.2fr_1fr_1.1fr_0.9fr_auto]">
-                            <Input label="Name of Promoter" value={member.name} onChange={(value) => updateTeamMember(index, "name", value)} readOnly={isViewMode} />
-                            <Input label="Role" value={member.role} onChange={(value) => updateTeamMember(index, "role", value)} readOnly={isViewMode} />
-                            <Input label="Email" value={member.email} onChange={(value) => updateTeamMember(index, "email", value)} readOnly={isViewMode} />
-                            <Input label="Mobile" value={member.mobile} onChange={(value) => updateTeamMember(index, "mobile", value)} readOnly={isViewMode} />
+                      <div>
+                        <input
+                          type="text"
+                          placeholder="Last Name"
+                          value={fields.authorLastName}
+                          onChange={(e) => updateField("authorLastName", e.target.value)}
+                          readOnly={isViewMode}
+                          className={`w-full rounded-lg border bg-[#EDF0F5] px-4 py-2.5 text-sm text-slate-800 outline-none transition-all font-semibold ${
+                            errors.authorLastName ? "border-red-500 bg-red-50/30" : "border-slate-200 focus:border-[#F05A28] focus:bg-white"
+                          } ${isViewMode ? "opacity-75 cursor-not-allowed" : ""}`}
+                        />
+                        {errors.authorLastName && <p className="text-red-500 font-bold text-xs mt-1">{errors.authorLastName}</p>}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Designation */}
+                  <Input
+                    label="Designation"
+                    value={fields.designation}
+                    onChange={(value) => updateField("designation", value)}
+                    error={errors.designation}
+                    readOnly={isViewMode}
+                    required
+                  />
+
+                  {/* Mobile No. */}
+                  <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start py-4 border-b border-slate-100">
+                    <div className="md:col-span-4 pt-2">
+                      <label className="text-sm font-extrabold text-[#0B2A5B]">
+                        Mobile No.<span className="text-red-500">*</span>
+                      </label>
+                    </div>
+                    <div className="md:col-span-8 flex gap-3">
+                      <span className="bg-[#EDF0F5] border border-slate-200 rounded-lg px-4 py-2.5 text-sm text-slate-500 font-bold shrink-0">
+                        +91
+                      </span>
+                      <div className="w-full">
+                        <input
+                          type="text"
+                          value={fields.mobile}
+                          onChange={(e) => updateField("mobile", e.target.value)}
+                          readOnly={isViewMode}
+                          className={`w-full rounded-lg border bg-[#EDF0F5] px-4 py-2.5 text-sm text-slate-800 outline-none transition-all font-semibold ${
+                            errors.mobile ? "border-red-500 bg-red-50/30" : "border-slate-200 focus:border-[#F05A28] focus:bg-white"
+                          } ${isViewMode ? "opacity-75 cursor-not-allowed" : ""}`}
+                        />
+                        {errors.mobile && <p className="text-red-500 font-bold text-xs mt-1">{errors.mobile}</p>}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Email ID */}
+                  <Input
+                    label="Email ID"
+                    value={fields.email}
+                    onChange={(value) => updateField("email", value)}
+                    error={errors.email}
+                    readOnly={isViewMode}
+                    required
+                  />
+
+                  {/* Board Resolution / Authorisation letter / PoA */}
+                  <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start py-4 border-b border-slate-100 last:border-b-0">
+                    <div className="md:col-span-4 pt-2">
+                      <label className="text-sm font-extrabold text-[#0B2A5B]">
+                        Board Resolution / Authorisation letter / PoA<span className="text-red-500">*</span>
+                      </label>
+                    </div>
+                    <div className="md:col-span-8 space-y-3">
+                      {isViewMode ? (
+                        <div className="flex flex-col items-center justify-center border border-slate-200 rounded-lg bg-slate-50 p-4 max-w-sm">
+                          <FileText className="h-6 w-6 text-[#FF6B00]" />
+                          <span className="mt-1 text-xs font-bold text-slate-650">BoardResolution.pdf</span>
+                          <span className="text-[10px] text-slate-400 font-bold mt-0.5 uppercase">Download File</span>
+                        </div>
+                      ) : (
+                        <>
+                          <div>
+                            <span className="text-xs font-bold text-[#F05A28] underline cursor-pointer">
+                              Sample Download
+                            </span>
+                          </div>
+                          <div>
+                            <button
+                              type="button"
+                              className="inline-flex items-center gap-2 rounded-full border border-[#0B2A5B] px-6 py-2 text-xs font-black uppercase tracking-wider text-[#0B2A5B] hover:bg-slate-50 transition"
+                            >
+                              Upload
+                            </button>
+                          </div>
+                          <p className="text-xs text-slate-400 font-bold">Supported file format - PDF only</p>
+                          <p className="text-xs text-slate-500 font-medium leading-relaxed">
+                            For the person filling this form and signing other self-declaration documents from authorised signatory of the applicant for filling and representing the organisation for this application
+                          </p>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </StepSection>
+            )}
+
+            {step === 1 && (
+              <StepSection title="Entity Details" subtitle="Capture your company identity and registration details.">
+                <div className="space-y-1">
+                  <Input
+                    label="DPIIT Recognition Number"
+                    value={fields.dpiitNumber}
+                    onChange={(value) => updateField("dpiitNumber", value)}
+                    readOnly={isViewMode}
+                  />
+                  <Input
+                    label="Name of the Entity"
+                    value={fields.entityName}
+                    onChange={(value) => updateField("entityName", value)}
+                    error={errors.entityName}
+                    readOnly={isViewMode}
+                    required
+                  />
+                  <Select
+                    label="Nature of Entity"
+                    value={fields.natureOfEntity}
+                    onChange={(value) => updateField("natureOfEntity", value)}
+                    error={errors.natureOfEntity}
+                    options={entityOptions}
+                    disabled={isViewMode}
+                    required
+                  />
+                  <Input
+                    label="Incorporation / Registration Date"
+                    type="date"
+                    value={fields.incorporationDate}
+                    onChange={(value) => updateField("incorporationDate", value)}
+                    error={errors.incorporationDate}
+                    readOnly={isViewMode}
+                    required
+                  />
+                  <Input
+                    label="PAN Number"
+                    value={fields.panNumber}
+                    onChange={(value) => updateField("panNumber", value)}
+                    error={errors.panNumber}
+                    readOnly={isViewMode}
+                    required
+                  />
+                  <Input
+                    label="State"
+                    value={fields.state}
+                    onChange={(value) => updateField("state", value)}
+                    error={errors.state}
+                    readOnly={isViewMode}
+                    required
+                  />
+                  <Input
+                    label="City"
+                    value={fields.city}
+                    onChange={(value) => updateField("city", value)}
+                    error={errors.city}
+                    readOnly={isViewMode}
+                    required
+                  />
+                  <TextArea
+                    label="Startup Address"
+                    value={fields.address}
+                    onChange={(value) => updateField("address", value)}
+                    error={errors.address}
+                    readOnly={isViewMode}
+                    required
+                  />
+                </div>
+              </StepSection>
+            )}
+
+            {step === 2 && (
+              <StepSection title="Startup Details" subtitle="Summarize what you build, for whom, and why it matters.">
+                <div className="space-y-1">
+                  <Toggle
+                    label="Is it a Technology Startup?"
+                    value={fields.technologyStartup}
+                    onChange={(value) => updateField("technologyStartup", value)}
+                    disabled={isViewMode}
+                    required
+                  />
+                  <TextArea
+                    label="What is the problem you are solving?"
+                    value={fields.problemStatement}
+                    onChange={(value) => updateField("problemStatement", value)}
+                    error={errors.problemStatement}
+                    readOnly={isViewMode}
+                    required
+                  />
+                  <TextArea
+                    label="What is your value proposition?"
+                    value={fields.valueProposition}
+                    onChange={(value) => updateField("valueProposition", value)}
+                    error={errors.valueProposition}
+                    readOnly={isViewMode}
+                    required
+                  />
+                  <TextArea
+                    label="What is your unique selling point?"
+                    value={fields.uniqueSellingPoint}
+                    onChange={(value) => updateField("uniqueSellingPoint", value)}
+                    error={errors.uniqueSellingPoint}
+                    readOnly={isViewMode}
+                    required
+                  />
+                  <TextArea
+                    label="What is your target customer segment?"
+                    value={fields.targetCustomer}
+                    onChange={(value) => updateField("targetCustomer", value)}
+                    error={errors.targetCustomer}
+                    readOnly={isViewMode}
+                    required
+                  />
+                  <Input
+                    label="What is the market size of the opportunity?"
+                    value={fields.marketSize}
+                    onChange={(value) => updateField("marketSize", value)}
+                    error={errors.marketSize}
+                    readOnly={isViewMode}
+                    required
+                  />
+                  <TextArea
+                    label="How do you aim to scale-up?"
+                    value={fields.scalePlan}
+                    onChange={(value) => updateField("scalePlan", value)}
+                    error={errors.scalePlan}
+                    readOnly={isViewMode}
+                    required
+                  />
+                  <TextArea
+                    label="What will be the revenue model?"
+                    value={fields.revenueModel}
+                    onChange={(value) => updateField("revenueModel", value)}
+                    error={errors.revenueModel}
+                    readOnly={isViewMode}
+                    required
+                  />
+                  <Input
+                    label="Who are your key competitors?"
+                    value={fields.competitors}
+                    onChange={(value) => updateField("competitors", value)}
+                    readOnly={isViewMode}
+                  />
+                  <Input
+                    label="Website URL (Optional)"
+                    value={fields.websiteUrl}
+                    onChange={(value) => updateField("websiteUrl", value)}
+                    readOnly={isViewMode}
+                  />
+                </div>
+              </StepSection>
+            )}
+
+            {step === 3 && (
+              <StepSection title="Startup Team" subtitle="List the core people working on the startup.">
+                <div className="space-y-4">
+                  <Input
+                    label="Name & Background of the CEO"
+                    value={fields.authorFirstName ? `${fields.authorFirstName} ${fields.authorLastName}`.trim() : ""}
+                    onChange={() => {}}
+                    readOnly
+                    required
+                  />
+                  <Input
+                    label="LinkedIn Profile (Optional)"
+                    value={fields.linkedInUrl}
+                    onChange={(value) => updateField("linkedInUrl", value)}
+                    readOnly={isViewMode}
+                  />
+
+                  {/* Promoter details list */}
+                  <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-4">
+                    <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                      <div>
+                        <h4 className="text-sm font-bold text-[#0B2A5B]">Promoter Details</h4>
+                        <p className="text-xs text-slate-500 font-medium">Add at least one promoter or founding member.</p>
+                      </div>
+                      {!isViewMode && (
+                        <button
+                          type="button"
+                          onClick={addTeamMember}
+                          className="rounded-full border border-[#F05A28] px-4 py-1.5 text-xs font-black uppercase tracking-wider text-[#F05A28] hover:bg-orange-50 transition"
+                        >
+                          Add Promoter
+                        </button>
+                      )}
+                    </div>
+                    
+                    <div className="space-y-4">
+                      {fields.teamMembers.map((member, index) => (
+                        <div key={index} className="bg-slate-50/50 p-4 rounded-xl border border-slate-200 space-y-3">
+                          <div className="flex justify-between items-center">
+                            <span className="text-xs font-black text-slate-400 uppercase tracking-wider">Promoter #{index + 1}</span>
                             {!isViewMode && (
-                              <button type="button" onClick={() => removeTeamMember(index)} className="self-end rounded-full border border-slate-300 px-3 py-2 text-xs font-bold text-slate-500">
-                                ×
+                              <button
+                                type="button"
+                                onClick={() => removeTeamMember(index)}
+                                className="text-xs font-bold text-red-500 hover:underline"
+                              >
+                                Remove
                               </button>
                             )}
                           </div>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="grid gap-5 md:grid-cols-2">
-                      <div className="rounded-2xl border border-slate-200 bg-white p-4">
-                        <label className="block text-sm font-bold text-[#0B2A5B]">No. of full-time employees *</label>
-                        <div className="mt-3 flex items-center gap-3">
-                          <button type="button" disabled={isViewMode} onClick={() => updateField("fullTimeEmployees", Math.max(1, fields.fullTimeEmployees - 1))} className="h-8 w-8 rounded-full border border-[#F05A28] text-[#F05A28] disabled:opacity-40">-</button>
-                          <span className="min-w-12 rounded-lg bg-slate-100 px-4 py-2 text-center font-bold">{fields.fullTimeEmployees}</span>
-                          <button type="button" disabled={isViewMode} onClick={() => updateField("fullTimeEmployees", fields.fullTimeEmployees + 1)} className="h-8 w-8 rounded-full border border-[#F05A28] text-[#F05A28] disabled:opacity-40">+</button>
+                          <div className="grid gap-4 md:grid-cols-2">
+                            <label className="block space-y-1">
+                              <span className="text-xs font-bold text-slate-600">Name</span>
+                              <input
+                                  type="text"
+                                  value={member.name}
+                                  onChange={(e) => updateTeamMember(index, "name", e.target.value)}
+                                  readOnly={isViewMode}
+                                  className="w-full bg-[#EDF0F5] border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 outline-none focus:border-[#F05A28] focus:bg-white transition-all font-semibold"
+                                />
+                            </label>
+                            <label className="block space-y-1">
+                              <span className="text-xs font-bold text-slate-600">Role</span>
+                              <input
+                                  type="text"
+                                  value={member.role}
+                                  onChange={(e) => updateTeamMember(index, "role", e.target.value)}
+                                  readOnly={isViewMode}
+                                  className="w-full bg-[#EDF0F5] border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 outline-none focus:border-[#F05A28] focus:bg-white transition-all font-semibold"
+                                />
+                            </label>
+                            <label className="block space-y-1">
+                              <span className="text-xs font-bold text-slate-600">Email</span>
+                              <input
+                                  type="text"
+                                  value={member.email}
+                                  onChange={(e) => updateTeamMember(index, "email", e.target.value)}
+                                  readOnly={isViewMode}
+                                  className="w-full bg-[#EDF0F5] border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 outline-none focus:border-[#F05A28] focus:bg-white transition-all font-semibold"
+                                />
+                            </label>
+                            <label className="block space-y-1">
+                              <span className="text-xs font-bold text-slate-600">Mobile</span>
+                              <input
+                                  type="text"
+                                  value={member.mobile}
+                                  onChange={(e) => updateTeamMember(index, "mobile", e.target.value)}
+                                  readOnly={isViewMode}
+                                  className="w-full bg-[#EDF0F5] border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 outline-none focus:border-[#F05A28] focus:bg-white transition-all font-semibold"
+                                />
+                            </label>
+                          </div>
                         </div>
-                      </div>
+                      ))}
                     </div>
                   </div>
-                </StepSection>
-              )}
 
-              {step === 4 && (
-                <StepSection title="Funding Details" subtitle="Share the current capital and funding profile.">
-                  <div className="grid gap-5 md:grid-cols-2">
-                    <Toggle label="Have you cumulatively received more than ₹10 lakhs? *" value={fields.raisedFunding} onChange={(value) => updateField("raisedFunding", value)} disabled={isViewMode} />
-                    <Input label="Current Funding Requirement" value={fields.fundingAmount} onChange={(value) => updateField("fundingAmount", value)} error={errors.fundingAmount} readOnly={isViewMode} />
-                    <Select label="Funding Instrument" value={fields.fundingInstrument} onChange={(value) => updateField("fundingInstrument", value)} error={errors.fundingInstrument} options={fundingInstrumentOptions} disabled={isViewMode} />
-                    <Input label="Your current revenue / traction note" value={fields.revenueModel} onChange={(value) => updateField("revenueModel", value)} readOnly={isViewMode} />
-                  </div>
-                </StepSection>
-              )}
+                  <FormRow label="No. of full-time employees" required>
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        disabled={isViewMode}
+                        onClick={() => updateField("fullTimeEmployees", Math.max(1, fields.fullTimeEmployees - 1))}
+                        className="h-8 w-8 rounded-full border border-[#F05A28] text-[#F05A28] font-bold disabled:opacity-40 flex items-center justify-center hover:bg-orange-50 transition"
+                      >
+                        -
+                      </button>
+                      <span className="min-w-[60px] rounded-lg bg-slate-100 px-4 py-2 text-center font-bold text-slate-800">
+                        {fields.fullTimeEmployees}
+                      </span>
+                      <button
+                        type="button"
+                        disabled={isViewMode}
+                        onClick={() => updateField("fullTimeEmployees", fields.fullTimeEmployees + 1)}
+                        className="h-8 w-8 rounded-full border border-[#F05A28] text-[#F05A28] font-bold disabled:opacity-40 flex items-center justify-center hover:bg-orange-50 transition"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </FormRow>
+                </div>
+              </StepSection>
+            )}
 
-              {step === 5 && (
-                <StepSection title="Incubator Preference" subtitle="Choose your preferred incubators in order.">
-                  <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
-                    <p className="text-sm leading-7 text-slate-700">
-                      Please note that once your application is submitted, you cannot modify incubator preferences, or the amount and instrument of funding requested.
-                    </p>
+            {step === 4 && (
+              <StepSection title="Funding Details" subtitle="Share the current capital and funding profile.">
+                <div className="space-y-1">
+                  <Toggle
+                    label="Have you cumulatively received more than ₹10 lakhs?"
+                    value={fields.raisedFunding}
+                    onChange={(value) => updateField("raisedFunding", value)}
+                    disabled={isViewMode}
+                    required
+                  />
+                  <Input
+                    label="Current Funding Requirement"
+                    value={fields.fundingAmount}
+                    onChange={(value) => updateField("fundingAmount", value)}
+                    error={errors.fundingAmount}
+                    readOnly={isViewMode}
+                  />
+                  <Select
+                    label="Funding Instrument"
+                    value={fields.fundingInstrument}
+                    onChange={(value) => updateField("fundingInstrument", value)}
+                    error={errors.fundingInstrument}
+                    options={fundingInstrumentOptions}
+                    disabled={isViewMode}
+                  />
+                  <Input
+                    label="Your current revenue / traction note"
+                    value={fields.revenueModel}
+                    onChange={(value) => updateField("revenueModel", value)}
+                    readOnly={isViewMode}
+                  />
+                </div>
+              </StepSection>
+            )}
+
+            {step === 5 && (
+              <StepSection title="Incubator Preference" subtitle="Choose your preferred incubators in order.">
+                <div className="space-y-4">
+                  <div className="rounded-xl border border-[#FCD88C] bg-[#FFF8E7] p-4 text-xs font-semibold text-slate-700 leading-relaxed">
+                    Please note that once your application is submitted, you cannot modify incubator preferences, or the amount and instrument of funding requested.
                   </div>
-                  <div className="grid gap-5 md:grid-cols-3">
+                  <div className="space-y-1">
                     <Select
-                      label="Incubator Preference #1 *"
+                      label="Incubator Preference #1"
                       value={fields.incubator1}
                       onChange={(value) => setIncubatorPreference(1, value)}
                       error={errors.incubator1}
                       options={incubatorChoices(1)}
                       disabled={isViewMode}
+                      required
                     />
                     <Select
-                      label="Incubator Preference #2 *"
+                      label="Incubator Preference #2"
                       value={fields.incubator2}
                       onChange={(value) => setIncubatorPreference(2, value)}
                       error={errors.incubator2}
                       options={incubatorChoices(2)}
                       disabled={isViewMode}
+                      required
                     />
                     <Select
-                      label="Incubator Preference #3 *"
+                      label="Incubator Preference #3"
                       value={fields.incubator3}
                       onChange={(value) => setIncubatorPreference(3, value)}
                       error={errors.incubator3}
                       options={incubatorChoices(3)}
                       disabled={isViewMode}
+                      required
                     />
                   </div>
-                </StepSection>
-              )}
+                </div>
+              </StepSection>
+            )}
 
-              {step === 6 && (
-                <StepSection title="Upload Documents" subtitle="Final attachments before submit.">
-                  <div className="grid gap-6">
+            {step === 6 && (
+              <StepSection title="Upload Documents" subtitle="Final attachments before submit.">
+                <div className="space-y-1">
+                  {isViewMode ? (
+                    <FormRow label="Pitch Deck of your Business Idea" required>
+                      <div 
+                        onClick={() => handleDownloadFile("pitchDeck", fields.pitchDeckName || "PitchDeck.pdf")}
+                        className="flex flex-col items-center justify-center border border-slate-200 rounded-lg bg-slate-50 p-4 transition-colors hover:bg-slate-100 cursor-pointer max-w-sm"
+                      >
+                        <FileText className="h-6 w-6 text-[#FF6B00]" />
+                        <span className="mt-1 text-xs font-bold text-slate-650 text-center truncate w-full">
+                          {fields.pitchDeckName || "PitchDeck.pdf"}
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-bold mt-0.5 uppercase">Click to Download</span>
+                      </div>
+                    </FormRow>
+                  ) : (
                     <FileUpload
-                      label="Upload Pitch Deck of your Business Idea *"
+                      label="Upload Pitch Deck of your Business Idea"
                       file={pitchDeckFile}
                       fileName={fields.pitchDeckName}
                       onFile={handleFile}
@@ -617,8 +994,33 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
                       helper="Supported format - PDF only | Max size: 15 MB"
                       sampleText="Download Sample Pitch Deck"
                       disabled={isViewMode}
+                      required
                     />
-                    <Input label="Video URL showcasing your product and/or business model (Optional)" value={fields.videoUrl} onChange={(value) => updateField("videoUrl", value)} readOnly={isViewMode} />
+                  )}
+
+                  <Input
+                    label="Video URL showcasing your product and/or business model (Optional)"
+                    value={fields.videoUrl}
+                    onChange={(value) => updateField("videoUrl", value)}
+                    readOnly={isViewMode}
+                  />
+
+                  {isViewMode ? (
+                    fields.otherDocumentName ? (
+                      <FormRow label="Other relevant document">
+                        <div 
+                          onClick={() => handleDownloadFile("otherDocument", fields.otherDocumentName || "Attachment.pdf")}
+                          className="flex flex-col items-center justify-center border border-slate-200 rounded-lg bg-slate-50 p-4 transition-colors hover:bg-slate-100 cursor-pointer max-w-sm"
+                        >
+                          <FileText className="h-6 w-6 text-[#FF6B00]" />
+                          <span className="mt-1 text-xs font-bold text-slate-650 text-center truncate w-full">
+                            {fields.otherDocumentName}
+                          </span>
+                          <span className="text-[10px] text-slate-400 font-bold mt-0.5 uppercase">Click to Download</span>
+                        </div>
+                      </FormRow>
+                    ) : null
+                  ) : (
                     <FileUpload
                       label="Upload any other relevant document (Optional)"
                       file={otherFile}
@@ -628,59 +1030,73 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
                       helper="Supported format - PDF only | Max size: 15 MB"
                       disabled={isViewMode}
                     />
-                    <label className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm leading-7 text-slate-700">
+                  )}
+
+                  <div className="py-4">
+                    <label className="flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm leading-7 text-slate-700 cursor-pointer">
                       <input
                         type="checkbox"
                         checked={fields.declarationAccepted}
                         onChange={(e) => updateField("declarationAccepted", e.target.checked)}
                         disabled={isViewMode}
-                        className="mt-1 h-4 w-4 rounded border-slate-300 text-[#F05A28]"
+                        className="mt-1.5 h-4 w-4 rounded border-slate-350 text-[#F05A28] focus:ring-[#F05A28]"
                       />
-                      <span>
+                      <span className="font-semibold text-xs text-slate-650">
                         We are in compliance with the provisions of the various Acts, Rules, Regulations, Guidelines, Standards applicable to the entity from time to time. All information provided by us is true, correct and complete.
                       </span>
                     </label>
+                    {errors.declarationAccepted && (
+                      <p className="text-red-500 font-bold text-xs mt-1">{errors.declarationAccepted}</p>
+                    )}
                   </div>
-                </StepSection>
-              )}
+                </div>
+              </StepSection>
+            )}
 
-              <div className="flex items-center justify-between gap-3 border-t border-slate-200 pt-5">
-                <button type="button" onClick={onCancel} className="rounded-full border border-[#0B2A5B] px-5 py-3 text-xs font-black uppercase tracking-wider text-[#0B2A5B]">
-                  {isViewMode ? "Close" : "Cancel"}
+            {/* Footer Buttons Bar */}
+            <div className="flex items-center justify-between gap-3 border-t border-slate-200 pt-6 mt-8">
+              <button 
+                type="button" 
+                onClick={onCancel} 
+                className="rounded-full border-2 border-[#5B75A6] px-8 py-2 text-sm font-bold uppercase text-[#5B75A6] hover:bg-slate-50 transition-colors duration-200"
+              >
+                {isViewMode ? "Close" : "Cancel"}
+              </button>
+
+              <div className="text-sm font-semibold text-slate-500">
+                Step {step + 1} / {steps.length}
+              </div>
+
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={handlePrevious}
+                  disabled={step === 0}
+                  className="rounded-full border-2 border-slate-300 px-6 py-2 text-sm font-bold uppercase text-slate-500 disabled:opacity-40 hover:bg-slate-50 transition-colors duration-200"
+                >
+                  Previous
                 </button>
 
-                <div className="flex items-center gap-3">
+                {step < steps.length - 1 ? (
                   <button
                     type="button"
-                    onClick={handlePrevious}
-                    disabled={step === 0}
-                    className="rounded-full border border-[#0B2A5B]/20 px-5 py-3 text-xs font-black uppercase tracking-wider text-[#0B2A5B] disabled:opacity-40"
+                    onClick={handleNext}
+                    className="rounded-full bg-[#FCE5B2] px-8 py-2 text-sm font-bold uppercase text-[#735A1A] hover:bg-[#FCD88C] transition-colors duration-200"
                   >
-                    Previous
+                    {isViewMode ? "Next" : "Save and Next"}
                   </button>
-
-                  {step < steps.length - 1 ? (
-                    <button
-                      type="button"
-                      onClick={handleNext}
-                      className="inline-flex items-center gap-2 rounded-full bg-[#F05A28] px-6 py-3 text-xs font-black uppercase tracking-wider text-white shadow-[0_16px_30px_rgba(240,90,40,0.22)]"
-                    >
-                      {isViewMode ? "Next" : "Save and Next"}
-                      <ArrowRight className="h-4 w-4" />
-                    </button>
-                  ) : isViewMode ? null : (
-                    <button
-                      type="submit"
-                      disabled={submitting}
-                      className="inline-flex items-center gap-2 rounded-full bg-[#F05A28] px-6 py-3 text-xs font-black uppercase tracking-wider text-white shadow-[0_16px_30px_rgba(240,90,40,0.22)] disabled:opacity-50"
-                    >
-                      {submitting ? "Submitting..." : "Submit"}
-                      <ArrowRight className="h-4 w-4" />
-                    </button>
-                  )}
-                </div>
+                ) : isViewMode ? null : (
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="rounded-full bg-[#F05A28] px-8 py-2 text-sm font-bold uppercase text-white hover:bg-[#E04F20] transition-colors duration-200 shadow-md disabled:opacity-50"
+                  >
+                    {submitting ? "Submitting..." : "Submit"}
+                  </button>
+                )}
               </div>
             </div>
+
           </div>
         </form>
       </div>
@@ -701,13 +1117,33 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
 };
 
 const StepSection: React.FC<{ title: string; subtitle: string; children: React.ReactNode }> = ({ title, subtitle, children }) => (
-  <section className="rounded-[24px] border border-[#E8ECF6] bg-white p-5 shadow-sm">
-    <div className="border-b border-slate-100 pb-4">
+  <div className="space-y-6">
+    <div className="border-b border-slate-200 pb-3">
       <h2 className="text-lg font-black text-[#0B2A5B]">{title}</h2>
-      <p className="mt-1 text-sm leading-7 text-slate-500">{subtitle}</p>
+      <p className="mt-1 text-xs font-semibold text-slate-400">{subtitle}</p>
     </div>
-    <div className="mt-5">{children}</div>
-  </section>
+    <div className="bg-white">{children}</div>
+  </div>
+);
+
+const FormRow: React.FC<{
+  label: string;
+  required?: boolean;
+  error?: string;
+  children: React.ReactNode;
+}> = ({ label, required = false, error, children }) => (
+  <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start py-4 border-b border-slate-100 last:border-b-0">
+    <div className="md:col-span-4 pt-2">
+      <label className="text-sm font-extrabold text-[#0B2A5B]">
+        {label}
+        {required && <span className="text-red-500 ml-0.5">*</span>}
+      </label>
+    </div>
+    <div className="md:col-span-8">
+      {children}
+      {error && <p className="text-red-500 font-bold text-xs mt-1">{error}</p>}
+    </div>
+  </div>
 );
 
 const Input: React.FC<{
@@ -716,23 +1152,21 @@ const Input: React.FC<{
   onChange: (value: string) => void;
   error?: string;
   type?: string;
-  className?: string;
   readOnly?: boolean;
-}> = ({ label, value, onChange, error, type = "text", className = "", readOnly = false }) => (
-  <label className={`block space-y-1.5 ${className}`}>
-    <span className="block text-sm font-bold text-[#0B2A5B]">{label}</span>
+  required?: boolean;
+}> = ({ label, value, onChange, error, type = "text", readOnly = false, required = false }) => (
+  <FormRow label={label} required={required} error={error}>
     <input
       type={type}
       value={value}
       readOnly={readOnly}
       aria-readonly={readOnly}
       onChange={(event) => onChange(event.target.value)}
-      className={`w-full rounded-xl border px-4 py-3 text-sm outline-none transition ${
-        error ? "border-red-500 bg-red-50/30" : "border-slate-300 focus:border-[#F05A28]"
-      } ${readOnly ? "bg-slate-100" : "bg-white"}`}
+      className={`w-full rounded-lg border bg-[#EDF0F5] px-4 py-2.5 text-sm text-slate-800 outline-none transition-all font-semibold ${
+        error ? "border-red-500 bg-red-50/30" : "border-slate-200 focus:border-[#F05A28] focus:bg-white"
+      } ${readOnly ? "opacity-75 cursor-not-allowed" : ""}`}
     />
-    {error && <p className="text-xs font-bold text-red-500">{error}</p>}
-  </label>
+  </FormRow>
 );
 
 const TextArea: React.FC<{
@@ -741,21 +1175,20 @@ const TextArea: React.FC<{
   onChange: (value: string) => void;
   error?: string;
   readOnly?: boolean;
-}> = ({ label, value, onChange, error, readOnly = false }) => (
-  <label className="block space-y-1.5">
-    <span className="block text-sm font-bold text-[#0B2A5B]">{label}</span>
+  required?: boolean;
+}> = ({ label, value, onChange, error, readOnly = false, required = false }) => (
+  <FormRow label={label} required={required} error={error}>
     <textarea
       rows={4}
       value={value}
       readOnly={readOnly}
       aria-readonly={readOnly}
       onChange={(event) => onChange(event.target.value)}
-      className={`w-full rounded-xl border px-4 py-3 text-sm outline-none transition ${
-        error ? "border-red-500 bg-red-50/30" : "border-slate-300 focus:border-[#F05A28]"
-      } ${readOnly ? "bg-slate-100" : "bg-white"}`}
+      className={`w-full rounded-lg border bg-[#EDF0F5] px-4 py-2.5 text-sm text-slate-800 outline-none transition-all font-semibold ${
+        error ? "border-red-500 bg-red-50/30" : "border-slate-200 focus:border-[#F05A28] focus:bg-white"
+      } ${readOnly ? "opacity-75 cursor-not-allowed" : ""}`}
     />
-    {error && <p className="text-xs font-bold text-red-500">{error}</p>}
-  </label>
+  </FormRow>
 );
 
 const Select: React.FC<{
@@ -765,16 +1198,16 @@ const Select: React.FC<{
   options: string[];
   error?: string;
   disabled?: boolean;
-}> = ({ label, value, onChange, options, error, disabled = false }) => (
-  <label className="block space-y-1.5">
-    <span className="block text-sm font-bold text-[#0B2A5B]">{label}</span>
+  required?: boolean;
+}> = ({ label, value, onChange, options, error, disabled = false, required = false }) => (
+  <FormRow label={label} required={required} error={error}>
     <select
       value={value}
       disabled={disabled}
       onChange={(event) => onChange(event.target.value)}
-      className={`w-full rounded-xl border bg-white px-4 py-3 text-sm outline-none transition ${
-        error ? "border-red-500 bg-red-50/30" : "border-slate-300 focus:border-[#F05A28]"
-      } ${disabled ? "cursor-not-allowed bg-slate-100 text-slate-600" : ""}`}
+      className={`w-full rounded-lg border bg-[#EDF0F5] px-4 py-2.5 text-sm text-slate-800 outline-none transition-all font-semibold ${
+        error ? "border-red-500 bg-red-50/30" : "border-slate-200 focus:border-[#F05A28] focus:bg-white"
+      } ${disabled ? "cursor-not-allowed opacity-75" : ""}`}
     >
       <option value="">Select</option>
       {options.map((option) => (
@@ -783,8 +1216,7 @@ const Select: React.FC<{
         </option>
       ))}
     </select>
-    {error && <p className="text-xs font-bold text-red-500">{error}</p>}
-  </label>
+  </FormRow>
 );
 
 const Toggle: React.FC<{
@@ -792,9 +1224,9 @@ const Toggle: React.FC<{
   value: string;
   onChange: (value: "Yes" | "No") => void;
   disabled?: boolean;
-}> = ({ label, value, onChange, disabled = false }) => (
-  <div className="space-y-2">
-    <span className="block text-sm font-bold text-[#0B2A5B]">{label}</span>
+  required?: boolean;
+}> = ({ label, value, onChange, disabled = false, required = false }) => (
+  <FormRow label={label} required={required}>
     <div className="inline-flex rounded-full border border-[#FDBA74] bg-[#FFF4EA] p-1">
       {(["Yes", "No"] as const).map((option) => (
         <button
@@ -802,15 +1234,15 @@ const Toggle: React.FC<{
           type="button"
           disabled={disabled}
           onClick={() => onChange(option)}
-          className={`rounded-full px-4 py-2 text-xs font-black uppercase tracking-wider transition ${
+          className={`rounded-full px-4 py-1.5 text-xs font-black uppercase tracking-wider transition ${
             value === option ? "bg-[#F05A28] text-white" : "text-slate-500"
-          } ${disabled ? "cursor-not-allowed" : ""}`}
+          } ${disabled ? "cursor-not-allowed opacity-70" : ""}`}
         >
           {option}
         </button>
       ))}
     </div>
-  </div>
+  </FormRow>
 );
 
 const FileUpload: React.FC<{
@@ -822,27 +1254,39 @@ const FileUpload: React.FC<{
   kind: "pitch" | "other";
   onFile: (file: File | null, kind: "pitch" | "other") => void;
   disabled?: boolean;
-}> = ({ label, helper, sampleText, file, fileName, kind, onFile, disabled = false }) => (
-  <div className="space-y-2">
-    <div className="flex flex-wrap items-center gap-3">
-      <label className="block text-sm font-bold text-[#0B2A5B]">{label}</label>
-      {sampleText && <span className="text-xs font-semibold text-[#F05A28] underline">{sampleText}</span>}
+  required?: boolean;
+}> = ({ label, helper, sampleText, file, fileName, kind, onFile, disabled = false, required = false }) => (
+  <FormRow label={label} required={required}>
+    <div className="space-y-3">
+      <div className="flex items-center gap-4">
+        <input
+          type="file"
+          className="hidden"
+          id={`${kind}-file-input`}
+          disabled={disabled}
+          onChange={(event) => onFile(event.target.files?.[0] || null, kind)}
+          accept=".pdf,.ppt,.pptx"
+        />
+        <label
+          htmlFor={`${kind}-file-input`}
+          className={`inline-flex items-center gap-2 rounded-full border border-[#0B2A5B] px-6 py-2 text-xs font-black uppercase tracking-wider text-[#0B2A5B] hover:bg-slate-50 transition ${
+            disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"
+          }`}
+        >
+          Upload
+        </label>
+        {sampleText && (
+          <span className="text-xs font-bold text-[#F05A28] underline cursor-pointer">
+            {sampleText}
+          </span>
+        )}
+      </div>
+      <p className="text-xs text-slate-500 font-semibold leading-relaxed">{helper}</p>
+      {(file || fileName) && (
+        <p className="text-xs font-extrabold text-[#FF6B00]">
+          Selected: {file?.name || fileName}
+        </p>
+      )}
     </div>
-    <div className="rounded-2xl border-2 border-dashed border-[#FDBA74] bg-[#FFF8F0] p-5 text-center">
-      <input
-        type="file"
-        className="hidden"
-        id={`${kind}-file-input`}
-        disabled={disabled}
-        onChange={(event) => onFile(event.target.files?.[0] || null, kind)}
-        accept=".pdf,.ppt,.pptx"
-      />
-      <label htmlFor={`${kind}-file-input`} className={`inline-flex items-center gap-2 rounded-full border border-[#F05A28] px-5 py-3 text-xs font-black uppercase tracking-wider text-[#F05A28] ${disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}>
-        <UploadCloud className="h-4 w-4" />
-        Upload
-      </label>
-      <p className="mt-2 text-xs text-slate-500">{helper}</p>
-      {(file || fileName) && <p className="mt-2 text-xs font-bold text-[#FF6B00]">Selected: {file?.name || fileName}</p>}
-    </div>
-  </div>
+  </FormRow>
 );

@@ -4,33 +4,25 @@
  */
 
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ArrowRight, BadgeCheck, BookOpen, Building2, FileText, Sparkles, Lightbulb, Rocket, Globe2 } from "lucide-react";
 import { useAppState } from "../../context/AppContext";
 import { StatusBadge } from "../../components/common/StatusBadge";
-import { ApplicationDetailsModal } from "../../components/common/ApplicationDetailsModal";
 import { getCatalogProgram, programCatalog } from "../../data/programCatalog";
-import { StartupProgramApplication } from "../public/programs/startup-program/StartupProgramApplication";
 import { contentApi } from "../../services/contentApi";
 import type { Application } from "../../types";
 
 export const MyApplications: React.FC = () => {
   const { user, startups } = useAppState();
+  const navigate = useNavigate();
   const [localApps, setLocalApps] = useState<Application[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedAppId, setSelectedAppId] = useState<string>("");
-  const [showApplicationModal, setShowApplicationModal] = useState(false);
-  const [applicationForView, setApplicationForView] = useState<Application | null>(null);
   const [activeTab, setActiveTab] = useState<"in_progress" | "selected" | "closed" | "rejected">("in_progress");
 
   const openApplicationView = (application: Application) => {
-    setApplicationForView(application);
-    setShowApplicationModal(true);
-  };
-
-  const closeApplicationView = () => {
-    setShowApplicationModal(false);
-    setApplicationForView(null);
+    const appId = application.id || (application as any)._id;
+    navigate(`/support/${application.programId}/apply?view=true&appId=${appId}`);
   };
 
   useEffect(() => {
@@ -57,7 +49,8 @@ export const MyApplications: React.FC = () => {
   }, [user]);
 
   const myStartup = startups.find((s) => s.id === user?.startupId);
-  const myApplications = localApps.filter((app) => app.startupId === user?.startupId);
+  const userProgramId = myStartup?.selectedProgram || user?.selectedProgram || "startup-program";
+  const myApplications = localApps.filter((app) => app.startupId === user?.startupId && app.programId === userProgramId);
 
   // Determine active application
   const activeAppId = selectedAppId || myApplications[0]?.id || "";
@@ -425,66 +418,68 @@ export const MyApplications: React.FC = () => {
         </div>
       ) : (
         /* CASE: Startup has NOT applied to any support programs yet */
-        <div className="space-y-6">
-          <div className="bg-white border border-slate-200 rounded-2xl p-8 text-center max-w-xl mx-auto shadow-xs">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-50 text-[#FF6B00]">
-              <Sparkles className="h-6 w-6" />
-            </div>
-            <h2 className="mt-4 text-lg font-black text-slate-800">No active applications</h2>
-            <p className="mt-2 text-xs leading-5 text-slate-500 font-medium">
-              You haven't submitted any applications for BHASKAR support programs yet. Explore the programs below to apply.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {programCatalog.map((prog) => {
+        <div className="flex justify-center pt-16">
+          {programCatalog
+            .filter((prog) => prog.id === userProgramId)
+            .map((prog) => {
               const Icon = prog.icon;
               return (
-                <div key={prog.id} className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs flex flex-col justify-between space-y-4">
-                  <div className="space-y-3">
-                    <div className="p-2.5 rounded-xl bg-orange-50 text-[#FF6B00] w-fit">
-                      <Icon className="w-5 h-5" />
+                <article
+                  key={prog.slug}
+                  className="group relative flex flex-col pt-12 bg-white border border-slate-200 rounded-[2rem] shadow-sm hover:shadow-md transition duration-300 max-w-sm w-full"
+                  id={`program-card-${prog.slug}`}
+                >
+                  {/* Circular Logo/Badge Container centered at top border */}
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 rounded-full border border-slate-200 bg-white shadow-[0_4px_12px_rgba(0,0,0,0.05)] flex items-center justify-center z-10 p-1">
+                    <div className="w-full h-full rounded-full bg-slate-50 flex items-center justify-center border border-slate-100/80 overflow-hidden">
+                      {(prog as any).logoUrl ? (
+                        <img src={(prog as any).logoUrl} alt={prog.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <Icon className="h-7 w-7 text-slate-500 transition-colors group-hover:text-[#FF6B00]" />
+                      )}
                     </div>
-                    <h3 className="text-sm font-bold text-[#07184A]">{prog.name}</h3>
-                    <p className="text-xs text-slate-500 font-medium leading-relaxed">{prog.tagline}</p>
                   </div>
-                  <Link
-                    to={`/support/${prog.slug}/apply`}
-                    className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-[#FF6B00] px-4 py-2.5 text-xs font-black uppercase tracking-wider text-white transition hover:bg-[#e65f00] shadow-sm"
-                  >
-                    Apply Now
-                    <ArrowRight className="h-3.5 w-3.5" />
-                  </Link>
-                </div>
+
+                  {/* Title band with rounded-t corners matching the card's rounded-[2rem] */}
+                  <div className="w-full bg-[#FFF5F2] border-b border-slate-100 py-5 px-6 text-center rounded-t-[2rem]">
+                    <h2 className="text-lg font-black text-[#0B2A5B] leading-tight tracking-tight">{prog.name}</h2>
+                  </div>
+
+                  {/* Card Body */}
+                  <div className="flex-1 flex flex-col p-6 pb-5">
+                    {/* Description box fitting content perfectly */}
+                    <div className="flex-1 text-sm leading-7 text-slate-600 text-center font-medium">
+                      {prog.shortDescription}
+                    </div>
+
+                    {/* Status Section */}
+                    <div className="mt-6 border-t border-slate-100 pt-5 w-full flex items-center justify-center">
+                      <div className="text-center flex flex-col items-center justify-center">
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Status</span>
+                        <span className="mt-1 text-base font-black tracking-tight block text-[#FF6B00]">
+                          Eligible
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Bottom Buttons (Footer) */}
+                  <div className="border-t border-slate-100 bg-[#FCFDFE] py-4 px-6 rounded-b-[2rem]">
+                    <div className="flex justify-center w-full">
+                      <Link
+                        to={`/support/${prog.slug}/apply`}
+                        className="text-xs font-black text-[#0B2A5B] hover:text-[#FF6B00] transition cursor-pointer"
+                      >
+                        Apply Now
+                      </Link>
+                    </div>
+                  </div>
+                </article>
               );
             })}
-          </div>
         </div>
       )}
 
-      {/* Details viewing modal overlay popup */}
-      {showApplicationModal && applicationForView?.programId === "startup-program" ? (
-        <div
-          className="fixed inset-0 z-[120] bg-slate-950/60 p-3 backdrop-blur-sm sm:p-6"
-          role="dialog"
-          aria-modal="true"
-        >
-          <div className="mx-auto h-full max-w-7xl overflow-y-auto rounded-[28px] bg-white shadow-2xl">
-            <StartupProgramApplication
-              program={getCatalogProgram("startup-program") || selectedProg || getCatalogProgram("startup-program")!}
-              application={applicationForView}
-              mode="view"
-              onCancel={closeApplicationView}
-            />
-          </div>
-        </div>
-      ) : (
-        <ApplicationDetailsModal
-          open={showApplicationModal}
-          application={applicationForView}
-          onClose={closeApplicationView}
-        />
-      )}
     </div>
   );
 };

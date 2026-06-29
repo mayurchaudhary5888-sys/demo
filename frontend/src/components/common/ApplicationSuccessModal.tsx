@@ -1,8 +1,3 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.5
- */
-
 import React from "react";
 import { CheckCircle2, ArrowRight, X } from "lucide-react";
 

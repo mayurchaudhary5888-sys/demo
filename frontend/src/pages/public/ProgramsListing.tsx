@@ -19,10 +19,17 @@ export const ProgramsListing: React.FC = () => {
     ? programCatalog.filter((p) => p.id === userProgramId || p.slug === userProgramId)
     : programCatalog;
 
-  const handleApply = (programSlug: string) => {
+  const handleApply = (programId: string, programSlug: string) => {
     if (!user) {
       showToast("Please login to apply for this program.", "info");
       requestLogin();
+      return;
+    }
+
+    const userApp = applications.find((app) => app.programId === programId);
+    if (userApp) {
+      showToast("You have already applied for this program.", "info");
+      navigate("/startup/applications");
       return;
     }
 
@@ -137,7 +144,7 @@ export const ProgramsListing: React.FC = () => {
                 <div className="flex justify-center w-full">
                   <button
                     type="button"
-                    onClick={() => handleApply(program.slug)}
+                    onClick={() => handleApply(program.id, program.slug)}
                     className="text-xs font-black text-[#0B2A5B] hover:text-[#FF6B00] transition cursor-pointer"
                   >
                     Learn More

@@ -1,10 +1,5 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.5
- */
-
 import React, { useState, useEffect } from "react";
-import { useParams, Link, useNavigate, useLocation, Navigate } from "react-router-dom";
+import { useParams, Link, useNavigate, useLocation, Navigate, useSearchParams } from "react-router-dom";
 import { 
   ArrowLeft, FileText, UploadCloud, CheckCircle2, ShieldAlert, 
   HelpCircle
@@ -18,6 +13,7 @@ import { FoundationProgram } from "./programs/foundation-program/FoundationProgr
 import { GlobalImpactProgram } from "./programs/global-impact-program/GlobalImpactProgram";
 import { StartupProgramApplication } from "./programs/startup-program/StartupProgramApplication";
 import { MsmeProgramApplication } from "./programs/msme-program/MsmeProgramApplication";
+import { contentApi } from "../../services/contentApi";
 
 const requestLogin = () => {
   window.dispatchEvent(new CustomEvent("bsi:open-login"));
@@ -28,9 +24,14 @@ export const ProgramDetail: React.FC = () => {
   const { programs, user, applyToProgram, showToast, startups } = useAppState();
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
+
+  const isViewMode = searchParams.get("view") === "true";
+  const appId = searchParams.get("appId");
+  const [viewApplication, setViewApplication] = useState<any>(null);
 
   const [activeTab, setActiveTab] = useState<"details" | "apply">(
-    location.pathname.endsWith("/apply") ? "apply" : "details"
+    location.pathname.endsWith("/apply") || isViewMode ? "apply" : "details"
   );
   const [dragActive, setDragActive] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
@@ -56,7 +57,21 @@ export const ProgramDetail: React.FC = () => {
   const userStartup = startups.find((s) => s.id === user?.startupId);
   const userProgramId = userStartup?.selectedProgram || user?.selectedProgram;
 
-  if (user && user.role === "founder" && userProgramId && prog && prog.id !== userProgramId && (prog as any).slug !== userProgramId) {
+  useEffect(() => {
+    if (isViewMode && appId) {
+      contentApi.getApplicationById(appId)
+        .then((data) => {
+          setViewApplication(data);
+        })
+        .catch((err) => {
+          console.error("Error loading application:", err);
+        });
+    } else {
+      setViewApplication(null);
+    }
+  }, [isViewMode, appId]);
+
+  if (user && user.role === "founder" && userProgramId && prog && prog.id !== userProgramId && (prog as any).slug !== userProgramId && !isViewMode) {
     const targetPath = location.pathname.endsWith("/apply") 
       ? `/support/${userProgramId}/apply` 
       : `/support/${userProgramId}`;
@@ -79,23 +94,23 @@ export const ProgramDetail: React.FC = () => {
       declarationChecked: false
     });
     setFormErrors({});
-    setActiveTab(location.pathname.endsWith("/apply") ? "apply" : "details");
-  }, [id, location.pathname, user?.email, user?.name, userStartup?.name]);
+    setActiveTab(location.pathname.endsWith("/apply") || isViewMode ? "apply" : "details");
+  }, [id, location.pathname, user?.email, user?.name, userStartup?.name, isViewMode]);
 
   useEffect(() => {
-    if (location.pathname.endsWith("/apply") && !user && prog) {
+    if (location.pathname.endsWith("/apply") && !user && prog && !isViewMode) {
       showToast("Please login to apply for this program.", "info");
       requestLogin();
       navigate(`/support/${prog.id}`, { replace: true });
     }
-  }, [location.pathname, navigate, prog, showToast, user]);
+  }, [location.pathname, navigate, prog, showToast, user, isViewMode]);
 
   useEffect(() => {
-    if (location.pathname.endsWith("/apply") && user?.isActive === false && prog) {
+    if (location.pathname.endsWith("/apply") && user?.isActive === false && prog && !isViewMode) {
       setProfileReviewOpen(true);
       navigate(`/support/${prog.id}`, { replace: true });
     }
-  }, [location.pathname, navigate, prog, user?.isActive]);
+  }, [location.pathname, navigate, prog, user?.isActive, isViewMode]);
 
   if (!prog) {
     return (
@@ -246,39 +261,45 @@ export const ProgramDetail: React.FC = () => {
             </div>
 
             {/* Selector tabs */}
-            <div className="flex bg-slate-50 border border-slate-200 p-1 rounded-lg self-start">
-              <button
-                onClick={() => setActiveTab("details")}
-                className={`px-4 py-2 text-xs font-bold rounded-md transition-all ${
-                  activeTab === "details"
-                    ? "bg-[#0B2A5B] text-white shadow"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
-                id="tab-details-btn"
-              >
-                Scheme details
-              </button>
+            {!isViewMode ? (
+              <div className="flex bg-slate-50 border border-slate-200 p-1 rounded-lg self-start">
                 <button
-                onClick={() => {
-                  if (!user) {
-                    showToast("Authentication required. Please sign in or sign up first.", "info");
-                    requestLogin();
-                  } else if (user.isActive === false) {
-                    setProfileReviewOpen(true);
-                  } else {
-                    setActiveTab("apply");
-                  }
-                }}
-                className={`px-4 py-2 text-xs font-bold rounded-md transition-all ${
-                  activeTab === "apply"
-                    ? "bg-[#0B2A5B] text-white shadow"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
-                id="tab-apply-btn"
-              >
-                Apply for support
-              </button>
-            </div>
+                  onClick={() => setActiveTab("details")}
+                  className={`px-4 py-2 text-xs font-bold rounded-md transition-all ${
+                    activeTab === "details"
+                      ? "bg-[#0B2A5B] text-white shadow"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                  id="tab-details-btn"
+                >
+                  Scheme details
+                </button>
+                <button
+                  onClick={() => {
+                    if (!user) {
+                      showToast("Authentication required. Please sign in or sign up first.", "info");
+                      requestLogin();
+                    } else if (user.isActive === false) {
+                      setProfileReviewOpen(true);
+                    } else {
+                      setActiveTab("apply");
+                    }
+                  }}
+                  className={`px-4 py-2 text-xs font-bold rounded-md transition-all ${
+                    activeTab === "apply"
+                      ? "bg-[#0B2A5B] text-white shadow"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                  id="tab-apply-btn"
+                >
+                  Apply for support
+                </button>
+              </div>
+            ) : (
+              <div className="inline-flex items-center gap-2 rounded-full border border-[#FFE2D5] bg-[#FFF5F2] px-4 py-2 text-xs font-bold text-[#FF6B00]">
+                Application Review
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -385,15 +406,15 @@ export const ProgramDetail: React.FC = () => {
           </aside>
         </div>
       ) : prog.id === "idea-validation-program" ? (
-        <IdeaValidationProgram program={prog} onCancel={() => setActiveTab("details")} />
+        <IdeaValidationProgram program={prog} application={viewApplication} mode={isViewMode ? "view" : undefined} onCancel={() => isViewMode ? navigate(user?.role === "admin" ? "/admin/applications" : "/startup/applications") : setActiveTab("details")} />
       ) : prog.id === "foundation-program" ? (
-        <FoundationProgram program={prog} onCancel={() => setActiveTab("details")} />
+        <FoundationProgram program={prog} application={viewApplication} mode={isViewMode ? "view" : undefined} onCancel={() => isViewMode ? navigate(user?.role === "admin" ? "/admin/applications" : "/startup/applications") : setActiveTab("details")} />
       ) : prog.id === "global-impact-program" ? (
-        <GlobalImpactProgram program={prog} onCancel={() => setActiveTab("details")} />
+        <GlobalImpactProgram program={prog} application={viewApplication} mode={isViewMode ? "view" : undefined} onCancel={() => isViewMode ? navigate(user?.role === "admin" ? "/admin/applications" : "/startup/applications") : setActiveTab("details")} />
       ) : prog.id === "startup-program" ? (
-        <StartupProgramApplication program={prog} onCancel={() => setActiveTab("details")} />
+        <StartupProgramApplication program={prog} application={viewApplication} mode={isViewMode ? "view" : undefined} onCancel={() => isViewMode ? navigate(user?.role === "admin" ? "/admin/applications" : "/startup/applications") : setActiveTab("details")} />
       ) : prog.id === "msme-program" ? (
-        <MsmeProgramApplication program={prog} onCancel={() => setActiveTab("details")} />
+        <MsmeProgramApplication program={prog} application={viewApplication} mode={isViewMode ? "view" : undefined} onCancel={() => isViewMode ? navigate(user?.role === "admin" ? "/admin/applications" : "/startup/applications") : setActiveTab("details")} />
       ) : (
         /* COMMON APPLICATION FORM */
         <div className="bg-white border border-slate-200 rounded-xl p-6 md:p-8 shadow-sm space-y-8" id="application-form-pane">

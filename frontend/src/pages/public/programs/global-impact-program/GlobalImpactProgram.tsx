@@ -1,12 +1,16 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAppState } from "../../../../context/AppContext";
 import type { Program } from "../../../../types";
 import { ApplicationSuccessModal } from "../../../../components/common/ApplicationSuccessModal";
+import { FileText } from "lucide-react";
+import { downloadStoredFile } from "../../../../utils/documentStorage";
 
 type GlobalImpactProgramProps = {
   program: Program;
   onCancel: () => void;
+  application?: any;
+  mode?: "edit" | "view";
 };
 
 type FinancialStatement = {
@@ -101,7 +105,7 @@ const initialFields = (user?: { email?: string }, startupName = ""): GlobalImpac
   declarationAccepted: true,
 });
 
-export const GlobalImpactProgram: React.FC<GlobalImpactProgramProps> = ({ program, onCancel }) => {
+export const GlobalImpactProgram: React.FC<GlobalImpactProgramProps> = ({ program, onCancel, application, mode }) => {
   const { user, startups, applyToProgram, showToast } = useAppState();
   const navigate = useNavigate();
   const userStartup = startups.find((startup) => startup.id === user?.startupId);
@@ -111,6 +115,46 @@ export const GlobalImpactProgram: React.FC<GlobalImpactProgramProps> = ({ progra
   const [submitting, setSubmitting] = useState(false);
   const [successModalOpen, setSuccessModalOpen] = useState(false);
   const [successApplication, setSuccessApplication] = useState<{ id: string; programName: string } | null>(null);
+
+  useEffect(() => {
+    if (mode === "view" && application) {
+      setFields({
+        registeredBusinessName: application.registeredBusinessName || "",
+        localBusinessName: application.localBusinessName || "",
+        incorporationDate: application.incorporationDate || "",
+        legalEntity: application.legalEntity || "",
+        placeOfOperations: application.placeOfOperations || "",
+        industry: application.industry || "",
+        website: application.website || "",
+        email: application.email || "",
+        awardsRecognition: application.awardsRecognition || "",
+        businessPitch: application.businessPitch || "",
+        businessStage: application.businessStage || "",
+        financialOne: application.financialOne || emptyFinancial(),
+        financialTwo: application.financialTwo || emptyFinancial(),
+        receivedFinancialSupport: application.receivedFinancialSupport || "",
+        financialSupportDetails: application.financialSupportDetails || "",
+        coreTeam: application.coreTeam || "",
+        theoryOfChange: application.theoryOfChange || "",
+        impactAreas: application.impactAreas || [],
+        impactSegments: application.impactSegments || [],
+        individualsImpacted: application.individualsImpacted || "",
+        businessPlans: application.businessPlans || "",
+        grantUsage: application.grantUsage || "",
+        estimatedReach: application.estimatedReach || "",
+        declarationAccepted: application.declarationAccepted || false,
+      });
+    }
+  }, [mode, application]);
+
+  const handleDownloadFile = (fieldKey: string, filename: string) => {
+    const success = downloadStoredFile(application.id || application._id, fieldKey, filename);
+    if (!success) {
+      showToast(`Simulated download of ${filename}`, "info");
+    } else {
+      showToast(`Downloading ${filename}`, "success");
+    }
+  };
 
   const updateField = <K extends keyof GlobalImpactFields>(field: K, value: GlobalImpactFields[K]) => {
     setFields((prev) => ({ ...prev, [field]: value }));
@@ -226,125 +270,156 @@ export const GlobalImpactProgram: React.FC<GlobalImpactProgramProps> = ({ progra
   };
 
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm" id="global-impact-application-form">
-      <div className="border-b border-slate-100 bg-slate-50 px-6 py-8 md:px-8">
-        <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[#FF6B00]">Global Impact Support</p>
-        <h3 className="mt-3 text-2xl font-black tracking-tight text-[#0B2A5B]">Apply for Global Impact Support</h3>
-        <h4 className="mt-3 text-base font-extrabold text-slate-900">Single form for company, impact, and scale readiness</h4>
-        <p className="mt-3 max-w-4xl text-sm leading-7 text-slate-600">
-          Share your enterprise profile, financial data, impact model, and scale proposal so the program team can review fit and readiness.
-        </p>
+    <FormModeContext.Provider value={{ disabled: mode === "view" }}>
+      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm" id="global-impact-application-form">
+        <div className="border-b border-slate-100 bg-slate-50 px-6 py-8 md:px-8">
+          <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[#FF6B00]">Global Impact Support</p>
+          <h3 className="mt-3 text-2xl font-black tracking-tight text-[#0B2A5B]">Apply for Global Impact Support</h3>
+          <h4 className="mt-3 text-base font-extrabold text-slate-900">Single form for company, impact, and scale readiness</h4>
+          <p className="mt-3 max-w-4xl text-sm leading-7 text-slate-600">
+            Share your enterprise profile, financial data, impact model, and scale proposal so the program team can review fit and readiness.
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-8 p-6 text-sm text-slate-800 md:p-8">
+          <SectionTitle title="About your company" />
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <TextField label="Registered business name *" value={fields.registeredBusinessName} error={errors.registeredBusinessName} onChange={(value) => updateField("registeredBusinessName", value)} />
+            <TextField label="Local business name (if different)" value={fields.localBusinessName} error={errors.localBusinessName} onChange={(value) => updateField("localBusinessName", value)} />
+            <TextField label="Date of incorporation/registration *" type="date" value={fields.incorporationDate} error={errors.incorporationDate} onChange={(value) => updateField("incorporationDate", value)} />
+            <SelectField label="Type of legal entity *" value={fields.legalEntity} error={errors.legalEntity} options={legalEntityOptions} onChange={(value) => updateField("legalEntity", value)} />
+            <TextField label="Primary place of operations (country, city) *" value={fields.placeOfOperations} error={errors.placeOfOperations} placeholder="e.g. India, Mumbai" onChange={(value) => updateField("placeOfOperations", value)} />
+            <SelectField label="Industry / Sector *" value={fields.industry} error={errors.industry} options={industryOptions} onChange={(value) => updateField("industry", value)} />
+            <TextField label="Website / Social media profile URL" value={fields.website} error={errors.website} placeholder="https://example.com" onChange={(value) => updateField("website", value)} />
+            <TextField label="Email address *" type="email" value={fields.email} error={errors.email} placeholder="contact@company.com" onChange={(value) => updateField("email", value)} />
+          </div>
+
+          <TextAreaField
+            label="Provide brief details of awards or recognition received by your business, if any"
+            value={fields.awardsRecognition}
+            error={errors.awardsRecognition}
+            onChange={(value) => updateField("awardsRecognition", value)}
+          />
+
+          <SectionTitle title="Business profile and pitch" />
+          <TextAreaField
+            label="Summarise your business pitch in a few sentences *"
+            value={fields.businessPitch}
+            error={errors.businessPitch}
+            helper="State the problem, your solution, the unique value proposition, and the business model."
+            onChange={(value) => updateField("businessPitch", value)}
+          />
+          <SelectField label="Current stage of the business *" value={fields.businessStage} error={errors.businessStage} options={businessStageOptions} onChange={(value) => updateField("businessStage", value)} />
+
+          <SectionTitle title="Financial profile" />
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <FinancialFields title="First financial statement *" statement="financialOne" values={fields.financialOne} errors={errors} onChange={updateFinancial} />
+            <FinancialFields title="Second financial statement *" statement="financialTwo" values={fields.financialTwo} errors={errors} onChange={updateFinancial} />
+          </div>
+
+          <SelectField label="Have you received any financial support in the past? *" value={fields.receivedFinancialSupport} error={errors.receivedFinancialSupport} options={yesNoOptions} onChange={(value) => updateField("receivedFinancialSupport", value)} />
+          {fields.receivedFinancialSupport === "Yes" && (
+            <TextAreaField
+              label="Details of financial support received *"
+              value={fields.financialSupportDetails}
+              error={errors.financialSupportDetails}
+              helper="Share details of awards, loans, investments, or grants received, including amounts and sources."
+              onChange={(value) => updateField("financialSupportDetails", value)}
+            />
+          )}
+
+          <SectionTitle title="Team, impact model, and reach" />
+          <TextAreaField
+            label="Briefly describe the experience and background of the core team members *"
+            value={fields.coreTeam}
+            error={errors.coreTeam}
+            onChange={(value) => updateField("coreTeam", value)}
+          />
+          <TextAreaField
+            label="Briefly describe your theory of change *"
+            value={fields.theoryOfChange}
+            error={errors.theoryOfChange}
+            helper="Explain how your business model and operations create positive social or environmental impact."
+            onChange={(value) => updateField("theoryOfChange", value)}
+          />
+          <CheckboxGroup label="Select the areas that your business impacts *" values={fields.impactAreas} error={errors.impactAreas} options={impactAreaOptions} onChange={(value) => toggleMultiValue("impactAreas", value)} />
+          <CheckboxGroup label="Select the segments that your business impacts *" values={fields.impactSegments} error={errors.impactSegments} options={impactSegmentOptions} onChange={(value) => toggleMultiValue("impactSegments", value)} />
+          <TextField label="Number of individuals impacted to date *" value={fields.individualsImpacted} error={errors.individualsImpacted} onChange={(value) => updateField("individualsImpacted", value)} />
+
+          <SectionTitle title="Business plans and proposal" />
+          <TextAreaField label="Describe your business plans for the coming two years *" value={fields.businessPlans} error={errors.businessPlans} onChange={(value) => updateField("businessPlans", value)} />
+          <TextAreaField
+            label="How will support be used to scale your business and impact? *"
+            value={fields.grantUsage}
+            error={errors.grantUsage}
+            helper="Include usage breakdown, beneficiary gains, and how the business and social impact will scale."
+            onChange={(value) => updateField("grantUsage", value)}
+          />
+          <TextField label="Estimated number of individuals you plan to directly reach *" value={fields.estimatedReach} error={errors.estimatedReach} onChange={(value) => updateField("estimatedReach", value)} />
+
+          <div className="space-y-2">
+            <label className="block font-bold text-[#0B2A5B]">Supporting document or proposal file</label>
+            {mode === "view" ? (
+              <div 
+                onClick={() => handleDownloadFile("pitchDeck", application?.pitchDeckName || "GlobalImpactProposal.pdf")}
+                className="flex flex-col items-center justify-center border-2 border-slate-200 rounded-xl bg-slate-50 p-4 transition-colors hover:bg-slate-100 cursor-pointer shadow-xs max-w-md"
+              >
+                <FileText className="h-8 w-8 text-[#FF6B00]" />
+                <span className="mt-2 text-xs font-bold text-slate-600 text-center truncate w-full">
+                  {application?.pitchDeckName || "GlobalImpactProposal.pdf"}
+                </span>
+                <span className="text-[10px] text-slate-400 font-bold mt-1 uppercase tracking-wider">Click to Download</span>
+              </div>
+            ) : (
+              <>
+                <input type="file" onChange={handleFileChange} accept=".pdf,.ppt,.pptx,.doc,.docx" className="block w-full rounded-lg border border-slate-300 p-3 text-sm" />
+                {supportingDocument && <p className="text-xs font-bold text-[#FF6B00]">Selected: {supportingDocument.name}</p>}
+              </>
+            )}
+          </div>
+
+          <div className="space-y-2 border-t border-slate-200 pt-6">
+            <label className="flex items-start gap-3 font-semibold text-slate-700">
+              <input type="checkbox" disabled={mode === "view"} checked={fields.declarationAccepted} onChange={(event) => updateField("declarationAccepted", event.target.checked)} className="mt-1" />
+              <span>I confirm that the information provided is true, complete, authorized for review, and may be used for application assessment and related communication.</span>
+            </label>
+            {errors.declarationAccepted && <p className="text-xs font-bold text-red-500">{errors.declarationAccepted}</p>}
+          </div>
+
+          <div className="flex justify-end gap-3 border-t border-slate-100 pt-6">
+            {mode === "view" ? (
+              <button type="button" onClick={onCancel} className="rounded-lg border border-[#0B2A5B] bg-white px-8 py-3 font-bold text-[#0B2A5B] transition-colors hover:bg-slate-50">
+                Go Back
+              </button>
+            ) : (
+              <>
+                <button type="button" onClick={onCancel} className="rounded-lg border border-slate-200 bg-slate-50 px-6 py-3 font-bold text-[#0B2A5B] transition-colors hover:bg-slate-100">
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="rounded-lg bg-[#FF6B00] px-8 py-3 font-extrabold uppercase tracking-widest text-white shadow transition-all hover:bg-[#E65F00] disabled:opacity-50"
+                >
+                  {submitting ? "Submitting..." : "Submit Application"}
+                </button>
+              </>
+            )}
+          </div>
+        </form>
+        <ApplicationSuccessModal
+          open={successModalOpen}
+          applicationId={successApplication?.id}
+          programName={successApplication?.programName}
+          onClose={() => setSuccessModalOpen(false)}
+          onContinue={handleContinue}
+        />
       </div>
-
-      <form onSubmit={handleSubmit} className="space-y-8 p-6 text-sm text-slate-800 md:p-8">
-        <SectionTitle title="About your company" />
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          <TextField label="Registered business name *" value={fields.registeredBusinessName} error={errors.registeredBusinessName} onChange={(value) => updateField("registeredBusinessName", value)} />
-          <TextField label="Registered business name / brand name" value={fields.localBusinessName} error={errors.localBusinessName} onChange={(value) => updateField("localBusinessName", value)} />
-          <TextField label="Date of incorporation *" type="date" value={fields.incorporationDate} error={errors.incorporationDate} onChange={(value) => updateField("incorporationDate", value)} />
-          <SelectField label="Type of legal entity *" value={fields.legalEntity} error={errors.legalEntity} options={legalEntityOptions} onChange={(value) => updateField("legalEntity", value)} />
-          <SelectField label="Industry *" value={fields.industry} error={errors.industry} options={industryOptions} onChange={(value) => updateField("industry", value)} />
-          <TextField label="Link to company website" value={fields.website} error={errors.website} placeholder="https://" onChange={(value) => updateField("website", value)} />
-          <TextField label="Email address *" type="email" value={fields.email} error={errors.email} onChange={(value) => updateField("email", value)} />
-        </div>
-        <TextAreaField label="Place of operations *" value={fields.placeOfOperations} error={errors.placeOfOperations} onChange={(value) => updateField("placeOfOperations", value)} />
-        <TextAreaField label="Accreditation, awards and recognition" value={fields.awardsRecognition} error={errors.awardsRecognition} onChange={(value) => updateField("awardsRecognition", value)} />
-
-        <SectionTitle title="About your business" />
-        <TextAreaField
-          label="Elevator pitch of your business *"
-          value={fields.businessPitch}
-          error={errors.businessPitch}
-          helper="Include purpose, unique value proposition, revenue drivers, target customer segment, cost structure, and sales channels."
-          onChange={(value) => updateField("businessPitch", value)}
-        />
-        <SelectField label="Current stage of business *" value={fields.businessStage} error={errors.businessStage} options={businessStageOptions} onChange={(value) => updateField("businessStage", value)} />
-
-        <section className="space-y-6 rounded-2xl border border-slate-200 bg-slate-50 p-5">
-          <SectionTitle title="Financial data for the most recent two years" compact />
-          <FinancialFields title="Annual Financial Statement 1" statement="financialOne" values={fields.financialOne} errors={errors} onChange={updateFinancial} />
-          <FinancialFields title="Annual Financial Statement 2" statement="financialTwo" values={fields.financialTwo} errors={errors} onChange={updateFinancial} />
-        </section>
-
-        <SelectField
-          label="Has the business received any financial awards, bank loans, or investments? *"
-          value={fields.receivedFinancialSupport}
-          error={errors.receivedFinancialSupport}
-          options={yesNoOptions}
-          onChange={(value) => updateField("receivedFinancialSupport", value)}
-        />
-        {fields.receivedFinancialSupport === "Yes" && (
-          <TextAreaField label="Financial awards, loans, investments, or grant details *" value={fields.financialSupportDetails} error={errors.financialSupportDetails} onChange={(value) => updateField("financialSupportDetails", value)} />
-        )}
-
-        <TextAreaField
-          label="Who are your core team members? *"
-          value={fields.coreTeam}
-          error={errors.coreTeam}
-          helper="Briefly describe relevant industry, business, impact experience, skill sets, advisors, and company size/headcount."
-          onChange={(value) => updateField("coreTeam", value)}
-        />
-
-        <SectionTitle title="About your impact" />
-        <TextAreaField
-          label="What is your theory of change? *"
-          value={fields.theoryOfChange}
-          error={errors.theoryOfChange}
-          helper="Describe intended beneficiaries, long-term outcomes, and how you track and measure impact."
-          onChange={(value) => updateField("theoryOfChange", value)}
-        />
-        <CheckboxGroup label="Select the areas that your business impacts *" values={fields.impactAreas} error={errors.impactAreas} options={impactAreaOptions} onChange={(value) => toggleMultiValue("impactAreas", value)} />
-        <CheckboxGroup label="Select the segments that your business impacts *" values={fields.impactSegments} error={errors.impactSegments} options={impactSegmentOptions} onChange={(value) => toggleMultiValue("impactSegments", value)} />
-        <TextField label="Number of individuals impacted to date *" value={fields.individualsImpacted} error={errors.individualsImpacted} onChange={(value) => updateField("individualsImpacted", value)} />
-
-        <SectionTitle title="Business plans and proposal" />
-        <TextAreaField label="Describe your business plans for the coming two years *" value={fields.businessPlans} error={errors.businessPlans} onChange={(value) => updateField("businessPlans", value)} />
-        <TextAreaField
-          label="How will support be used to scale your business and impact? *"
-          value={fields.grantUsage}
-          error={errors.grantUsage}
-          helper="Include usage breakdown, beneficiary gains, and how the business and social impact will scale."
-          onChange={(value) => updateField("grantUsage", value)}
-        />
-        <TextField label="Estimated number of individuals you plan to directly reach *" value={fields.estimatedReach} error={errors.estimatedReach} onChange={(value) => updateField("estimatedReach", value)} />
-
-        <div className="space-y-2">
-          <label className="block font-bold text-[#0B2A5B]">Supporting document or proposal file</label>
-          <input type="file" onChange={handleFileChange} accept=".pdf,.ppt,.pptx,.doc,.docx" className="block w-full rounded-lg border border-slate-300 p-3 text-sm" />
-          {supportingDocument && <p className="text-xs font-bold text-[#FF6B00]">Selected: {supportingDocument.name}</p>}
-        </div>
-
-        <div className="space-y-2 border-t border-slate-200 pt-6">
-          <label className="flex items-start gap-3 font-semibold text-slate-700">
-            <input type="checkbox" checked={fields.declarationAccepted} onChange={(event) => updateField("declarationAccepted", event.target.checked)} className="mt-1" />
-            <span>I confirm that the information provided is true, complete, authorized for review, and may be used for application assessment and related communication.</span>
-          </label>
-          {errors.declarationAccepted && <p className="text-xs font-bold text-red-500">{errors.declarationAccepted}</p>}
-        </div>
-
-        <div className="flex justify-end gap-3 border-t border-slate-100 pt-6">
-          <button type="button" onClick={onCancel} className="rounded-lg border border-slate-200 bg-slate-50 px-6 py-3 font-bold text-[#0B2A5B] transition-colors hover:bg-slate-100">
-            Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={submitting}
-            className="rounded-lg bg-[#FF6B00] px-8 py-3 font-extrabold uppercase tracking-widest text-white shadow transition-all hover:bg-[#E65F00] disabled:opacity-50"
-          >
-            {submitting ? "Submitting..." : "Submit Application"}
-          </button>
-        </div>
-      </form>
-      <ApplicationSuccessModal
-        open={successModalOpen}
-        applicationId={successApplication?.id}
-        programName={successApplication?.programName}
-        onClose={() => setSuccessModalOpen(false)}
-        onContinue={handleContinue}
-      />
-    </div>
+    </FormModeContext.Provider>
   );
 };
+
+const FormModeContext = React.createContext({ disabled: false });
 
 const SectionTitle: React.FC<{ title: string; compact?: boolean }> = ({ title, compact = false }) => (
   <div className={compact ? "" : "border-b border-slate-100 pb-3"}>
@@ -360,52 +435,70 @@ type BaseFieldProps = {
   onChange: (value: string) => void;
 };
 
-const TextField: React.FC<BaseFieldProps & { type?: string; placeholder?: string }> = ({ label, value, error, helper, onChange, type = "text", placeholder }) => (
-  <div className="space-y-1.5">
-    <label className="block font-bold text-[#0B2A5B]">{label}</label>
-    <input
-      type={type}
-      value={value}
-      onChange={(event) => onChange(event.target.value)}
-      placeholder={placeholder}
-      className={`w-full rounded-lg border bg-white p-3 outline-none ${error ? "border-red-500 bg-red-50/30" : "border-slate-300 focus:border-[#0B2A5B]"}`}
-    />
-    {helper && <p className="text-xs font-semibold text-slate-500">{helper}</p>}
-    {error && <p className="text-xs font-bold text-red-500">{error}</p>}
-  </div>
-);
+const TextField: React.FC<BaseFieldProps & { type?: string; placeholder?: string }> = ({ label, value, error, helper, onChange, type = "text", placeholder }) => {
+  const { disabled: contextDisabled } = React.useContext(FormModeContext);
+  return (
+    <div className="space-y-1.5">
+      <label className="block font-bold text-[#0B2A5B]">{label}</label>
+      <input
+        type={type}
+        value={value}
+        disabled={contextDisabled}
+        onChange={(event) => onChange(event.target.value)}
+        placeholder={placeholder}
+        className={`w-full rounded-lg border bg-white p-3 outline-none ${
+          contextDisabled ? "bg-slate-100 text-slate-500 cursor-not-allowed" : ""
+        } ${error ? "border-red-500 bg-red-50/30" : "border-slate-300 focus:border-[#0B2A5B]"}`}
+      />
+      {helper && <p className="text-xs font-semibold text-slate-500">{helper}</p>}
+      {error && <p className="text-xs font-bold text-red-500">{error}</p>}
+    </div>
+  );
+};
 
-const TextAreaField: React.FC<BaseFieldProps> = ({ label, value, error, helper, onChange }) => (
-  <div className="space-y-1.5">
-    <label className="block font-bold text-[#0B2A5B]">{label}</label>
-    {helper && <p className="text-xs font-semibold text-slate-500">{helper}</p>}
-    <textarea
-      rows={5}
-      value={value}
-      onChange={(event) => onChange(event.target.value)}
-      className={`w-full rounded-lg border bg-white p-3 outline-none ${error ? "border-red-500 bg-red-50/30" : "border-slate-300 focus:border-[#0B2A5B]"}`}
-    />
-    {error && <p className="text-xs font-bold text-red-500">{error}</p>}
-  </div>
-);
+const TextAreaField: React.FC<BaseFieldProps> = ({ label, value, error, helper, onChange }) => {
+  const { disabled: contextDisabled } = React.useContext(FormModeContext);
+  return (
+    <div className="space-y-1.5">
+      <label className="block font-bold text-[#0B2A5B]">{label}</label>
+      {helper && <p className="text-xs font-semibold text-slate-500">{helper}</p>}
+      <textarea
+        rows={5}
+        value={value}
+        disabled={contextDisabled}
+        onChange={(event) => onChange(event.target.value)}
+        className={`w-full rounded-lg border bg-white p-3 outline-none ${
+          contextDisabled ? "bg-slate-100 text-slate-500 cursor-not-allowed" : ""
+        } ${error ? "border-red-500 bg-red-50/30" : "border-slate-300 focus:border-[#0B2A5B]"}`}
+      />
+      {error && <p className="text-xs font-bold text-red-500">{error}</p>}
+    </div>
+  );
+};
 
-const SelectField: React.FC<BaseFieldProps & { options: string[] }> = ({ label, value, error, helper, options, onChange }) => (
-  <div className="space-y-1.5">
-    <label className="block font-bold text-[#0B2A5B]">{label}</label>
-    <select
-      value={value}
-      onChange={(event) => onChange(event.target.value)}
-      className={`w-full rounded-lg border bg-white p-3 outline-none ${error ? "border-red-500 bg-red-50/30" : "border-slate-300 focus:border-[#0B2A5B]"}`}
-    >
-      <option value="">Choose an option</option>
-      {options.map((option) => (
-        <option key={option} value={option}>{option}</option>
-      ))}
-    </select>
-    {helper && <p className="text-xs font-semibold text-slate-500">{helper}</p>}
-    {error && <p className="text-xs font-bold text-red-500">{error}</p>}
-  </div>
-);
+const SelectField: React.FC<BaseFieldProps & { options: string[] }> = ({ label, value, error, helper, options, onChange }) => {
+  const { disabled: contextDisabled } = React.useContext(FormModeContext);
+  return (
+    <div className="space-y-1.5">
+      <label className="block font-bold text-[#0B2A5B]">{label}</label>
+      <select
+        value={value}
+        disabled={contextDisabled}
+        onChange={(event) => onChange(event.target.value)}
+        className={`w-full rounded-lg border bg-white p-3 outline-none ${
+          contextDisabled ? "bg-slate-100 text-slate-500 cursor-not-allowed" : ""
+        } ${error ? "border-red-500 bg-red-50/30" : "border-slate-300 focus:border-[#0B2A5B]"}`}
+      >
+        <option value="">Choose an option</option>
+        {options.map((option) => (
+          <option key={option} value={option}>{option}</option>
+        ))}
+      </select>
+      {helper && <p className="text-xs font-semibold text-slate-500">{helper}</p>}
+      {error && <p className="text-xs font-bold text-red-500">{error}</p>}
+    </div>
+  );
+};
 
 const CheckboxGroup: React.FC<{
   label: string;
@@ -413,20 +506,25 @@ const CheckboxGroup: React.FC<{
   error?: string;
   options: string[];
   onChange: (value: string) => void;
-}> = ({ label, values, error, options, onChange }) => (
-  <fieldset className="space-y-3">
-    <legend className="font-bold text-[#0B2A5B]">{label}</legend>
-    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-      {options.map((option) => (
-        <label key={option} className="flex items-center gap-3 rounded-lg border border-slate-200 bg-white p-3 font-semibold">
-          <input type="checkbox" checked={values.includes(option)} onChange={() => onChange(option)} />
-          {option}
-        </label>
-      ))}
-    </div>
-    {error && <p className="text-xs font-bold text-red-500">{error}</p>}
-  </fieldset>
-);
+}> = ({ label, values, error, options, onChange }) => {
+  const { disabled: contextDisabled } = React.useContext(FormModeContext);
+  return (
+    <fieldset className="space-y-3">
+      <legend className="font-bold text-[#0B2A5B]">{label}</legend>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {options.map((option) => (
+          <label key={option} className={`flex items-center gap-3 rounded-lg border border-slate-200 bg-white p-3 font-semibold ${
+            contextDisabled ? "opacity-75 cursor-not-allowed" : "cursor-pointer"
+          }`}>
+            <input type="checkbox" checked={values.includes(option)} disabled={contextDisabled} onChange={() => onChange(option)} />
+            {option}
+          </label>
+        ))}
+      </div>
+      {error && <p className="text-xs font-bold text-red-500">{error}</p>}
+    </fieldset>
+  );
+};
 
 const FinancialFields: React.FC<{
   title: string;

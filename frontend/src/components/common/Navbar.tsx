@@ -17,7 +17,6 @@ export const Navbar: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [openMobileDropdown, setOpenMobileDropdown] = useState<string | null>(null);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
-  const [settingsSubmenuOpen, setSettingsSubmenuOpen] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState("en");
   const profileMenuRef = useRef<HTMLDivElement | null>(null);
 
@@ -94,7 +93,6 @@ export const Navbar: React.FC = () => {
     const handleClickOutside = (event: MouseEvent) => {
       if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
         setProfileMenuOpen(false);
-        setSettingsSubmenuOpen(false);
       }
     };
 
@@ -156,10 +154,7 @@ export const Navbar: React.FC = () => {
     { label: "Notifications", path: "/startup/notifications", icon: <Bell className="w-4 h-4" /> },
   ];
 
-  const settingsLinks = [
-    { label: "Change Email ID", path: "/startup/settings#email", icon: <Settings className="w-3.5 h-3.5" /> },
-    { label: "Change Password", path: "/startup/settings#password", icon: <Settings className="w-3.5 h-3.5" /> },
-  ];
+
 
   // ── Handle Register Form Submit ──
   const handleRegSubmit = async (e: React.FormEvent) => {
@@ -395,39 +390,18 @@ export const Navbar: React.FC = () => {
                               <span>{item.label}</span>
                             </Link>
                           ))}
-                          <button
-                            type="button"
-                            onClick={() => setSettingsSubmenuOpen((prev) => !prev)}
-                            className={`flex w-full items-center justify-between px-4 py-2.5 text-sm font-semibold transition-colors ${
+                          <Link
+                            to="/startup/settings"
+                            onClick={() => setProfileMenuOpen(false)}
+                            className={`flex w-full items-center gap-3 px-4 py-2.5 text-sm font-semibold transition-colors ${
                               location.pathname.startsWith("/startup/settings")
                                 ? "bg-slate-50 text-[#0B2A5B]"
                                 : "text-slate-700 hover:bg-slate-50 hover:text-[#0B2A5B]"
                             }`}
                           >
-                            <span className="flex items-center gap-3">
-                              <Settings className="w-4 h-4 text-slate-400" />
-                              <span>Settings</span>
-                            </span>
-                            <ChevronDown className={`w-4 h-4 transition-transform ${settingsSubmenuOpen ? "rotate-180" : ""}`} />
-                          </button>
-                          {settingsSubmenuOpen && (
-                            <div className="bg-slate-50/80 border-t border-slate-100">
-                              {settingsLinks.map((item) => (
-                                <Link
-                                  key={item.path}
-                                  to={item.path}
-                                  onClick={() => {
-                                    setProfileMenuOpen(false);
-                                    setSettingsSubmenuOpen(false);
-                                  }}
-                                  className="flex items-center gap-3 pl-10 pr-4 py-2.5 text-xs font-semibold text-slate-600 hover:text-[#0B2A5B] hover:bg-white border-t border-slate-100"
-                                >
-                                  <span className="text-slate-400">{item.icon}</span>
-                                  <span>{item.label}</span>
-                                </Link>
-                              ))}
-                            </div>
-                          )}
+                            <Settings className="w-4 h-4 text-slate-400" />
+                            <span>Settings</span>
+                          </Link>
                         </div>
                         <div className="border-t border-slate-100 p-2">
                           <button
