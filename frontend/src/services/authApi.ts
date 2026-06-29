@@ -1,7 +1,9 @@
 const getApiBaseUrl = () => {
   const configured = import.meta.env.VITE_API_BASE_URL?.trim();
   if (configured) return configured.replace(/\/$/, "");
-  return import.meta.env.PROD ? "/api" : "http://localhost:5000/api";
+  // Use relative "/api" when running on a deployed domain; localhost uses the dev backend.
+  const isLocal = typeof window !== "undefined" && /^localhost$|^127\./.test(window.location.hostname);
+  return isLocal ? "http://localhost:5000/api" : "/api";
 };
 
 const API_BASE_URL = getApiBaseUrl();
