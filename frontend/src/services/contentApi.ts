@@ -1,4 +1,17 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+const getApiBaseUrl = () => {
+  const configured = import.meta.env.VITE_API_BASE_URL?.trim();
+  if (configured) return configured.replace(/\/$/, "");
+  return import.meta.env.PROD ? "/api" : "http://localhost:5000/api";
+};
+
+const API_BASE_URL = getApiBaseUrl();
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const isRetryableNetworkError = (error: unknown) => {
+  const message = error instanceof Error ? error.message : String(error);
+  return /Failed to fetch|NetworkError|ERR_NETWORK_CHANGED|Load failed/i.test(message);
+};
 
 type ApiResponse<T> = {
   success: boolean;
@@ -8,14 +21,35 @@ type ApiResponse<T> = {
 
 const request = async <T>(path: string, options: RequestInit = {}): Promise<ApiResponse<T>> => {
   const token = localStorage.getItem("bsi_auth_token");
-  const response = await fetch(`${API_BASE_URL}${path}`, {
+  const requestInit: RequestInit = {
     ...options,
     headers: {
       "Content-Type": "application/json",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(options.headers || {}),
     },
-  });
+  };
+
+  let response: Response | null = null;
+  let lastError: unknown = null;
+
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      response = await fetch(`${API_BASE_URL}${path}`, requestInit);
+      lastError = null;
+      break;
+    } catch (error) {
+      lastError = error;
+      if (attempt === 1 || !isRetryableNetworkError(error)) {
+        throw error;
+      }
+      await sleep(300 * (attempt + 1));
+    }
+  }
+
+  if (!response) {
+    throw lastError instanceof Error ? lastError : new Error("Request failed. Please try again.");
+  }
 
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
@@ -62,6 +96,8 @@ export const contentApi = {
     unwrap(request<any>("/applications", { method: "POST", body: JSON.stringify(payload) })),
   updateApplicationStatus: (id: string, payload: Record<string, unknown>) =>
     unwrap(request<any>(`/admin/applications/${id}/status`, { method: "PATCH", body: JSON.stringify(payload) })),
+  updateApplicationIncubatorStatus: (id: string, payload: { preferenceOrder: number; status?: string; completenessStatus?: string; comments?: string }) =>
+    unwrap(request<any>(`/admin/applications/${id}/incubator-status`, { method: "PATCH", body: JSON.stringify(payload) })),
   createQuery: (payload: Record<string, unknown>) =>
     unwrap(request<any>("/queries", { method: "POST", body: JSON.stringify(payload) })),
   replyQuery: (id: string, reply: string) =>

@@ -32,6 +32,17 @@ const applicationRecordSchema = new mongoose.Schema(
     additionalDocumentsName: String,
     adminRemarks: String,
     rejectedAt: String,
+    incubatorPreferences: [
+      {
+        incubatorName: String,
+        preferenceOrder: Number,
+        status: String,
+        submittedDate: String,
+        completenessStatus: String,
+        comments: String,
+        commentsDate: String,
+      },
+    ],
     timeline: [
       {
         status: String,
