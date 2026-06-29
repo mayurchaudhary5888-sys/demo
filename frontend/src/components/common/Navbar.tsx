@@ -58,8 +58,8 @@ export const Navbar: React.FC = () => {
       label: "PORTFOLIO",
       path: "/portfolio",
       dropdownItems: [
-        { label: "Incubator Portfolios", path: "/portfolio/incubators" },
-        { label: "Startup Portfolios", path: "/portfolio/startups" },
+        { label: "Incubator Portfolios", path: "/portfolio" },
+        { label: "Startup Portfolios", path: "/startup_portfolio" },
       ],
     },
     {

@@ -21,7 +21,6 @@ const ProgramsListing = lazy(() => import("./pages/public/ProgramsListing").then
 const ProgramInfoPage = lazy(() => import("./pages/public/ProgramInfoPage").then((mod) => ({ default: mod.ProgramInfoPage })));
 const ProgramDetail = lazy(() => import("./pages/public/ProgramDetail").then((mod) => ({ default: mod.ProgramDetail })));
 const ContactUs = lazy(() => import("./pages/public/ContactUs").then((mod) => ({ default: mod.ContactUs })));
-const PortfolioIndex = lazy(() => import("./pages/public/portfolio/PortfolioIndex").then((mod) => ({ default: mod.PortfolioIndex })));
 const IncubatorPortfolio = lazy(() => import("./pages/public/portfolio/IncubatorPortfolio").then((mod) => ({ default: mod.IncubatorPortfolio })));
 const StartupPortfolio = lazy(() => import("./pages/public/portfolio/StartupPortfolio").then((mod) => ({ default: mod.StartupPortfolio })));
 
@@ -113,12 +112,13 @@ const AppContent: React.FC = () => {
             <Route path="/programs/:slug" element={<LegacyProgramRedirect />} />
             <Route path="/contact-us" element={<ContactUs />} />
             <Route path="/contact" element={<Navigate to="/contact-us" replace />} />
-            <Route path="/portfolio" element={<PortfolioIndex />} />
-            <Route path="/portfolio/incubators" element={<IncubatorPortfolio />} />
-            <Route path="/portfolio/startups" element={<StartupPortfolio />} />
+            <Route path="/portfolio" element={<IncubatorPortfolio />} />
+            <Route path="/startup_portfolio" element={<StartupPortfolio />} />
             <Route path="/portfolios" element={<Navigate to="/portfolio" replace />} />
-            <Route path="/portfolios/incubators" element={<Navigate to="/portfolio/incubators" replace />} />
-            <Route path="/portfolios/startups" element={<Navigate to="/portfolio/startups" replace />} />
+            <Route path="/portfolio/incubators" element={<Navigate to="/portfolio" replace />} />
+            <Route path="/portfolio/startups" element={<Navigate to="/startup_portfolio" replace />} />
+            <Route path="/portfolios/incubators" element={<Navigate to="/portfolio" replace />} />
+            <Route path="/portfolios/startups" element={<Navigate to="/startup_portfolio" replace />} />
 
             {/* Auth Channels */}
             <Route path="/register" element={<Register />} />
