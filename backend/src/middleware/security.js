@@ -4,7 +4,7 @@ import rateLimit from "express-rate-limit";
 import { env } from "../config/env.js";
 
 const corsOrigin = (origin, callback) => {
-  if (!origin || env.clientOrigins.includes(origin.replace(/\/$/, ""))) {
+  if (!origin || env.allowAllClientOrigins || env.clientOrigins.includes(origin.replace(/\/$/, ""))) {
     return callback(null, true);
   }
   return callback(new Error("CORS origin is not allowed."));
@@ -15,6 +15,8 @@ export const securityMiddleware = [
   cors({
     origin: corsOrigin,
     credentials: false,
+    methods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   }),
 ];
 

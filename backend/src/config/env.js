@@ -44,7 +44,14 @@ if (isProduction) {
   }
 }
 
-const clientOrigins = parseOrigins(process.env.CLIENT_ORIGIN || "http://localhost:3000");
+const clientOriginValues = [
+  process.env.CLIENT_ORIGINS,
+  process.env.CLIENT_ORIGIN,
+  "http://localhost:3000",
+];
+
+const clientOrigins = [...new Set(clientOriginValues.flatMap((value) => parseOrigins(value)))];
+const allowAllClientOrigins = clientOrigins.includes("*");
 
 export const env = {
   port: Number(process.env.PORT || 5000),
@@ -54,6 +61,7 @@ export const env = {
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || (isProduction ? "2h" : "7d"),
   clientOrigin: clientOrigins[0],
   clientOrigins,
+  allowAllClientOrigins,
   otpTtlMinutes: Number(process.env.OTP_TTL_MINUTES || 10),
   adminEmail: process.env.ADMIN_EMAIL || "admin@startupindia.gov.in",
   adminPassword: process.env.ADMIN_PASSWORD || "admin@123",
