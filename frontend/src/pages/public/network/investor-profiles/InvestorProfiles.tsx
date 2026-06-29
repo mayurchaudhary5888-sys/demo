@@ -1,297 +1,584 @@
-import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import {
-  TrendingUp,
-  Users,
-  Briefcase,
-  Shield,
-  Bell,
-  ArrowRight,
-  Sparkles,
+  ArrowLeft,
+  CheckCircle2,
+  Building2,
+  User,
+  Mail,
+  Phone,
   Globe,
-  BadgeCheck,
-  Rocket,
-  ChevronRight,
+  Linkedin,
+  FileText,
+  Briefcase,
+  AlertCircle
 } from "lucide-react";
+import { contentApi } from "../../../../services/contentApi";
 
-const LAUNCH_DATE = new Date("2026-08-15T00:00:00+05:30");
-
-const useCountdown = (target: Date) => {
-  const calc = () => {
-    const now = Date.now();
-    const diff = Math.max(0, target.getTime() - now);
-    return {
-      days: Math.floor(diff / (1000 * 60 * 60 * 24)),
-      hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
-      minutes: Math.floor((diff / (1000 * 60)) % 60),
-      seconds: Math.floor((diff / 1000) % 60),
-    };
-  };
-  const [time, setTime] = useState(calc);
-  useEffect(() => {
-    const id = setInterval(() => setTime(calc), 1000);
-    return () => clearInterval(id);
-  }, []);
-  return time;
-};
-
-const features = [
-  {
-    icon: TrendingUp,
-    title: "Smart Deal Flow",
-    description:
-      "AI-curated startup recommendations based on your investment thesis, sector preferences, and ticket size.",
-    color: "from-blue-500 to-indigo-600",
-    bgColor: "bg-blue-50",
-    iconColor: "text-blue-600",
-  },
-  {
-    icon: Shield,
-    title: "Verified Profiles",
-    description:
-      "SEBI-compliant due diligence records and DPIIT verified credentials for every listed investor entity.",
-    color: "from-emerald-500 to-teal-600",
-    bgColor: "bg-emerald-50",
-    iconColor: "text-emerald-600",
-  },
-  {
-    icon: Users,
-    title: "Co-Investment Network",
-    description:
-      "Syndicate deal rooms connecting angel investors, VC partners, and institutional LPs for collaborative rounds.",
-    color: "from-violet-500 to-purple-600",
-    bgColor: "bg-violet-50",
-    iconColor: "text-violet-600",
-  },
-  {
-    icon: Globe,
-    title: "Cross-Border Access",
-    description:
-      "Gateway to international investor networks across Singapore, UAE, UK, and US for Indian startups seeking global capital.",
-    color: "from-amber-500 to-orange-600",
-    bgColor: "bg-amber-50",
-    iconColor: "text-amber-600",
-  },
+const investorTypes = [
+  "Angel Investor",
+  "Venture Capital (VC)",
+  "Family Office",
+  "Corporate VC",
+  "Syndicate",
+  "Other"
 ];
 
-const stats = [
-  { value: "250+", label: "Angel Investors" },
-  { value: "80+", label: "VC Firms" },
-  { value: "₹500Cr+", label: "Capital Deployed" },
-  { value: "15+", label: "Sectors Covered" },
+const sectorOptions = [
+  "Fintech",
+  "SaaS / B2B",
+  "Healthtech",
+  "Edtech",
+  "E-commerce",
+  "CleanTech / EV",
+  "DeepTech / AI",
+  "Agritech",
+  "Other"
+];
+
+const stageOptions = [
+  "Pre-Seed",
+  "Seed",
+  "Pre-Series A",
+  "Series A",
+  "Series B",
+  "Growth"
+];
+
+const ticketSizeOptions = [
+  "Under ₹10 Lakhs",
+  "₹10 Lakhs - ₹50 Lakhs",
+  "₹50 Lakhs - ₹2 Crores",
+  "₹2 Crores - ₹5 Crores",
+  "Above ₹5 Crores"
 ];
 
 export const InvestorProfiles: React.FC = () => {
-  const countdown = useCountdown(LAUNCH_DATE);
-  const [email, setEmail] = useState("");
-  const [subscribed, setSubscribed] = useState(false);
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    name: "",
+    designation: "",
+    email: "",
+    phone: "",
+    firmName: "",
+    website: "",
+    linkedin: "",
+    investorType: "",
+    sectors: [] as string[],
+    investmentStages: [] as string[],
+    ticketSize: "",
+    investmentThesis: "",
+    portfolioCompanies: ""
+  });
 
-  const handleNotify = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (email.trim() && /\S+@\S+\.\S+/.test(email)) {
-      setSubscribed(true);
-      setEmail("");
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) {
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next[name];
+        return next;
+      });
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30" id="investor-profiles-page">
-      {/* Hero Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-16">
-        <div className="text-center max-w-3xl mx-auto space-y-6">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 bg-gradient-to-r from-[#FF6B00]/10 to-amber-50 border border-[#FF6B00]/20 rounded-full px-4 py-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-[#FF6B00]" />
-            <span className="text-[11px] font-black uppercase tracking-[0.2em] text-[#FF6B00]">
-              Coming Soon
-            </span>
+  const handleCheckboxChange = (name: "sectors" | "investmentStages", value: string) => {
+    setFormData((prev) => {
+      const currentList = prev[name];
+      const nextList = currentList.includes(value)
+        ? currentList.filter((item) => item !== value)
+        : [...currentList, value];
+      return { ...prev, [name]: nextList };
+    });
+    if (errors[name]) {
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next[name];
+        return next;
+      });
+    }
+  };
+
+  const validate = () => {
+    const newErrors: Record<string, string> = {};
+    if (!formData.name.trim()) newErrors.name = "Representative name is required.";
+    if (!formData.designation.trim()) newErrors.designation = "Designation is required.";
+    if (!formData.email.trim()) {
+      newErrors.email = "Email address is required.";
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = "Invalid email format.";
+    }
+    if (!formData.phone.trim()) {
+      newErrors.phone = "Phone number is required.";
+    } else if (!/^\+?[\d\s-]{10,15}$/.test(formData.phone.trim())) {
+      newErrors.phone = "Invalid phone number format.";
+    }
+    if (!formData.firmName.trim()) newErrors.firmName = "Firm / Syndicate name is required.";
+    if (!formData.linkedin.trim()) {
+      newErrors.linkedin = "LinkedIn profile URL is required.";
+    } else if (!/^https?:\/\/(www\.)?linkedin\.com\/.*$/i.test(formData.linkedin)) {
+      newErrors.linkedin = "Please enter a valid LinkedIn URL.";
+    }
+    if (!formData.investorType) newErrors.investorType = "Investor type is required.";
+    if (formData.sectors.length === 0) newErrors.sectors = "Select at least one sector.";
+    if (formData.investmentStages.length === 0) newErrors.investmentStages = "Select at least one investment stage.";
+    if (!formData.ticketSize) newErrors.ticketSize = "Average ticket size is required.";
+    if (!formData.investmentThesis.trim()) {
+      newErrors.investmentThesis = "Investment thesis is required.";
+    } else if (formData.investmentThesis.trim().length < 20) {
+      newErrors.investmentThesis = "Investment thesis should be at least 20 characters.";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validate()) {
+      const firstErrorField = Object.keys(errors)[0];
+      const element = document.getElementsByName(firstErrorField)[0];
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+      return;
+    }
+
+    setSubmitting(true);
+    setSubmitError("");
+    try {
+      await contentApi.submitInvestorProfile(formData);
+      setSubmitted(true);
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : "Failed to register profile. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (submitted) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8" id="investor-success-page">
+        <div className="max-w-md w-full bg-white rounded-3xl border border-slate-200/80 shadow-[0_12px_40px_rgba(15,23,42,0.06)] p-8 text-center space-y-6">
+          <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-emerald-50 border border-emerald-100">
+            <CheckCircle2 className="h-10 w-10 text-emerald-500" />
           </div>
-
-          {/* Title */}
-          <h1 className="text-4xl md:text-5xl font-black tracking-tight text-[#0B2A5B] leading-[1.1]">
-            Investor Profiles
-            <span className="block mt-2 bg-gradient-to-r from-[#FF6B00] to-amber-500 bg-clip-text text-transparent">
-              Directory
-            </span>
-          </h1>
-
-          <p className="text-base md:text-lg text-slate-600 leading-relaxed max-w-2xl mx-auto">
-            India's most comprehensive verified directory of angel investors, venture capital firms,
-            and institutional funding partners — purpose-built for the BHASKAR startup ecosystem.
-          </p>
-
-          {/* Countdown Timer */}
-          <div className="flex justify-center gap-3 sm:gap-5 pt-4">
-            {[
-              { value: countdown.days, label: "Days" },
-              { value: countdown.hours, label: "Hours" },
-              { value: countdown.minutes, label: "Minutes" },
-              { value: countdown.seconds, label: "Seconds" },
-            ].map((unit) => (
-              <div
-                key={unit.label}
-                className="flex flex-col items-center"
-              >
-                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center justify-center">
-                  <span className="text-2xl sm:text-3xl font-black text-[#0B2A5B] tabular-nums">
-                    {String(unit.value).padStart(2, "0")}
-                  </span>
-                </div>
-                <span className="mt-2 text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                  {unit.label}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Stats Row */}
-      <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {stats.map((stat) => (
-            <div
-              key={stat.label}
-              className="bg-white rounded-2xl border border-slate-200 p-5 text-center shadow-sm hover:shadow-md hover:border-slate-300 transition-all"
-            >
-              <p className="text-2xl md:text-3xl font-black text-[#0B2A5B]">{stat.value}</p>
-              <p className="mt-1 text-xs font-bold text-slate-500 uppercase tracking-wide">{stat.label}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Features Grid */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
-        <div className="text-center mb-10">
-          <span className="text-[11px] font-black text-[#FF6B00] uppercase tracking-[0.2em]">
-            Platform Capabilities
-          </span>
-          <h2 className="mt-2 text-2xl md:text-3xl font-black text-[#0B2A5B] tracking-tight">
-            What's Coming
-          </h2>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {features.map((feat) => (
-            <div
-              key={feat.title}
-              className="group bg-white rounded-2xl border border-slate-200 p-6 md:p-8 shadow-sm hover:shadow-lg hover:border-slate-300 transition-all"
-            >
-              <div className="flex items-start gap-4">
-                <div className={`h-12 w-12 rounded-xl ${feat.bgColor} flex items-center justify-center shrink-0`}>
-                  <feat.icon className={`h-6 w-6 ${feat.iconColor}`} />
-                </div>
-                <div className="space-y-2">
-                  <h3 className="text-base font-black text-[#0B2A5B]">{feat.title}</h3>
-                  <p className="text-sm text-slate-600 leading-relaxed">{feat.description}</p>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Notify CTA */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
-        <div className="bg-gradient-to-br from-[#0B2A5B] to-[#163d7a] rounded-3xl p-8 md:p-12 text-center relative overflow-hidden">
-          {/* Decorative circles */}
-          <div className="absolute -top-20 -right-20 w-64 h-64 bg-white/5 rounded-full" />
-          <div className="absolute -bottom-16 -left-16 w-48 h-48 bg-white/5 rounded-full" />
-
-          <div className="relative z-10 max-w-lg mx-auto space-y-5">
-            <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-1.5">
-              <Bell className="w-3.5 h-3.5 text-[#FF6B00]" />
-              <span className="text-[11px] font-black uppercase tracking-[0.2em] text-white/90">
-                Get Early Access
-              </span>
-            </div>
-
-            <h2 className="text-2xl md:text-3xl font-black text-white tracking-tight">
-              Be the First to Know
-            </h2>
-            <p className="text-sm text-white/70 leading-relaxed">
-              Join our early access list to get notified when Investor Profiles goes live.
-              Priority access for registered BHASKAR members.
+          <div className="space-y-2">
+            <h2 className="text-2xl font-black text-[#0B2A5B] tracking-tight">Registration Submitted!</h2>
+            <p className="text-sm font-semibold text-slate-550 leading-relaxed">
+              Thank you for registering. Your details have been sent to our review team at{" "}
+              <span className="font-extrabold text-[#0B2A5B]">helloitsmeparth@gmail.com</span>. We will review and verify your profile shortly.
             </p>
+          </div>
+          <div className="pt-2">
+            <button
+              onClick={() => navigate("/")}
+              className="w-full rounded-xl bg-[#0B2A5B] hover:bg-[#07144A] py-3 text-xs font-black uppercase tracking-widest text-white shadow-lg transition-all"
+            >
+              Go to Homepage
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-            {subscribed ? (
-              <div className="flex items-center justify-center gap-2 bg-emerald-500/20 border border-emerald-400/30 rounded-xl py-3 px-6">
-                <BadgeCheck className="w-5 h-5 text-emerald-400" />
-                <span className="text-sm font-bold text-emerald-300">
-                  You're on the list! We'll notify you at launch.
-                </span>
+  return (
+    <div className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8" id="investor-profile-registration">
+      <div className="max-w-4xl mx-auto mb-5 flex items-center">
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-2 text-slate-500 hover:text-[#0B2A5B] font-bold text-sm transition-all"
+        >
+          <ArrowLeft className="w-4 h-4" /> Back
+        </button>
+      </div>
+
+      <div className="max-w-4xl mx-auto bg-white rounded-3xl border border-slate-200/80 shadow-[0_12px_40px_rgba(15,23,42,0.06)] overflow-hidden">
+        {/* Header Block */}
+        <div className="text-center py-10 bg-slate-50 border-b border-slate-200">
+          <h1 className="text-3xl font-black text-[#0B2A5B] tracking-tight">Investor Profile</h1>
+          <p className="mt-2 text-sm font-semibold text-slate-650">
+            All form fields are <span className="font-extrabold text-[#0B2A5B]">mandatory</span>, unless mentioned as <span className="italic font-extrabold">'optional'</span>
+          </p>
+          <p className="mt-1 text-xs font-semibold text-slate-400">Join the BHASKAR network directory of Angel and VC Investors</p>
+        </div>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="p-8 space-y-8 bg-white">
+          {submitError && (
+            <div className="flex items-start gap-3 bg-red-50 border border-red-200 rounded-xl p-4 text-red-700">
+              <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+              <div className="text-sm font-bold">{submitError}</div>
+            </div>
+          )}
+
+          {/* Section 1: Authorized Representative */}
+          <div className="space-y-1">
+            <div className="border-b border-slate-200 pb-2 mb-4">
+              <h3 className="text-base font-black text-[#0B2A5B] uppercase tracking-wider">
+                1. Representative & Contact Info
+              </h3>
+            </div>
+
+            {/* Representative Name */}
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start py-4 border-b border-slate-100">
+              <div className="md:col-span-4 pt-2">
+                <label className="text-sm font-extrabold text-[#0B2A5B]">
+                  Representative Name<span className="text-red-500">*</span>
+                </label>
               </div>
-            ) : (
-              <form onSubmit={handleNotify} className="flex gap-3 max-w-md mx-auto">
+              <div className="md:col-span-8">
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  placeholder="Enter full name"
+                  className={`w-full rounded-lg border bg-[#EDF0F5] px-4 py-2.5 text-sm text-slate-800 outline-none transition-all font-semibold ${
+                    errors.name ? "border-red-500 bg-red-50/30" : "border-slate-200 focus:border-[#FF6B00] focus:bg-white"
+                  }`}
+                />
+                {errors.name && <p className="text-red-550 font-bold text-xs mt-1">{errors.name}</p>}
+              </div>
+            </div>
+
+            {/* Designation */}
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start py-4 border-b border-slate-100">
+              <div className="md:col-span-4 pt-2">
+                <label className="text-sm font-extrabold text-[#0B2A5B]">
+                  Designation<span className="text-red-500">*</span>
+                </label>
+              </div>
+              <div className="md:col-span-8">
+                <input
+                  type="text"
+                  name="designation"
+                  value={formData.designation}
+                  onChange={handleInputChange}
+                  placeholder="e.g. Managing Partner, Angel Investor"
+                  className={`w-full rounded-lg border bg-[#EDF0F5] px-4 py-2.5 text-sm text-slate-800 outline-none transition-all font-semibold ${
+                    errors.designation ? "border-red-500 bg-red-50/30" : "border-slate-200 focus:border-[#FF6B00] focus:bg-white"
+                  }`}
+                />
+                {errors.designation && <p className="text-red-550 font-bold text-xs mt-1">{errors.designation}</p>}
+              </div>
+            </div>
+
+            {/* Email Address */}
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start py-4 border-b border-slate-100">
+              <div className="md:col-span-4 pt-2">
+                <label className="text-sm font-extrabold text-[#0B2A5B]">
+                  Email Address<span className="text-red-500">*</span>
+                </label>
+              </div>
+              <div className="md:col-span-8">
                 <input
                   type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="your@email.com"
-                  required
-                  className="flex-1 rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-sm font-semibold text-white placeholder-white/40 outline-none focus:border-[#FF6B00] focus:bg-white/15 transition-all"
-                  id="investor-notify-email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  placeholder="e.g. name@firm.com"
+                  className={`w-full rounded-lg border bg-[#EDF0F5] px-4 py-2.5 text-sm text-slate-800 outline-none transition-all font-semibold ${
+                    errors.email ? "border-red-500 bg-red-50/30" : "border-slate-200 focus:border-[#FF6B00] focus:bg-white"
+                  }`}
                 />
-                <button
-                  type="submit"
-                  className="rounded-xl bg-[#FF6B00] hover:bg-[#E65F00] px-6 py-3 text-xs font-black uppercase tracking-widest text-white shadow-lg transition-all flex items-center gap-2"
-                >
-                  Notify Me
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-              </form>
-            )}
+                {errors.email && <p className="text-red-550 font-bold text-xs mt-1">{errors.email}</p>}
+              </div>
+            </div>
+
+            {/* Phone Number */}
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start py-4 border-b border-slate-100">
+              <div className="md:col-span-4 pt-2">
+                <label className="text-sm font-extrabold text-[#0B2A5B]">
+                  Phone Number<span className="text-red-500">*</span>
+                </label>
+              </div>
+              <div className="md:col-span-8">
+                <input
+                  type="text"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleInputChange}
+                  placeholder="e.g. +91 9876543210"
+                  className={`w-full rounded-lg border bg-[#EDF0F5] px-4 py-2.5 text-sm text-slate-800 outline-none transition-all font-semibold ${
+                    errors.phone ? "border-red-500 bg-red-50/30" : "border-slate-200 focus:border-[#FF6B00] focus:bg-white"
+                  }`}
+                />
+                {errors.phone && <p className="text-red-550 font-bold text-xs mt-1">{errors.phone}</p>}
+              </div>
+            </div>
           </div>
-        </div>
-      </section>
 
-      {/* Quick Links */}
-      <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <Link
-            to="/network/startup-profiles"
-            className="group bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md hover:border-[#FF6B00]/30 transition-all flex items-center gap-4"
-          >
-            <div className="h-10 w-10 rounded-xl bg-blue-50 flex items-center justify-center shrink-0 group-hover:bg-blue-100 transition-colors">
-              <Rocket className="h-5 w-5 text-blue-600" />
+          {/* Section 2: Investor Profile */}
+          <div className="space-y-1">
+            <div className="border-b border-slate-200 pb-2 mb-4">
+              <h3 className="text-base font-black text-[#0B2A5B] uppercase tracking-wider">
+                2. Investor Entity Details
+              </h3>
             </div>
-            <div>
-              <p className="text-sm font-black text-[#0B2A5B]">Startup Profiles</p>
-              <p className="text-xs text-slate-500 mt-0.5">Browse registered founders</p>
-            </div>
-            <ArrowRight className="w-4 h-4 text-slate-300 ml-auto group-hover:text-[#FF6B00] transition-colors" />
-          </Link>
 
-          <Link
-            to="/startup_portfolio"
-            className="group bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md hover:border-[#FF6B00]/30 transition-all flex items-center gap-4"
-          >
-            <div className="h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0 group-hover:bg-emerald-100 transition-colors">
-              <Briefcase className="h-5 w-5 text-emerald-600" />
+            {/* Firm/Syndicate Name */}
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start py-4 border-b border-slate-100">
+              <div className="md:col-span-4 pt-2">
+                <label className="text-sm font-extrabold text-[#0B2A5B]">
+                  Firm / Syndicate Name<span className="text-red-500">*</span>
+                </label>
+              </div>
+              <div className="md:col-span-8">
+                <input
+                  type="text"
+                  name="firmName"
+                  value={formData.firmName}
+                  onChange={handleInputChange}
+                  placeholder="Enter company / fund name"
+                  className={`w-full rounded-lg border bg-[#EDF0F5] px-4 py-2.5 text-sm text-slate-800 outline-none transition-all font-semibold ${
+                    errors.firmName ? "border-red-500 bg-red-50/30" : "border-slate-200 focus:border-[#FF6B00] focus:bg-white"
+                  }`}
+                />
+                {errors.firmName && <p className="text-red-550 font-bold text-xs mt-1">{errors.firmName}</p>}
+              </div>
             </div>
-            <div>
-              <p className="text-sm font-black text-[#0B2A5B]">Startup Portfolio</p>
-              <p className="text-xs text-slate-500 mt-0.5">Explore funded ventures</p>
-            </div>
-            <ArrowRight className="w-4 h-4 text-slate-300 ml-auto group-hover:text-[#FF6B00] transition-colors" />
-          </Link>
 
-          <Link
-            to="/contact-us"
-            className="group bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md hover:border-[#FF6B00]/30 transition-all flex items-center gap-4"
-          >
-            <div className="h-10 w-10 rounded-xl bg-amber-50 flex items-center justify-center shrink-0 group-hover:bg-amber-100 transition-colors">
-              <BadgeCheck className="h-5 w-5 text-amber-600" />
+            {/* Website URL */}
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start py-4 border-b border-slate-100">
+              <div className="md:col-span-4 pt-2">
+                <label className="text-sm font-extrabold text-[#0B2A5B]">
+                  Website URL <span className="text-slate-400 font-medium">(Optional)</span>
+                </label>
+              </div>
+              <div className="md:col-span-8">
+                <input
+                  type="text"
+                  name="website"
+                  value={formData.website}
+                  onChange={handleInputChange}
+                  placeholder="https://example.com"
+                  className="w-full rounded-lg border border-slate-200 bg-[#EDF0F5] px-4 py-2.5 text-sm text-slate-800 outline-none transition-all font-semibold focus:border-[#FF6B00] focus:bg-white"
+                />
+              </div>
             </div>
-            <div>
-              <p className="text-sm font-black text-[#0B2A5B]">Register as Investor</p>
-              <p className="text-xs text-slate-500 mt-0.5">Join the directory</p>
+
+            {/* LinkedIn Profile */}
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start py-4 border-b border-slate-100">
+              <div className="md:col-span-4 pt-2">
+                <label className="text-sm font-extrabold text-[#0B2A5B]">
+                  LinkedIn Profile URL<span className="text-red-500">*</span>
+                </label>
+              </div>
+              <div className="md:col-span-8">
+                <input
+                  type="text"
+                  name="linkedin"
+                  value={formData.linkedin}
+                  onChange={handleInputChange}
+                  placeholder="https://linkedin.com/in/username"
+                  className={`w-full rounded-lg border bg-[#EDF0F5] px-4 py-2.5 text-sm text-slate-800 outline-none transition-all font-semibold ${
+                    errors.linkedin ? "border-red-500 bg-red-50/30" : "border-slate-200 focus:border-[#FF6B00] focus:bg-white"
+                  }`}
+                />
+                {errors.linkedin && <p className="text-red-550 font-bold text-xs mt-1">{errors.linkedin}</p>}
+              </div>
             </div>
-            <ArrowRight className="w-4 h-4 text-slate-300 ml-auto group-hover:text-[#FF6B00] transition-colors" />
-          </Link>
-        </div>
-      </section>
+
+            {/* Type of Investor */}
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start py-4 border-b border-slate-100">
+              <div className="md:col-span-4 pt-2">
+                <label className="text-sm font-extrabold text-[#0B2A5B]">
+                  Type of Investor<span className="text-red-500">*</span>
+                </label>
+              </div>
+              <div className="md:col-span-8">
+                <select
+                  name="investorType"
+                  value={formData.investorType}
+                  onChange={handleInputChange}
+                  className={`w-full rounded-lg border bg-[#EDF0F5] px-4 py-2.5 text-sm text-slate-800 outline-none transition-all font-semibold ${
+                    errors.investorType ? "border-red-500 bg-red-50/30" : "border-slate-200 focus:border-[#FF6B00] focus:bg-white"
+                  }`}
+                >
+                  <option value="">Select Investor Type</option>
+                  {investorTypes.map((type) => (
+                    <option key={type} value={type}>
+                      {type}
+                    </option>
+                  ))}
+                </select>
+                {errors.investorType && <p className="text-red-550 font-bold text-xs mt-1">{errors.investorType}</p>}
+              </div>
+            </div>
+          </div>
+
+          {/* Section 3: Investment Criteria & Thesis */}
+          <div className="space-y-1">
+            <div className="border-b border-slate-200 pb-2 mb-4">
+              <h3 className="text-base font-black text-[#0B2A5B] uppercase tracking-wider">
+                3. Investment Thesis & Criteria
+              </h3>
+            </div>
+
+            {/* Sectors of Interest */}
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start py-4 border-b border-slate-100">
+              <div className="md:col-span-4 pt-2">
+                <label className="text-sm font-extrabold text-[#0B2A5B]">
+                  Sectors of Interest<span className="text-red-500">*</span>
+                </label>
+                <p className="text-xs text-slate-400 font-bold mt-1">Select all that apply</p>
+              </div>
+              <div className="md:col-span-8">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {sectorOptions.map((sector) => (
+                    <label
+                      key={sector}
+                      className={`flex items-center gap-2 px-3 py-2 border rounded-lg cursor-pointer transition-all select-none ${
+                        formData.sectors.includes(sector)
+                          ? "border-[#FF6B00] bg-[#FF6B00]/5 text-[#FF6B00] font-bold"
+                          : "border-slate-200 bg-slate-50 text-slate-650 hover:bg-slate-100 font-semibold"
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={formData.sectors.includes(sector)}
+                        onChange={() => handleCheckboxChange("sectors", sector)}
+                        className="hidden"
+                      />
+                      <span className="text-xs">{sector}</span>
+                    </label>
+                  ))}
+                </div>
+                {errors.sectors && <p className="text-red-550 font-bold text-xs mt-2">{errors.sectors}</p>}
+              </div>
+            </div>
+
+            {/* Average Ticket Size */}
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start py-4 border-b border-slate-100">
+              <div className="md:col-span-4 pt-2">
+                <label className="text-sm font-extrabold text-[#0B2A5B]">
+                  Average Ticket Size<span className="text-red-500">*</span>
+                </label>
+              </div>
+              <div className="md:col-span-8">
+                <select
+                  name="ticketSize"
+                  value={formData.ticketSize}
+                  onChange={handleInputChange}
+                  className={`w-full rounded-lg border bg-[#EDF0F5] px-4 py-2.5 text-sm text-slate-800 outline-none transition-all font-semibold ${
+                    errors.ticketSize ? "border-red-500 bg-red-50/30" : "border-slate-200 focus:border-[#FF6B00] focus:bg-white"
+                  }`}
+                >
+                  <option value="">Select Ticket Size</option>
+                  {ticketSizeOptions.map((size) => (
+                    <option key={size} value={size}>
+                      {size}
+                    </option>
+                  ))}
+                </select>
+                {errors.ticketSize && <p className="text-red-550 font-bold text-xs mt-1">{errors.ticketSize}</p>}
+              </div>
+            </div>
+
+            {/* Target Investment Stages */}
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start py-4 border-b border-slate-100">
+              <div className="md:col-span-4 pt-2">
+                <label className="text-sm font-extrabold text-[#0B2A5B]">
+                  Target Investment Stages<span className="text-red-500">*</span>
+                </label>
+                <p className="text-xs text-slate-400 font-bold mt-1">Select all that apply</p>
+              </div>
+              <div className="md:col-span-8">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {stageOptions.map((stage) => (
+                    <label
+                      key={stage}
+                      className={`flex items-center gap-2 px-3 py-2 border rounded-lg cursor-pointer transition-all select-none ${
+                        formData.investmentStages.includes(stage)
+                          ? "border-[#FF6B00] bg-[#FF6B00]/5 text-[#FF6B00] font-bold"
+                          : "border-slate-200 bg-slate-50 text-slate-650 hover:bg-slate-100 font-semibold"
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={formData.investmentStages.includes(stage)}
+                        onChange={() => handleCheckboxChange("investmentStages", stage)}
+                        className="hidden"
+                      />
+                      <span className="text-xs">{stage}</span>
+                    </label>
+                  ))}
+                </div>
+                {errors.investmentStages && <p className="text-red-550 font-bold text-xs mt-2">{errors.investmentStages}</p>}
+              </div>
+            </div>
+
+            {/* Investment Thesis */}
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start py-4 border-b border-slate-100">
+              <div className="md:col-span-4 pt-2">
+                <label className="text-sm font-extrabold text-[#0B2A5B]">
+                  Brief Investment Thesis<span className="text-red-500">*</span>
+                </label>
+                <p className="text-xs text-slate-400 font-bold mt-1">Describe your focus sectors, value add, or philosophy</p>
+              </div>
+              <div className="md:col-span-8">
+                <textarea
+                  name="investmentThesis"
+                  value={formData.investmentThesis}
+                  onChange={handleInputChange}
+                  placeholder="Briefly state your core investment thesis and value addition to startups..."
+                  rows={4}
+                  className={`w-full rounded-lg border bg-[#EDF0F5] px-4 py-2.5 text-sm text-slate-800 outline-none transition-all font-semibold ${
+                    errors.investmentThesis ? "border-red-500 bg-red-50/30" : "border-slate-200 focus:border-[#FF6B00] focus:bg-white"
+                  }`}
+                />
+                {errors.investmentThesis && <p className="text-red-550 font-bold text-xs mt-1">{errors.investmentThesis}</p>}
+              </div>
+            </div>
+
+            {/* Key Portfolio Companies */}
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start py-4 border-b border-slate-100 last:border-b-0">
+              <div className="md:col-span-4 pt-2">
+                <label className="text-sm font-extrabold text-[#0B2A5B]">
+                  Key Portfolio Companies <span className="text-slate-400 font-medium">(Optional)</span>
+                </label>
+                <p className="text-xs text-slate-400 font-bold mt-1">List names of some of your prior investments</p>
+              </div>
+              <div className="md:col-span-8">
+                <textarea
+                  name="portfolioCompanies"
+                  value={formData.portfolioCompanies}
+                  onChange={handleInputChange}
+                  placeholder="e.g. Startup A, Startup B, Startup C"
+                  rows={3}
+                  className="w-full rounded-lg border border-slate-200 bg-[#EDF0F5] px-4 py-2.5 text-sm text-slate-800 outline-none transition-all font-semibold focus:border-[#FF6B00] focus:bg-white"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Form Actions */}
+          <div className="flex items-center justify-end gap-4 pt-6 border-t border-slate-200">
+            <button
+              type="button"
+              onClick={() => navigate(-1)}
+              className="px-6 py-2.5 border border-slate-350 hover:bg-slate-50 text-slate-700 rounded-xl font-black uppercase text-xs tracking-wider transition-all"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={submitting}
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#0B2A5B] hover:bg-[#07144A] disabled:bg-slate-350 px-8 py-2.5 text-xs font-black uppercase tracking-wider text-white shadow-lg transition-all"
+            >
+              {submitting ? "Saving..." : "Save"}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };

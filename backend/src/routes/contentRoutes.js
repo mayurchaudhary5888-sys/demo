@@ -14,6 +14,7 @@ import {
   getStartup,
   listApplications,
   listInvestors,
+  createInvestor,
   listUsers,
   listNotifications,
   listPrograms,
@@ -39,6 +40,7 @@ import {
   programSchema,
   queryReplySchema,
   startupProfileSchema,
+  investorProfileSchema,
   userStatusSchema,
   validateBody,
 } from "../validators/contentValidators.js";
@@ -60,6 +62,7 @@ contentRoutes.patch("/startups/:id", requireAuth, writeRateLimiter, validateBody
 contentRoutes.patch("/admin/startups/:id/approval", requireAuth, requireAdmin, writeRateLimiter, toggleStartupApproval);
 
 contentRoutes.get("/investors", listInvestors);
+contentRoutes.post("/investors", publicSubmissionRateLimiter, validateBody(investorProfileSchema), createInvestor);
 
 contentRoutes.get("/applications", requireAuth, listApplications);
 contentRoutes.get("/applications/:id", requireAuth, getApplication);
