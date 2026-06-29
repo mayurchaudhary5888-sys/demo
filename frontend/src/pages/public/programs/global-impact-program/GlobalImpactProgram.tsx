@@ -196,7 +196,7 @@ export const GlobalImpactProgram: React.FC<GlobalImpactProgramProps> = ({ progra
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!validate()) {
-      showToast("Please complete all required Global Impact Program fields.", "error");
+      showToast("Please complete all required Global Impact Support fields.", "error");
       return;
     }
 
@@ -227,7 +227,7 @@ export const GlobalImpactProgram: React.FC<GlobalImpactProgramProps> = ({ progra
   return (
     <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm" id="global-impact-application-form">
       <div className="border-b border-slate-100 bg-slate-50 px-6 py-8 md:px-8">
-        <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[#FF6B00]">Global Impact Program</p>
+        <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[#FF6B00]">Global Impact Support</p>
         <h3 className="mt-3 text-2xl font-black tracking-tight text-[#0B2A5B]">Apply for Global Impact Support</h3>
         <h4 className="mt-3 text-base font-extrabold text-slate-900">Single form for company, impact, and scale readiness</h4>
         <p className="mt-3 max-w-4xl text-sm leading-7 text-slate-600">
@@ -310,7 +310,7 @@ export const GlobalImpactProgram: React.FC<GlobalImpactProgramProps> = ({ progra
         <div className="space-y-2">
           <label className="block font-bold text-[#0B2A5B]">Supporting document or proposal file</label>
           <input type="file" onChange={handleFileChange} accept=".pdf,.ppt,.pptx,.doc,.docx" className="block w-full rounded-lg border border-slate-300 p-3 text-sm" />
-          {supportingDocument && <p className="text-xs font-bold text-emerald-700">Selected: {supportingDocument.name}</p>}
+          {supportingDocument && <p className="text-xs font-bold text-[#FF6B00]">Selected: {supportingDocument.name}</p>}
         </div>
 
         <div className="space-y-2 border-t border-slate-200 pt-6">

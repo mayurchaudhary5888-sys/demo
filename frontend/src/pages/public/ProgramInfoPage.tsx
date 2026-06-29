@@ -72,7 +72,7 @@ export const ProgramInfoPage: React.FC = () => {
               <DetailPanel title="Program Benefits">
                 {program.benefits.map((item) => (
                   <li key={item} className="flex gap-2.5 text-sm leading-relaxed text-slate-700">
-                    <CheckCircle2 className="h-4.5 w-4.5 text-emerald-600 shrink-0 mt-0.5" />
+                    <CheckCircle2 className="h-4.5 w-4.5 text-[#FF6B00] shrink-0 mt-0.5" />
                     <span>{item}</span>
                   </li>
                 ))}

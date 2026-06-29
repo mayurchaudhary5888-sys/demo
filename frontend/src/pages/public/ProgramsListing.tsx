@@ -76,10 +76,10 @@ export const ProgramsListing: React.FC = () => {
           const userApp = user ? applications.find((app) => app.programId === program.id) : null;
           
           // Determine status text and colors
-          let statusInfo = { text: "Apply Now", color: "text-red-600", bg: "bg-red-50", appId: "" };
+          let statusInfo = { text: "Apply Now", color: "text-emerald-600", bg: "bg-emerald-50", appId: "" };
           
           if (!user) {
-            statusInfo = { text: "Apply Now", color: "text-red-600", bg: "bg-red-50", appId: "" };
+            statusInfo = { text: "Apply Now", color: "text-emerald-600", bg: "bg-emerald-50", appId: "" };
           } else if (userApp) {
             statusInfo = {
               text: userApp.status,
@@ -89,12 +89,11 @@ export const ProgramsListing: React.FC = () => {
             };
           } else {
             // Logged in, not applied yet
-            // To mimic the mock exactly (some show "Apply Now", some show "Eligible"):
-            // If it's a mentorship track, show "Apply Now" (red). Else show "Eligible" (green).
+            // Keep only the "Apply Now" label green; the rest stays on the orange/blue theme.
             if (program.id === "idea-validation-program" || program.id === "foundation-program") {
-              statusInfo = { text: "Apply Now", color: "text-red-600", bg: "bg-red-50", appId: "" };
+              statusInfo = { text: "Apply Now", color: "text-emerald-600", bg: "bg-emerald-50", appId: "" };
             } else {
-              statusInfo = { text: "Eligible", color: "text-emerald-600", bg: "bg-emerald-50", appId: "" };
+              statusInfo = { text: "Eligible", color: "text-[#FF6B00]", bg: "bg-orange-50", appId: "" };
             }
           }
 
