@@ -292,7 +292,7 @@ export const StartupNetwork: React.FC = () => {
             </div>
 
             {/* Profile Grid metadata */}
-            <div className="grid grid-cols-2 gap-4 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
               <div className="bg-slate-50 p-3 rounded-lg border border-slate-150 space-y-0.5">
                 <span className="text-slate-400 font-bold uppercase text-[9px] font-mono">Primary Sector</span>
                 <p className="font-bold text-[#0B2A5B]">{focusedProfile.sector}</p>

@@ -144,7 +144,7 @@ export const ApplicationDetailsModal: React.FC<ApplicationDetailsModalProps> = (
         <div className="flex flex-1 flex-col md:flex-row overflow-hidden min-h-0">
           
           {/* Navigation Sidebar */}
-          <nav className="w-full md:w-64 border-r border-slate-100 bg-slate-50/20 p-4 space-y-1.5 overflow-y-auto shrink-0 md:block flex gap-2 md:flex-col pb-3 md:pb-4 border-b md:border-b-0">
+          <nav className="w-full md:w-64 border-r border-slate-100 bg-slate-50/20 p-4 space-y-1.5 overflow-x-auto md:overflow-y-auto shrink-0 md:block flex gap-2 md:flex-col pb-3 md:pb-4 border-b md:border-b-0">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -153,7 +153,7 @@ export const ApplicationDetailsModal: React.FC<ApplicationDetailsModalProps> = (
                   key={tab.id}
                   type="button"
                   onClick={() => setActiveTab(tab.id)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-xs font-extrabold tracking-wider uppercase transition-all ${
+                  className={`md:w-full shrink-0 flex items-center gap-3 px-4 py-3 rounded-xl text-left text-xs font-extrabold tracking-wider uppercase transition-all ${
                     isActive
                       ? "bg-[#0B2A5B] text-white shadow-md shadow-[#0B2A5B]/10"
                       : "text-slate-600 hover:bg-slate-100/80 hover:text-slate-900"

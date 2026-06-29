@@ -99,7 +99,7 @@ export const StartupProfiles: React.FC = () => {
                     key={role}
                     type="button"
                     onClick={() => setSelectedRole(role)}
-                    className={`px-4 py-2 text-xs font-bold rounded-lg transition-all duration-200 ${
+                    className={`shrink-0 px-4 py-2 text-xs font-bold rounded-lg transition-all duration-200 ${
                       isActive 
                         ? "bg-[#F9B233] text-slate-900 shadow font-extrabold scale-102"
                         : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
@@ -124,12 +124,12 @@ export const StartupProfiles: React.FC = () => {
 
         {/* Filter options bar matching screenshot */}
         <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm mt-4">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex flex-wrap items-center gap-6 w-full md:w-auto">
+          <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-6">
+            <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-4 w-full md:w-auto">
               <span className="text-[11px] font-black uppercase tracking-wider text-slate-400">Filter by:</span>
               
               {/* State Dropdown */}
-              <div className="relative min-w-[150px]">
+              <div className="relative w-full sm:w-auto sm:min-w-[150px]">
                 <select
                   value={selectedState}
                   onChange={(e) => setSelectedState(e.target.value)}
@@ -140,11 +140,11 @@ export const StartupProfiles: React.FC = () => {
                     <option key={s} value={s}>{s}</option>
                   ))}
                 </select>
-                <span className="pointer-events-none absolute right-3 top-3 h-2 w-2 border-b-2 border-r-2 border-slate-400 rotate-45" />
+                <span className="pointer-events-none absolute right-3 top-3.5 h-2 w-2 border-b-2 border-r-2 border-slate-400 rotate-45" />
               </div>
 
               {/* District/City Dropdown */}
-              <div className="relative min-w-[150px]">
+              <div className="relative w-full sm:w-auto sm:min-w-[150px]">
                 <select
                   value={selectedCity}
                   onChange={(e) => setSelectedCity(e.target.value)}
@@ -155,11 +155,11 @@ export const StartupProfiles: React.FC = () => {
                     <option key={c} value={c}>{c}</option>
                   ))}
                 </select>
-                <span className="pointer-events-none absolute right-3 top-3 h-2 w-2 border-b-2 border-r-2 border-slate-400 rotate-45" />
+                <span className="pointer-events-none absolute right-3 top-3.5 h-2 w-2 border-b-2 border-r-2 border-slate-400 rotate-45" />
               </div>
 
               {/* Sector Dropdown */}
-              <div className="relative min-w-[150px]">
+              <div className="relative w-full sm:w-auto sm:min-w-[150px]">
                 <select
                   value={selectedSector}
                   onChange={(e) => setSelectedSector(e.target.value)}
@@ -170,7 +170,7 @@ export const StartupProfiles: React.FC = () => {
                     <option key={sec} value={sec}>{sec}</option>
                   ))}
                 </select>
-                <span className="pointer-events-none absolute right-3 top-3 h-2 w-2 border-b-2 border-r-2 border-slate-400 rotate-45" />
+                <span className="pointer-events-none absolute right-3 top-3.5 h-2 w-2 border-b-2 border-r-2 border-slate-400 rotate-45" />
               </div>
             </div>
 
