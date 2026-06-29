@@ -14,6 +14,7 @@ import {
 import { authApi } from "../services/authApi";
 import { contentApi } from "../services/contentApi";
 import { normalizeStartupProfile } from "../pages/startup/utils/normalizeStartupProfile";
+import { saveFileToLocalStorage } from "../utils/documentStorage";
 
 // ── Toast type ──
 interface Toast {
@@ -307,6 +308,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         });
 
         setApplications((prev) => [created as unknown as Application, ...prev]);
+
+        // Client-side local storage document persistence
+        const appId = (created as any).id || (created as any)._id;
+        if (appId) {
+          if (data._pitchDeckFile) {
+            saveFileToLocalStorage(appId, "pitchDeck", data._pitchDeckFile).catch(console.error);
+          }
+          if (data._prototypePhotosFile) {
+            saveFileToLocalStorage(appId, "prototypePhotos", data._prototypePhotosFile).catch(console.error);
+          }
+          if (data._blockDiagramFile) {
+            saveFileToLocalStorage(appId, "blockDiagram", data._blockDiagramFile).catch(console.error);
+          }
+          if (data._additionalDocumentsFile) {
+            saveFileToLocalStorage(appId, "additionalDocuments", data._additionalDocumentsFile).catch(console.error);
+          }
+        }
+
         return created as Application;
       } catch (error) {
         const message = error instanceof Error ? error.message : "Unable to submit application.";

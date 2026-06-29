@@ -311,6 +311,9 @@ export const MsmeProgramApplication: React.FC<MsmeProgramApplicationProps> = ({ 
         pitchDeckName: pitchDeck?.name || "PitchDeck.pdf",
         prototypePhotosName: prototypePhotos?.name || "Prototype.png",
         blockDiagramName: blockDiagram?.name || "BlockDiagram.pdf",
+        _pitchDeckFile: pitchDeck,
+        _prototypePhotosFile: prototypePhotos,
+        _blockDiagramFile: blockDiagram,
       });
 
       setSuccessApplication({ id: created.id, programName: created.programName || program.name });

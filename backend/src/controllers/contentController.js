@@ -3,7 +3,6 @@ import { User } from "../models/User.js";
 import { Program } from "../models/Program.js";
 import { StartupProfile } from "../models/StartupProfile.js";
 import { InvestorProfile } from "../models/InvestorProfile.js";
-import { ApplicationRecord } from "../models/ApplicationRecord.js";
 import { ContactQuery } from "../models/ContactQuery.js";
 import { Notification } from "../models/Notification.js";
 import { Connection } from "../models/Connection.js";
@@ -13,8 +12,15 @@ import { generateApplicationId } from "../utils/applicationId.js";
 import { sendApplicationStatusEmail } from "../utils/otpEmail.js";
 import mongoose from "mongoose";
 
+import { IdeaValidationApplication } from "../models/IdeaValidationApplication.js";
+import { MsmeApplication } from "../models/MsmeApplication.js";
+import { FoundationApplication } from "../models/FoundationApplication.js";
+import { StartupApplication } from "../models/StartupApplication.js";
+import { GlobalImpactApplication } from "../models/GlobalImpactApplication.js";
+
 const sortNewestFirst = { createdAt: -1, updatedAt: -1 };
 const isPlaceholderStartupId = (value) => !value || value === "temp-id" || String(value).startsWith("temp-");
+
 
 const toPlainWithId = (doc) => {
   const item = typeof doc?.toObject === "function" ? doc.toObject() : doc;
@@ -294,11 +300,25 @@ export const listApplications = async (req, res, next) => {
     } else if (req.query.startupId) {
       query = { startupId: req.query.startupId };
     }
-    const data = await ApplicationRecord.find(query).sort(sortNewestFirst).lean();
-    const normalized = data.map((app) => ({
+    const [ideas, msmes, foundations, startups, globals] = await Promise.all([
+      IdeaValidationApplication.find(query).lean(),
+      MsmeApplication.find(query).lean(),
+      FoundationApplication.find(query).lean(),
+      StartupApplication.find(query).lean(),
+      GlobalImpactApplication.find(query).lean(),
+    ]);
+    const merged = [
+      ...ideas,
+      ...msmes,
+      ...foundations,
+      ...startups,
+      ...globals,
+    ];
+    const normalized = merged.map((app) => ({
       ...app,
       id: app.id || app._id.toString(),
     }));
+    normalized.sort((a, b) => new Date(b.createdAt || b.submittedDate || 0) - new Date(a.createdAt || a.submittedDate || 0));
     res.json({ success: true, data: normalized });
   } catch (err) {
     next(err);
@@ -307,7 +327,11 @@ export const listApplications = async (req, res, next) => {
 
 export const getApplication = async (req, res, next) => {
   try {
-    const data = await ApplicationRecord.findOne(applicationLookup(req.params.id)).lean();
+    const data = await IdeaValidationApplication.findOne(applicationLookup(req.params.id)).lean()
+      || await MsmeApplication.findOne(applicationLookup(req.params.id)).lean()
+      || await FoundationApplication.findOne(applicationLookup(req.params.id)).lean()
+      || await StartupApplication.findOne(applicationLookup(req.params.id)).lean()
+      || await GlobalImpactApplication.findOne(applicationLookup(req.params.id)).lean();
     if (!data) throw new AppError("Application not found.", 404);
     await assertApplicationOwnerOrAdmin(req, data);
     res.json({ success: true, data: { ...data, id: data.id || data._id.toString() } });
@@ -405,7 +429,20 @@ export const createApplication = async (req, res, next) => {
         },
       ],
     };
-    const created = await ApplicationRecord.create(payload);
+    let created;
+    if (req.body.programId === "idea-validation-program") {
+      created = await IdeaValidationApplication.create(payload);
+    } else if (req.body.programId === "msme-program") {
+      created = await MsmeApplication.create(payload);
+    } else if (req.body.programId === "foundation-program") {
+      created = await FoundationApplication.create(payload);
+    } else if (req.body.programId === "startup-program") {
+      created = await StartupApplication.create(payload);
+    } else if (req.body.programId === "global-impact-program") {
+      created = await GlobalImpactApplication.create(payload);
+    } else {
+      throw new AppError("Invalid program ID.", 400);
+    }
     res.status(201).json({ success: true, data: created.toObject() });
   } catch (err) {
     next(err);
@@ -414,7 +451,12 @@ export const createApplication = async (req, res, next) => {
 
 export const updateApplication = async (req, res, next) => {
   try {
-    const app = await ApplicationRecord.findOne(applicationLookup(req.params.id));
+    const app = await IdeaValidationApplication.findOne(applicationLookup(req.params.id))
+      || await MsmeApplication.findOne(applicationLookup(req.params.id))
+      || await FoundationApplication.findOne(applicationLookup(req.params.id))
+      || await StartupApplication.findOne(applicationLookup(req.params.id))
+      || await GlobalImpactApplication.findOne(applicationLookup(req.params.id));
+
     if (!app) throw new AppError("Application not found.", 404);
     await assertApplicationOwnerOrAdmin(req, app);
     Object.assign(app, req.body);
@@ -430,7 +472,12 @@ export const updateApplication = async (req, res, next) => {
 
 export const updateApplicationStatus = async (req, res, next) => {
   try {
-    const app = await ApplicationRecord.findOne(applicationLookup(req.params.id));
+    const app = await IdeaValidationApplication.findOne(applicationLookup(req.params.id))
+      || await MsmeApplication.findOne(applicationLookup(req.params.id))
+      || await FoundationApplication.findOne(applicationLookup(req.params.id))
+      || await StartupApplication.findOne(applicationLookup(req.params.id))
+      || await GlobalImpactApplication.findOne(applicationLookup(req.params.id));
+
     if (!app) throw new AppError("Application not found.", 404);
 
     app.status = req.body.status;
@@ -475,7 +522,12 @@ export const updateApplicationStatus = async (req, res, next) => {
 
 export const updateApplicationIncubatorStatus = async (req, res, next) => {
   try {
-    const app = await ApplicationRecord.findOne(applicationLookup(req.params.id));
+    const app = await IdeaValidationApplication.findOne(applicationLookup(req.params.id))
+      || await MsmeApplication.findOne(applicationLookup(req.params.id))
+      || await FoundationApplication.findOne(applicationLookup(req.params.id))
+      || await StartupApplication.findOne(applicationLookup(req.params.id))
+      || await GlobalImpactApplication.findOne(applicationLookup(req.params.id));
+
     if (!app) throw new AppError("Application not found.", 404);
 
     const { preferenceOrder, status, completenessStatus, comments } = req.body;
@@ -634,12 +686,33 @@ export const listConnections = async (_req, res, next) => {
 
 export const getDashboardStats = async (_req, res, next) => {
   try {
-    const [startups, applications, queries, programs] = await Promise.all([
+    const [
+      startups,
+      ideas,
+      msmes,
+      foundations,
+      startupsDocs,
+      globals,
+      queries,
+      programs,
+    ] = await Promise.all([
       StartupProfile.find(),
-      ApplicationRecord.find(),
+      IdeaValidationApplication.find().lean(),
+      MsmeApplication.find().lean(),
+      FoundationApplication.find().lean(),
+      StartupApplication.find().lean(),
+      GlobalImpactApplication.find().lean(),
       ContactQuery.find(),
       Program.find(),
     ]);
+
+    const applications = [
+      ...ideas,
+      ...msmes,
+      ...foundations,
+      ...startupsDocs,
+      ...globals,
+    ];
 
     res.json({
       success: true,

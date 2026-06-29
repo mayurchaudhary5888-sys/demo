@@ -381,6 +381,8 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
         selectedProgram: program.id,
         pitchDeckName: pitchDeckFile?.name || "PitchDeck.pdf",
         additionalDocumentsName: otherFile?.name,
+        _pitchDeckFile: pitchDeckFile,
+        _additionalDocumentsFile: otherFile,
       });
       setSuccessApplication({ id: created.id, programName: created.programName || program.name });
       setSuccessModalOpen(true);

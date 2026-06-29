@@ -21,6 +21,8 @@ import {
 } from "lucide-react";
 import { Application } from "../../types";
 import { StatusBadge } from "./StatusBadge";
+import { useAppState } from "../../context/AppContext";
+import { downloadStoredFile } from "../../utils/documentStorage";
 
 type ApplicationDetailsModalProps = {
   open: boolean;
@@ -64,10 +66,20 @@ export const ApplicationDetailsModal: React.FC<ApplicationDetailsModalProps> = (
   onClose
 }) => {
   const [activeTab, setActiveTab] = useState<string>("overview");
+  const { showToast } = useAppState();
 
   if (!open || !application) return null;
 
   const app = application as Application & Record<string, any>;
+
+  const handleDownload = (fieldKey: string, filename: string) => {
+    const success = downloadStoredFile(app.id || app._id, fieldKey, filename);
+    if (!success) {
+      showToast(`Simulated download of ${filename}`, "info");
+    } else {
+      showToast(`Downloading ${filename}`, "success");
+    }
+  };
 
   // Detect which custom fields are present in the submitted application
   const hasField = (key: string) => app[key] !== undefined && app[key] !== null && app[key] !== "";
@@ -630,7 +642,10 @@ export const ApplicationDetailsModal: React.FC<ApplicationDetailsModalProps> = (
                   <h4 className="text-xs font-black uppercase tracking-[0.2em] text-[#0B2A5B]">Attached Files</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* Pitch deck */}
-                    <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-4 flex items-center gap-3.5 shadow-sm">
+                    <div
+                      onClick={() => handleDownload("pitchDeck", app.pitchDeckName || "PitchDeck.pdf")}
+                      className="rounded-2xl border border-slate-200 bg-slate-50/50 p-4 flex items-center gap-3.5 shadow-sm cursor-pointer transition hover:bg-slate-100 hover:border-slate-300 active:scale-[0.98]"
+                    >
                       <div className="h-10 w-10 rounded-xl bg-red-100 flex items-center justify-center text-red-600 shrink-0">
                         <FileText className="h-5 w-5" />
                       </div>
@@ -642,7 +657,10 @@ export const ApplicationDetailsModal: React.FC<ApplicationDetailsModalProps> = (
 
                     {/* Prototype Photos */}
                     {hasField("prototypePhotosName") && (
-                      <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-4 flex items-center gap-3.5 shadow-sm">
+                      <div
+                        onClick={() => handleDownload("prototypePhotos", app.prototypePhotosName)}
+                        className="rounded-2xl border border-slate-200 bg-slate-50/50 p-4 flex items-center gap-3.5 shadow-sm cursor-pointer transition hover:bg-slate-100 hover:border-slate-300 active:scale-[0.98]"
+                      >
                         <div className="h-10 w-10 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600 shrink-0">
                           <FileText className="h-5 w-5" />
                         </div>
@@ -655,7 +673,10 @@ export const ApplicationDetailsModal: React.FC<ApplicationDetailsModalProps> = (
 
                     {/* Block Diagram */}
                     {hasField("blockDiagramName") && (
-                      <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-4 flex items-center gap-3.5 shadow-sm">
+                      <div
+                        onClick={() => handleDownload("blockDiagram", app.blockDiagramName)}
+                        className="rounded-2xl border border-slate-200 bg-slate-50/50 p-4 flex items-center gap-3.5 shadow-sm cursor-pointer transition hover:bg-slate-100 hover:border-slate-300 active:scale-[0.98]"
+                      >
                         <div className="h-10 w-10 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600 shrink-0">
                           <FileText className="h-5 w-5" />
                         </div>
@@ -668,7 +689,10 @@ export const ApplicationDetailsModal: React.FC<ApplicationDetailsModalProps> = (
 
                     {/* Additional documents */}
                     {hasField("additionalDocumentsName") && (
-                      <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-4 flex items-center gap-3.5 shadow-sm">
+                      <div
+                        onClick={() => handleDownload("additionalDocuments", app.additionalDocumentsName)}
+                        className="rounded-2xl border border-slate-200 bg-slate-50/50 p-4 flex items-center gap-3.5 shadow-sm cursor-pointer transition hover:bg-slate-100 hover:border-slate-300 active:scale-[0.98]"
+                      >
                         <div className="h-10 w-10 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 shrink-0">
                           <FileCode className="h-5 w-5" />
                         </div>

@@ -209,6 +209,7 @@ export const GlobalImpactProgram: React.FC<GlobalImpactProgramProps> = ({ progra
         startupId: user?.startupId || "",
         startupName: fields.registeredBusinessName,
         pitchDeckName: supportingDocument?.name || "GlobalImpactProposal.pdf",
+        _pitchDeckFile: supportingDocument,
       });
       setSuccessApplication({ id: created.id, programName: created.programName || program.name });
       setSuccessModalOpen(true);

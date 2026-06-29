@@ -4,7 +4,6 @@ import { fileURLToPath } from "url";
 import { Program } from "../models/Program.js";
 import { StartupProfile } from "../models/StartupProfile.js";
 import { InvestorProfile } from "../models/InvestorProfile.js";
-import { ApplicationRecord } from "../models/ApplicationRecord.js";
 import { ContactQuery } from "../models/ContactQuery.js";
 import { Notification } from "../models/Notification.js";
 import { Connection } from "../models/Connection.js";
@@ -44,7 +43,6 @@ const seedCollection = async (Model, seed) => {
 export const bootstrapContent = async () => {
   await seedCollection(Program, seedPrograms);
   await seedCollection(InvestorProfile, seedInvestors);
-  await seedCollection(ApplicationRecord, seedApplications);
   await seedCollection(ContactQuery, seedQueries);
   await seedCollection(Notification, seedNotifications);
   await seedCollection(Connection, seedConnections);
