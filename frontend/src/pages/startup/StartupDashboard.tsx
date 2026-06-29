@@ -11,11 +11,24 @@ import { StatusBadge } from "../../components/common/StatusBadge";
 import { ApplicationDetailsModal } from "../../components/common/ApplicationDetailsModal";
 import { StartupProfileSummaryCard } from "./components/StartupProfileSummaryCard";
 import { getCatalogProgram } from "../../data/programCatalog";
+import { StartupProgramApplication } from "../public/programs/startup-program/StartupProgramApplication";
+import type { Application } from "../../types";
 
 export const StartupDashboard: React.FC = () => {
   const { user, startups, applications } = useAppState();
   const [showApplicationModal, setShowApplicationModal] = useState(false);
+  const [applicationForView, setApplicationForView] = useState<Application | null>(null);
   const [activeTab, setActiveTab] = useState<"in_progress" | "selected" | "closed" | "rejected">("in_progress");
+
+  const openApplicationView = (application: Application) => {
+    setApplicationForView(application);
+    setShowApplicationModal(true);
+  };
+
+  const closeApplicationView = () => {
+    setShowApplicationModal(false);
+    setApplicationForView(null);
+  };
 
   const getAppTab = (status: string): "in_progress" | "selected" | "closed" | "rejected" => {
     switch (status) {
@@ -39,9 +52,10 @@ export const StartupDashboard: React.FC = () => {
   const latestApplication = myApplications[0];
   const startupAppForTab = myApplications.find((app) => {
     if (app.programId !== "startup-program") return false;
+    const appStatus = String(app.status);
 
     if (activeTab === "in_progress") {
-      return app.status !== "Closed" && app.status !== "Cancelled";
+      return appStatus !== "Closed" && appStatus !== "Cancelled";
     }
     if (activeTab === "selected") {
       const hasSelectedPref = app.incubatorPreferences?.some((p) => p.status === "Selected");
@@ -52,7 +66,7 @@ export const StartupDashboard: React.FC = () => {
       return app.status === "Rejected" || !!hasRejectedPref;
     }
     if (activeTab === "closed") {
-      return app.status === "Closed" || app.status === "Cancelled";
+      return appStatus === "Closed" || appStatus === "Cancelled";
     }
     return false;
   });
@@ -243,7 +257,7 @@ export const StartupDashboard: React.FC = () => {
                     </h3>
                     <button
                       type="button"
-                      onClick={() => setShowApplicationModal(true)}
+                      onClick={() => openApplicationView(startupAppForTab)}
                       className="border border-[#0B2A5B] text-[#0B2A5B] hover:bg-slate-50 font-bold px-5 py-1.5 rounded-full text-xs uppercase tracking-wide transition-colors"
                     >
                       View Application
@@ -302,7 +316,7 @@ export const StartupDashboard: React.FC = () => {
                               {isFirst && (
                                 <button
                                   type="button"
-                                  onClick={() => setShowApplicationModal(true)}
+                                  onClick={() => openApplicationView(startupAppForTab)}
                                   className="border border-[#0B2A5B] text-[#0B2A5B] hover:bg-slate-50 font-bold px-4 py-1.5 rounded-full text-xs uppercase tracking-wide transition-colors"
                                 >
                                   View Details
@@ -394,7 +408,7 @@ export const StartupDashboard: React.FC = () => {
                       </div>
                       <button
                         type="button"
-                        onClick={() => setShowApplicationModal(true)}
+                        onClick={() => openApplicationView(latestApplication)}
                         className="inline-flex items-center justify-center rounded-md bg-[#FF6B00] px-4 py-3 text-xs font-black uppercase tracking-wider text-white transition hover:bg-[#e65f00]"
                       >
                         View Application
@@ -450,11 +464,24 @@ export const StartupDashboard: React.FC = () => {
         </div>
       </section>
 
-      <ApplicationDetailsModal
-        open={showApplicationModal}
-        application={latestApplication}
-        onClose={() => setShowApplicationModal(false)}
-      />
+      {showApplicationModal && applicationForView?.programId === "startup-program" ? (
+        <div className="fixed inset-0 z-[120] bg-slate-950/60 p-3 backdrop-blur-sm sm:p-6" role="dialog" aria-modal="true">
+          <div className="mx-auto h-full max-w-7xl overflow-y-auto rounded-[28px] bg-white shadow-2xl">
+            <StartupProgramApplication
+              program={getCatalogProgram("startup-program") || selectedProgram}
+              application={applicationForView}
+              mode="view"
+              onCancel={closeApplicationView}
+            />
+          </div>
+        </div>
+      ) : (
+        <ApplicationDetailsModal
+          open={showApplicationModal}
+          application={applicationForView}
+          onClose={closeApplicationView}
+        />
+      )}
     </div>
   );
 };
