@@ -25,7 +25,7 @@ export const programCatalog: CatalogProgram[] = [
     partner: "BHASKAR",
     funding: "Up to ₹10 lakh grant",
     tagline: "Turn an early idea into a tested proof of concept.",
-    shortDescription: "Support for early-stage startups and student innovators developing a PoC or MVP.",
+    shortDescription: "Support is provided to help early-stage startups and student innovators develop Proof of Concept (PoC) and Minimum Viable Product (MVP). Eligible startups may also receive grant support to build prototypes, validate their ideas, and transform innovative concepts into market-ready solutions.",
     longDescription:
       "Support is provided to help early-stage startups and student innovators develop Proof of Concept (PoC) and Minimum Viable Product (MVP). Eligible startups may also receive grant support to build prototypes, validate their ideas, and transform innovative concepts into market-ready solutions.",
     benefits: [
@@ -59,7 +59,7 @@ export const programCatalog: CatalogProgram[] = [
     partner: "iCreate",
     funding: "Up to ₹15 lakh grant",
     tagline: "Strengthen innovation, commercial readiness, and growth potential.",
-    shortDescription: "Grant support for innovators, startups, MSMEs, students, and entrepreneurs with commercialization potential.",
+    shortDescription: "Eligible innovators, startups, MSMEs, students, and entrepreneurs can access grant support for innovative ideas with strong commercialization potential. These non-equity, non-repayable grants help fund prototype development, product validation, technology development, testing, commercialization, and business incubation.",
     longDescription:
       "Eligible innovators, startups, MSMEs, students, and entrepreneurs can access grant support for innovative ideas with strong commercialization potential. These non-equity, non-repayable grants help fund prototype development, product validation, technology development, testing, commercialization, and business incubation.",
     benefits: [
@@ -93,7 +93,7 @@ export const programCatalog: CatalogProgram[] = [
     partner: "BHASKAR",
     funding: "Up to ₹30 lakh grant",
     tagline: "Secure grants and CSR backing for purpose-led work.",
-    shortDescription: "Support for Foundations, Section 8 Companies, NGOs, and Social Enterprises seeking CSR and grant funding.",
+    shortDescription: "Support is provided to Foundations, Section 8 Companies, NGOs, and Social Enterprises to secure grants and CSR funding from corporate and institutional partners. We help with funding strategy, proposal development.",
     longDescription:
       "Support is provided to Foundations, Section 8 Companies, NGOs, and Social Enterprises to secure grants and CSR funding from corporate and institutional partners. We help with funding strategy, proposal development.",
     benefits: [
@@ -127,7 +127,7 @@ export const programCatalog: CatalogProgram[] = [
     partner: "SISFS",
     funding: "₹20 lakh grant / ₹50 lakh loan",
     tagline: "Move from proof of concept to market entry with seed support.",
-    shortDescription: "Financial assistance for startups working on PoC, prototype development, trials, and commercialization.",
+    shortDescription: "Seed fund aims to provide financial assistance to startups for proof of concept, prototype development, product trials, market entry and commercialization. This would enable these startups to graduate to a level where they will be able to raise investments from angel investors or venture capitalists or seek loans from commercial banks or financial institutions.",
     longDescription:
       "Seed fund aims to provide financial assistance to startups for proof of concept, prototype development, product trials, market entry and commercialization. This would enable these startups to graduate to a level where they will be able to raise investments from angel investors or venture capitalists or seek loans from commercial banks or financial institutions.",
     benefits: [
@@ -161,7 +161,7 @@ export const programCatalog: CatalogProgram[] = [
     partner: "BHASKAR",
     funding: "Up to ₹5 crore grant",
     tagline: "Back innovative solutions creating social, environmental, and economic change.",
-    shortDescription: "International funding support for organizations addressing global challenges.",
+    shortDescription: "The Global Impact Grant is an international funding support established to support organizations that are developing innovative solutions to address social, environmental, and economic challenges across the world.",
     longDescription:
       "The Global Impact Grant is an international funding support established to support organizations that are developing innovative solutions to address social, environmental, and economic challenges across the world.",
     benefits: [

@@ -33,36 +33,14 @@ export const ProgramsListing: React.FC = () => {
     <div className="min-h-[calc(100vh-7rem)] bg-slate-50" id="programs-listing-container">
       <section className="bg-[#07184A] text-white">
         <div className="mx-auto max-w-[88rem] px-5 py-10 sm:px-8 lg:px-10">
-          <nav className="flex" aria-label="Breadcrumb">
-            <ol role="list" className="flex items-center space-x-2 text-xs font-bold text-white/65">
-              <li>
-                <Link to="/" className="hover:text-white">Home</Link>
-              </li>
-              <li>
-                <span className="mx-1 text-white/30">/</span>
-                <span className="text-white">Programs</span>
-              </li>
-            </ol>
-          </nav>
-
-          <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,0.95fr)_minmax(320px,0.45fr)] lg:items-end">
-            <div className="space-y-4">
-              <span className="text-xs font-black uppercase tracking-[0.26em] text-[#F9B233]">Support Programs</span>
-              <h1 className="max-w-4xl text-4xl font-black tracking-tight sm:text-5xl">
-                Find the right startup support program
-              </h1>
-              <p className="max-w-3xl text-base leading-7 text-white/76">
-                Explore curated funding and mentorship tracks for idea validation, MSME innovation, foundation-stage founders, seed-stage startups, and global impact ventures.
-              </p>
-            </div>
-
-            <div className="rounded-2xl border border-white/15 bg-white/8 p-5">
-              <p className="text-[11px] font-black uppercase tracking-[0.22em] text-[#F9B233]">Available Tracks</p>
-              <p className="mt-2 text-3xl font-black">{displayedPrograms.length}</p>
-              <p className="mt-1 text-sm leading-6 text-white/70">
-                Select a program to review eligibility, required documents, and application details.
-              </p>
-            </div>
+          <div className="space-y-4">
+            <span className="text-xs font-black uppercase tracking-[0.26em] text-[#F9B233]">Support</span>
+            <h1 className="max-w-4xl text-4xl font-black tracking-tight sm:text-5xl">
+              Find the right startup support
+            </h1>
+            <p className="max-w-3xl text-base leading-7 text-white/76">
+              Explore curated funding and mentorship tracks to scale your startup.
+            </p>
           </div>
         </div>
       </section>
@@ -121,8 +99,8 @@ export const ProgramsListing: React.FC = () => {
 
               {/* Card Body */}
               <div className="flex-1 flex flex-col p-6 pb-5">
-                {/* Scrollable description box matching the orange scrollbar */}
-                <div className="h-32 overflow-y-auto pr-1 text-sm leading-7 text-slate-600 text-center font-medium custom-card-scrollbar">
+                {/* Description box fitting content perfectly */}
+                <div className="flex-1 text-sm leading-7 text-slate-600 text-center font-medium">
                   {program.shortDescription}
                 </div>
 
@@ -156,33 +134,15 @@ export const ProgramsListing: React.FC = () => {
 
               {/* Bottom Buttons (Footer) */}
               <div className="border-t border-slate-100 bg-[#FCFDFE] py-4 px-6 rounded-b-[2rem]">
-                {statusInfo.appId ? (
-                  <div className="flex items-center justify-between gap-4">
-                    <Link
-                      to="/startup/dashboard"
-                      className="text-xs font-black text-[#0B2A5B] hover:text-[#FF6B00] transition"
-                    >
-                      View Status
-                    </Link>
-                    <button
-                      type="button"
-                      onClick={() => handleApply(program.slug)}
-                      className="text-xs font-black text-[#0B2A5B] hover:text-[#FF6B00] transition cursor-pointer"
-                    >
-                      Learn More
-                    </button>
-                  </div>
-                ) : (
-                  <div className="flex justify-center w-full">
-                    <button
-                      type="button"
-                      onClick={() => handleApply(program.slug)}
-                      className="text-xs font-black text-[#0B2A5B] hover:text-[#FF6B00] transition cursor-pointer"
-                    >
-                      Learn More
-                    </button>
-                  </div>
-                )}
+                <div className="flex justify-center w-full">
+                  <button
+                    type="button"
+                    onClick={() => handleApply(program.slug)}
+                    className="text-xs font-black text-[#0B2A5B] hover:text-[#FF6B00] transition cursor-pointer"
+                  >
+                    Learn More
+                  </button>
+                </div>
               </div>
             </article>
           );

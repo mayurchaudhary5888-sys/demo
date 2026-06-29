@@ -33,7 +33,7 @@ export const ProfileUnderReviewModal: React.FC<ProfileUnderReviewModalProps> = (
           <p className="text-[11px] font-black uppercase tracking-[0.28em] text-amber-700">Profile Under Review</p>
           <h2 className="mt-3 text-2xl font-black tracking-tight text-[#0B2A5B]">Your profile is under review</h2>
           <p className="mx-auto mt-4 max-w-sm text-sm leading-7 text-slate-600">
-            Please try again after some time. You can log in normally, but program applications are temporarily paused until the review is completed.
+            Please try again after some time. You can log in normally, but support applications are temporarily paused until the review is completed.
           </p>
           <button
             type="button"

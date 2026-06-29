@@ -237,22 +237,6 @@ export const ProgramDetail: React.FC = () => {
   return (
     <div className="space-y-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" id="program-details-container">
       
-      {/* breadcrumb */}
-      <nav className="flex" aria-label="Breadcrumb">
-        <ol role="list" className="flex items-center space-x-2 text-xs font-medium text-slate-500">
-          <li>
-            <Link to="/support" className="hover:text-[#0B2A5B] flex items-center gap-1">
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Back to Programs</span>
-            </Link>
-          </li>
-          <li>
-            <span className="text-slate-300 mx-1">/</span>
-            <span className="text-[#0B2A5B] font-semibold truncate max-w-[200px] inline-block">{prog.name}</span>
-          </li>
-        </ol>
-      </nav>
-
       {/* DETAILED HEADER WITH TABS */}
       <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
         <div className="p-6 md:p-8 space-y-6">
@@ -292,7 +276,7 @@ export const ProgramDetail: React.FC = () => {
                 }`}
                 id="tab-apply-btn"
               >
-                Apply for program
+                Apply for support
               </button>
             </div>
           </div>

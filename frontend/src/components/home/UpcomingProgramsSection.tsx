@@ -16,7 +16,7 @@ type ProgramCard = {
 
 const upcomingPrograms: ProgramCard[] = [
   {
-    title: "Mentor Mixer Programs",
+    title: "Mentor Mixer Support",
     description:
       "A networking platform Connecting incubated founders with the Sector specific mentors, investors, and industry leaders to accelerate and build startup growth in the market.",
     tag: "Mentorship",
@@ -39,7 +39,7 @@ const upcomingPrograms: ProgramCard[] = [
   {
     title: "VSCIC Felicitation",
     description:
-      "Celebrating innovation excellence in students from the Tribal Region programs with special recognition.",
+      "Celebrating innovation excellence in students from the Tribal Region support with special recognition.",
     tag: "Recognition",
     month: "This month",
   },
@@ -106,10 +106,10 @@ export const UpcomingProgramsSection: React.FC = () => {
           <div>
             <span className="inline-flex items-center gap-2 rounded-full border border-[#FF6B00]/20 bg-white px-4 py-1.5 text-[11px] font-black uppercase tracking-[0.24em] text-[#FF6B00] shadow-sm">
               <Sparkles className="h-3.5 w-3.5" />
-              Upcoming Programs
+              Upcoming Support
             </span>
             <h2 className="mt-5 max-w-2xl text-3xl font-black tracking-normal text-[#07144A] sm:text-4xl md:text-5xl">
-              Programs opening this month
+              Support opening this month
             </h2>
           </div>
           <p className="max-w-2xl text-sm font-medium leading-7 text-slate-600 sm:text-base lg:justify-self-end">

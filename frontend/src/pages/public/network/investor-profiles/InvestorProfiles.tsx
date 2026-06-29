@@ -96,23 +96,6 @@ export const InvestorProfiles: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30" id="investor-profiles-page">
-      {/* Breadcrumb */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
-        <nav className="flex" aria-label="Breadcrumb">
-          <ol className="flex items-center space-x-2 text-xs font-medium text-slate-500">
-            <li>
-              <Link to="/" className="hover:text-[#0B2A5B] transition-colors">Home</Link>
-            </li>
-            <li><ChevronRight className="w-3 h-3 text-slate-300" /></li>
-            <li>
-              <Link to="/network/startup-profiles" className="hover:text-[#0B2A5B] transition-colors">Network</Link>
-            </li>
-            <li><ChevronRight className="w-3 h-3 text-slate-300" /></li>
-            <li className="text-[#0B2A5B] font-bold">Investor Profiles</li>
-          </ol>
-        </nav>
-      </div>
-
       {/* Hero Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-16">
         <div className="text-center max-w-3xl mx-auto space-y-6">

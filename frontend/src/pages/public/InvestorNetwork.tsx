@@ -41,19 +41,6 @@ export const InvestorNetwork: React.FC = () => {
   return (
     <div className="space-y-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" id="investor-network-container">
       
-      {/* breadcrumbs */}
-      <nav className="flex" aria-label="Breadcrumb">
-        <ol role="list" className="flex items-center space-x-2 text-xs font-medium text-slate-500">
-          <li>
-            <Link to="/" className="hover:text-[#0B2A5B]">Home</Link>
-          </li>
-          <li>
-            <span className="text-slate-300 mx-1">/</span>
-            <span className="text-[#0B2A5B] font-semibold">Angel & VC Partners</span>
-          </li>
-        </ol>
-      </nav>
-
       {/* page heading */}
       <div className="space-y-2">
         <span className="text-xs font-bold text-[#FF6B00] tracking-wider uppercase font-mono">Reference Directory</span>

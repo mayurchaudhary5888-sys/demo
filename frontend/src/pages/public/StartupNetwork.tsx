@@ -63,19 +63,6 @@ export const StartupNetwork: React.FC = () => {
   return (
     <div className="space-y-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" id="startup-network-container">
       
-      {/* breadcrumb */}
-      <nav className="flex" aria-label="Breadcrumb">
-        <ol role="list" className="flex items-center space-x-2 text-xs font-medium text-slate-500">
-          <li>
-            <Link to="/" className="hover:text-[#0B2A5B]">Home</Link>
-          </li>
-          <li>
-            <span className="text-slate-300 mx-1">/</span>
-            <span className="text-[#0B2A5B] font-semibold">Startup Profiles</span>
-          </li>
-        </ol>
-      </nav>
-
       {/* heading */}
       <div className="space-y-2">
         <span className="text-xs font-bold text-[#FF6B00] tracking-wider uppercase font-mono">Verified Ecosystem Directory</span>
