@@ -32,6 +32,7 @@ const StartupDashboard = lazy(() => import("./pages/startup/StartupDashboard").t
 const MyConnections = lazy(() => import("./pages/startup/MyConnections").then((mod) => ({ default: mod.MyConnections })));
 const Notifications = lazy(() => import("./pages/startup/Notifications").then((mod) => ({ default: mod.Notifications })));
 const Settings = lazy(() => import("./pages/startup/Settings").then((mod) => ({ default: mod.Settings })));
+const MyApplications = lazy(() => import("./pages/startup/MyApplications").then((mod) => ({ default: mod.MyApplications })));
 
 // Admin Settings
 const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard").then((mod) => ({ default: mod.AdminDashboard })));
@@ -140,6 +141,7 @@ const AppContent: React.FC = () => {
               <Route path="connections" element={<MyConnections />} />
               <Route path="notifications" element={<Notifications />} />
               <Route path="settings" element={<Settings />} />
+              <Route path="applications" element={<MyApplications />} />
             </Route>
 
             {/* Nested sidebar layout wrapper for ministerial ADMIN console */}

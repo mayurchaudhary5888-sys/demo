@@ -67,23 +67,12 @@ export const InformationCenter: React.FC = () => {
 
   return (
     <div className="space-y-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" id="info-center-container">
-      <nav className="flex" aria-label="Breadcrumb">
-        <ol role="list" className="flex items-center space-x-2 text-xs font-medium text-slate-500">
-          <li>
-            <Link to="/" className="hover:text-[#0B2A5B]">Home</Link>
-          </li>
-          <li className="flex items-center">
-            <span className="text-slate-300 mx-1">/</span>
-            <span className="text-[#0B2A5B] font-semibold">Information Center</span>
-          </li>
-        </ol>
-      </nav>
-
+      
       <div className="space-y-4">
         <span className="text-xs font-bold text-[#FF6B00] tracking-wider uppercase font-mono">Facilitated Knowledge Hub</span>
         <h1 className="text-3xl font-black text-[#0B2A5B]">Information & Schemes Center</h1>
         <p className="text-sm text-slate-500 max-w-2xl text-justify">
-          Backend-fed program updates, scheme notes, and FAQ records for founders and admins.
+          Backend-fed support updates, scheme notes, and FAQ records for founders and admins.
         </p>
       </div>
 
@@ -128,10 +117,10 @@ export const InformationCenter: React.FC = () => {
             </div>
             <div>
               <span className="text-[10px] bg-amber-200 text-amber-800 font-extrabold px-2.5 py-0.5 rounded-full font-mono uppercase">
-                Core Spotlight Program
+                Core Spotlight Support
               </span>
               <h2 className="text-xl font-bold text-[#0B2A5B] mt-0.5">
-                {String(featuredProgram?.name || "Featured Program")}
+                {String(featuredProgram?.name || "Featured Support")}
               </h2>
             </div>
           </div>
@@ -139,16 +128,16 @@ export const InformationCenter: React.FC = () => {
             to="/support/startup-program"
             className="bg-[#0B2A5B] hover:bg-[#0B2A5B]/90 text-white font-extrabold text-xs px-5 py-2.5 rounded-lg uppercase tracking-wider"
           >
-            View Program
+            View Support
           </Link>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start text-xs font-sans">
           <div className="lg:col-span-8 space-y-4">
             <div>
-              <h4 className="font-extrabold text-[#0B2A5B] text-sm mb-1">Program Overview</h4>
+              <h4 className="font-extrabold text-[#0B2A5B] text-sm mb-1">Support Overview</h4>
               <p className="text-slate-600 leading-relaxed text-justify">
-                {String(featuredProgram?.longDescription || featuredProgram?.shortDescription || "No featured program loaded yet.")}
+                {String(featuredProgram?.longDescription || featuredProgram?.shortDescription || "No featured support loaded yet.")}
               </p>
             </div>
 

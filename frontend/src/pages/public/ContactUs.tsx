@@ -1,25 +1,13 @@
 /**
  * @license
- * SPDX-License-Identifier: Apache-2.5
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 import React, { useEffect, useState } from "react";
-import {
-  ArrowRight,
-  CheckCircle,
-  Clock,
-  Globe,
-  Landmark,
-  Mail,
-  MapPin,
-  Phone,
-  ShieldCheck,
-  User,
-  MessageSquareText,
-} from "lucide-react";
+import { Link } from "react-router-dom";
+import { ArrowRight, CheckCircle, Mail, MapPin, Phone } from "lucide-react";
 import { useAppState } from "../../context/AppContext";
 import { INDIAN_STATES } from "../../constants/options";
-import { AuthShell } from "../../components/auth/AuthShell";
 import { contentApi } from "../../services/contentApi";
 
 const CITIES_BY_STATE: Record<string, string[]> = {
@@ -31,26 +19,21 @@ const CITIES_BY_STATE: Record<string, string[]> = {
   Gujarat: ["Ahmedabad", "Surat", "Vadodara"],
 };
 
-const queryOptions = [
-  "Seed Fund guidance",
-  "Startup registration support",
-  "Incubator coordination",
-  "Program eligibility",
-  "Technical assistance",
-  "General query",
-];
-
 export const ContactUs: React.FC = () => {
   const { showToast } = useAppState();
 
   const [formFields, setFormFields] = useState({
     entityType: "",
+    customEntityType: "",
     entityName: "",
     name: "",
     email: "",
     state: "",
+    customState: "",
     city: "",
+    customCity: "",
     queryType: "",
+    customQueryType: "",
     message: "",
   });
 
@@ -59,7 +42,7 @@ export const ContactUs: React.FC = () => {
   const [ticketDetails, setTicketDetails] = useState<{ id: string; date: string } | null>(null);
 
   useEffect(() => {
-    if (formFields.state) {
+    if (formFields.state && formFields.state !== "Other (Type manually)") {
       const list = CITIES_BY_STATE[formFields.state] || ["Regional Block", "Capital City"];
       setCities(list);
       setFormFields((f) => ({ ...f, city: "" }));
@@ -75,14 +58,45 @@ export const ContactUs: React.FC = () => {
 
   const validateForm = () => {
     const errs: Record<string, string> = {};
-    if (!formFields.name.trim()) errs.name = "Full name required.";
-    if (!formFields.email.trim()) errs.email = "Email address required.";
-    else if (!/\S+@\S+\.\S+/.test(formFields.email)) errs.email = "Enter a valid email address.";
-    if (!formFields.state) errs.state = "Select state.";
-    if (!formFields.city) errs.city = "Select city.";
-    if (!formFields.queryType) errs.queryType = "Select query type.";
-    if (!formFields.message.trim()) errs.message = "Please add a short query description.";
-    if (formFields.entityType && !formFields.entityName.trim()) errs.entityName = "Enterprise name required.";
+    if (!formFields.name.trim()) errs.name = "Name is required.";
+    
+    if (!formFields.email.trim()) {
+      errs.email = "Email ID is required.";
+    } else if (!/\S+@\S+\.\S+/.test(formFields.email)) {
+      errs.email = "Enter a valid email address.";
+    }
+
+    if (!formFields.entityType) {
+      errs.entityType = "Please select entity type.";
+    } else if (formFields.entityType === "Other (Type manually)" && !formFields.customEntityType.trim()) {
+      errs.customEntityType = "Please specify entity type.";
+    }
+
+    if (!formFields.entityName.trim()) {
+      errs.entityName = "Please enter name of the entity.";
+    }
+
+    const actualState = formFields.state === "Other (Type manually)" ? formFields.customState : formFields.state;
+    if (!actualState || !actualState.trim()) {
+      errs.state = "Please select State";
+    }
+
+    const actualCity = (formFields.state === "Other (Type manually)" || formFields.city === "Other (Type manually)") 
+      ? formFields.customCity 
+      : formFields.city;
+    if (!actualCity || !actualCity.trim()) {
+      errs.city = "Please select city";
+    }
+
+    if (!formFields.queryType) {
+      errs.queryType = "Please select query type.";
+    } else if (formFields.queryType === "Other (Type manually)" && !formFields.customQueryType.trim()) {
+      errs.customQueryType = "Please specify query type.";
+    }
+
+    if (!formFields.message.trim()) {
+      errs.message = "Please enter a message.";
+    }
 
     setFormErrors(errs);
     return Object.keys(errs).length === 0;
@@ -91,12 +105,23 @@ export const ContactUs: React.FC = () => {
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) {
-      showToast("Please fix the validation markings before submitting.", "error");
+      showToast("Please fill all required fields correctly.", "error");
       return;
     }
 
+    const payload = {
+      entityType: formFields.entityType === "Other (Type manually)" ? formFields.customEntityType : formFields.entityType,
+      entityName: formFields.entityName,
+      name: formFields.name,
+      email: formFields.email,
+      state: formFields.state === "Other (Type manually)" ? formFields.customState : formFields.state,
+      city: formFields.state === "Other (Type manually)" || formFields.city === "Other (Type manually)" ? formFields.customCity : formFields.city,
+      queryType: formFields.queryType === "Other (Type manually)" ? formFields.customQueryType : formFields.queryType,
+      message: formFields.message,
+    };
+
     try {
-      const created = await contentApi.createQuery(formFields);
+      const created = await contentApi.createQuery(payload);
       const formattedDate = new Date(created.submittedDate || Date.now()).toLocaleDateString("en-IN", {
         day: "2-digit",
         month: "short",
@@ -106,7 +131,7 @@ export const ContactUs: React.FC = () => {
       });
 
       setTicketDetails({ id: created.id, date: formattedDate });
-      showToast("Query ticket created successfully.", "success");
+      showToast("Query ticket submitted successfully.", "success");
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unable to submit query right now.";
       showToast(message, "error");
@@ -114,313 +139,353 @@ export const ContactUs: React.FC = () => {
   };
 
   return (
-    <AuthShell
-      badge="dpiit helpdesk"
-      title="Contact & Query Facilitation"
-      description="Reach the official nodal desk for seed fund questions, startup registration support, incubator coordination, and other program queries."
-      maxWidthClassName="max-w-[88rem]"
-      showFooterNote={false}
-      decorated={false}
-      aside={
-        <div className="grid gap-3 sm:grid-cols-3">
-          <div className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-md bg-white text-[#0B2A5B]">
-              <Phone className="h-5 w-5" />
-            </div>
-            <div>
-              <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Helpline</div>
-              <div className="text-sm font-black text-slate-800">1800-115-565</div>
-            </div>
-          </div>
-          <div className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-md bg-white text-[#0B2A5B]">
-              <Mail className="h-5 w-5" />
-            </div>
-            <div>
-              <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Email</div>
-              <div className="text-sm font-black text-slate-800">nodal-desk.bhaskar@nic.in</div>
-            </div>
-          </div>
-          <div className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-md bg-white text-[#0B2A5B]">
-              <Landmark className="h-5 w-5" />
-            </div>
-            <div>
-              <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Office</div>
-              <div className="text-sm font-black text-slate-800">New Delhi</div>
-            </div>
+    <div className="min-h-[calc(100vh-7rem)] bg-slate-50" id="contact-us-container">
+      {/* Page Banner */}
+      <section className="bg-[#07184A] text-white">
+        <div className="mx-auto max-w-[88rem] px-5 py-10 sm:px-8 lg:px-10">
+          <div className="text-center">
+            <h1 className="text-4xl font-black tracking-tight sm:text-5xl">
+              Contact Us
+            </h1>
           </div>
         </div>
-      }
-    >
-      <div className="grid gap-6 lg:grid-cols-12">
-        <div className="space-y-5 lg:col-span-8">
-          <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 sm:p-5">
-            <div className="grid gap-3 sm:grid-cols-3">
-              <div className="flex items-center gap-3 rounded-md border border-slate-200 bg-white p-3">
-                <ShieldCheck className="h-5 w-5 text-[#FF6B00]" />
-                <div>
-                  <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Support Type</div>
-                  <div className="text-sm font-black text-slate-800">Official helpdesk</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 rounded-md border border-slate-200 bg-white p-3">
-                <Clock className="h-5 w-5 text-[#FF6B00]" />
-                <div>
-                  <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Hours</div>
-                  <div className="text-sm font-black text-slate-800">Mon-Sat, 10 AM - 6 PM</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 rounded-md border border-slate-200 bg-white p-3">
-                <MapPin className="h-5 w-5 text-[#FF6B00]" />
-                <div>
-                  <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Coverage</div>
-                  <div className="text-sm font-black text-slate-800">PAN India</div>
-                </div>
-              </div>
-            </div>
-          </div>
+      </section>
 
-          {!ticketDetails ? (
-            <form onSubmit={handleFormSubmit} className="space-y-5" id="query-intake-form">
-              <div className="space-y-5 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-                <div className="border-b border-slate-100 pb-3">
-                  <h3 className="text-sm font-black uppercase tracking-wider text-[#0B2A5B]">Query intake form</h3>
-                </div>
-
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-1.5 sm:col-span-2">
-                    <label className="block text-[13px] font-black uppercase tracking-wider text-slate-500">Entity type</label>
-                    <select
-                      value={formFields.entityType}
-                      onChange={(e) => updateField("entityType", e.target.value)}
-                      className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition focus:border-[#FF6B00]"
-                    >
-                      <option value="">Select entity type</option>
-                      <option value="DPIIT Recognized Startup">DPIIT Recognized Startup</option>
-                      <option value="Registered Incubator partner">Registered Incubator partner</option>
-                      <option value="Institutional Investor Syndicate">Institutional Investor</option>
-                    </select>
+      {/* Main Content */}
+      <div className="mx-auto max-w-5xl px-5 py-16 sm:px-8 lg:px-10">
+        <div className="w-full">
+          {/* Form Side */}
+          <div>
+            {!ticketDetails ? (
+              <div className="bg-white border border-slate-200 rounded-[2rem] p-8 md:p-12 shadow-[0_20px_50px_rgba(69,84,155,0.04)]">
+                <form onSubmit={handleFormSubmit} className="space-y-7" id="contact-query-form">
+                  {/* Entity Type Row */}
+                  <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-3 md:gap-8 items-start">
+                    <label className="text-sm font-bold text-slate-700 md:pt-3">Entity Type</label>
+                    <div className="space-y-2">
+                      <select
+                        value={formFields.entityType}
+                        onChange={(e) => updateField("entityType", e.target.value)}
+                        className={`w-full rounded-xl border bg-white px-4 py-3.5 text-sm font-semibold text-slate-800 outline-none transition focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/10 ${
+                          formErrors.entityType ? "border-red-400" : "border-slate-200"
+                        }`}
+                      >
+                        <option value="">Select</option>
+                        <option value="Startups">Startups</option>
+                        <option value="Incubators">Incubators</option>
+                        <option value="Other (Type manually)">Other (Type manually)</option>
+                      </select>
+                      {formFields.entityType === "Other (Type manually)" && (
+                        <input
+                          type="text"
+                          value={formFields.customEntityType}
+                          onChange={(e) => updateField("customEntityType", e.target.value)}
+                          placeholder="Specify entity type"
+                          className={`w-full rounded-xl border bg-white px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/10 ${
+                            formErrors.customEntityType ? "border-red-400" : "border-slate-200"
+                          }`}
+                        />
+                      )}
+                      {formErrors.entityType && (
+                        <p className="text-xs text-red-500 font-semibold">{formErrors.entityType}</p>
+                      )}
+                      {formErrors.customEntityType && (
+                        <p className="text-xs text-red-500 font-semibold">{formErrors.customEntityType}</p>
+                      )}
+                    </div>
                   </div>
 
-                  <div className="space-y-1.5 sm:col-span-2">
-                    <label className="block text-[13px] font-black uppercase tracking-wider text-slate-500">Enterprise name</label>
-                    <div className="relative">
-                      <User className="pointer-events-none absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
+                  {/* Name of the Entity Row */}
+                  <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-3 md:gap-8 items-start">
+                    <label className="text-sm font-bold text-slate-700 md:pt-3">Name of the Entity</label>
+                    <div className="space-y-1">
                       <input
                         type="text"
                         value={formFields.entityName}
                         onChange={(e) => updateField("entityName", e.target.value)}
-                        placeholder="e.g. KisanBot Agrotech"
-                        className={`w-full rounded-lg border py-3 pl-11 pr-4 text-sm font-semibold text-slate-800 outline-none transition focus:border-[#FF6B00] ${
-                          formErrors.entityName ? "border-red-400 bg-red-50" : "border-slate-300 bg-white"
+                        placeholder="Enter"
+                        className={`w-full rounded-xl border bg-white px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/10 ${
+                          formErrors.entityName ? "border-red-400" : "border-slate-200"
                         }`}
                       />
+                      {formErrors.entityName && (
+                        <p className="text-xs text-red-500 font-semibold">{formErrors.entityName}</p>
+                      )}
                     </div>
-                    {formErrors.entityName && <p className="text-[10px] font-bold text-red-500">{formErrors.entityName}</p>}
                   </div>
 
-                  <div className="space-y-1.5">
-                    <label className="block text-[13px] font-black uppercase tracking-wider text-slate-500">Full name *</label>
-                    <input
-                      type="text"
-                      value={formFields.name}
-                      onChange={(e) => updateField("name", e.target.value)}
-                      placeholder="e.g. Bhaskar Sharma"
-                      className={`w-full rounded-lg border px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition focus:border-[#FF6B00] ${
-                        formErrors.name ? "border-red-400 bg-red-50" : "border-slate-300 bg-white"
-                      }`}
-                    />
-                    {formErrors.name && <p className="text-[10px] font-bold text-red-500">{formErrors.name}</p>}
+                  {/* Name Row */}
+                  <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-3 md:gap-8 items-start">
+                    <label className="text-sm font-bold text-slate-700 md:pt-3">Name</label>
+                    <div className="space-y-1">
+                      <input
+                        type="text"
+                        value={formFields.name}
+                        onChange={(e) => updateField("name", e.target.value)}
+                        placeholder="Enter"
+                        className={`w-full rounded-xl border bg-white px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/10 ${
+                          formErrors.name ? "border-red-400" : "border-slate-200"
+                        }`}
+                      />
+                      {formErrors.name && (
+                        <p className="text-xs text-red-500 font-semibold">{formErrors.name}</p>
+                      )}
+                    </div>
                   </div>
 
-                  <div className="space-y-1.5">
-                    <label className="block text-[13px] font-black uppercase tracking-wider text-slate-500">Email *</label>
-                    <div className="relative">
-                      <Mail className="pointer-events-none absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
+                  {/* Email ID Row */}
+                  <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-3 md:gap-8 items-start">
+                    <label className="text-sm font-bold text-slate-700 md:pt-3">Email ID</label>
+                    <div className="space-y-1">
                       <input
                         type="email"
                         value={formFields.email}
                         onChange={(e) => updateField("email", e.target.value)}
-                        placeholder="e.g. bhaskar@kisanbot.in"
-                        className={`w-full rounded-lg border py-3 pl-11 pr-4 text-sm font-semibold text-slate-800 outline-none transition focus:border-[#FF6B00] ${
-                          formErrors.email ? "border-red-400 bg-red-50" : "border-slate-300 bg-white"
+                        placeholder="Enter"
+                        className={`w-full rounded-xl border bg-white px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/10 ${
+                          formErrors.email ? "border-red-400" : "border-slate-200"
                         }`}
                       />
+                      {formErrors.email && (
+                        <p className="text-xs text-red-500 font-semibold">{formErrors.email}</p>
+                      )}
                     </div>
-                    {formErrors.email && <p className="text-[10px] font-bold text-red-500">{formErrors.email}</p>}
                   </div>
 
-                  <div className="space-y-1.5">
-                    <label className="block text-[13px] font-black uppercase tracking-wider text-slate-500">State *</label>
-                    <div className="relative">
-                      <Globe className="pointer-events-none absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
+                  {/* Location Row (State & City) */}
+                  <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-3 md:gap-8 items-start">
+                    <label className="text-sm font-bold text-slate-700 md:pt-3">Location</label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {/* State field */}
+                      <div className="space-y-1.5">
+                        {formFields.state === "Other (Type manually)" ? (
+                          <div className="relative">
+                            <input
+                              type="text"
+                              value={formFields.customState}
+                              onChange={(e) => updateField("customState", e.target.value)}
+                              placeholder="Type State"
+                              className={`w-full rounded-xl border bg-white px-4 py-3 pr-16 text-sm font-semibold text-slate-800 outline-none transition focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/10 ${
+                                formErrors.state ? "border-red-400" : "border-slate-200"
+                              }`}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                updateField("state", "");
+                                updateField("customState", "");
+                              }}
+                              className="absolute right-3.5 top-3 text-[10px] font-black uppercase tracking-wider text-[#FF6B00] hover:underline"
+                            >
+                              Reset
+                            </button>
+                          </div>
+                        ) : (
+                          <select
+                            value={formFields.state}
+                            onChange={(e) => updateField("state", e.target.value)}
+                            className={`w-full rounded-xl border bg-white px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/10 ${
+                              formErrors.state ? "border-red-400" : "border-slate-200"
+                            }`}
+                          >
+                            <option value="">Select State</option>
+                            {INDIAN_STATES.map((st) => (
+                              <option key={st} value={st}>
+                                {st}
+                              </option>
+                            ))}
+                            <option value="Other (Type manually)">Other (Type manually)</option>
+                          </select>
+                        )}
+                        {formErrors.state && (
+                          <p className="text-xs text-red-500 font-semibold">{formErrors.state}</p>
+                        )}
+                      </div>
+
+                      {/* City field */}
+                      <div className="space-y-1.5">
+                        {formFields.state === "Other (Type manually)" || formFields.city === "Other (Type manually)" ? (
+                          <div className="relative">
+                            <input
+                              type="text"
+                              value={formFields.customCity}
+                              onChange={(e) => updateField("customCity", e.target.value)}
+                              placeholder="Type City"
+                              className={`w-full rounded-xl border bg-white px-4 py-3 pr-16 text-sm font-semibold text-slate-850 outline-none transition focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/10 ${
+                                formErrors.city ? "border-red-400" : "border-slate-200"
+                              }`}
+                            />
+                            {formFields.state !== "Other (Type manually)" && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  updateField("city", "");
+                                  updateField("customCity", "");
+                                }}
+                                className="absolute right-3.5 top-3 text-[10px] font-black uppercase tracking-wider text-[#FF6B00] hover:underline"
+                              >
+                                Reset
+                              </button>
+                            )}
+                          </div>
+                        ) : (
+                          <select
+                            value={formFields.city}
+                            onChange={(e) => updateField("city", e.target.value)}
+                            disabled={!formFields.state}
+                            className={`w-full rounded-xl border bg-white px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition disabled:bg-slate-100 disabled:cursor-not-allowed focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/10 ${
+                              formErrors.city ? "border-red-400" : "border-slate-200"
+                            }`}
+                          >
+                            <option value="">Select City</option>
+                            {cities.map((ct) => (
+                              <option key={ct} value={ct}>
+                                {ct}
+                              </option>
+                            ))}
+                            <option value="Other (Type manually)">Other (Type manually)</option>
+                          </select>
+                        )}
+                        {formErrors.city && (
+                          <p className="text-xs text-red-500 font-semibold">{formErrors.city}</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Query Type Row */}
+                  <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-3 md:gap-8 items-start">
+                    <label className="text-sm font-bold text-slate-700 md:pt-3">Query Type</label>
+                    <div className="space-y-2">
                       <select
-                        value={formFields.state}
-                        onChange={(e) => updateField("state", e.target.value)}
-                        className={`w-full appearance-none rounded-lg border bg-white py-3 pl-11 pr-10 text-sm font-semibold text-slate-800 outline-none transition focus:border-[#FF6B00] ${
-                          formErrors.state ? "border-red-400 bg-red-50" : "border-slate-300"
+                        value={formFields.queryType}
+                        onChange={(e) => updateField("queryType", e.target.value)}
+                        className={`w-full rounded-xl border bg-white px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/10 ${
+                          formErrors.queryType ? "border-red-400" : "border-slate-200"
                         }`}
                       >
-                        <option value="">Select State...</option>
-                        {INDIAN_STATES.map((st) => (
-                          <option key={st} value={st}>
-                            {st}
-                          </option>
-                        ))}
+                        <option value="">Select</option>
+                        <option value="Funding & Seed Fund Related">Funding & Seed Fund Related</option>
+                        <option value="Program Support">Program Support</option>
+                        <option value="DPIIT Recognition">DPIIT Recognition</option>
+                        <option value="Other (Type manually)">Other (Type manually)</option>
                       </select>
+                      {formFields.queryType === "Other (Type manually)" && (
+                        <input
+                          type="text"
+                          value={formFields.customQueryType}
+                          onChange={(e) => updateField("customQueryType", e.target.value)}
+                          placeholder="Specify query type"
+                          className={`w-full rounded-xl border bg-white px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/10 ${
+                            formErrors.customQueryType ? "border-red-400" : "border-slate-200"
+                          }`}
+                        />
+                      )}
+                      {formErrors.queryType && (
+                        <p className="text-xs text-red-500 font-semibold">{formErrors.queryType}</p>
+                      )}
+                      {formErrors.customQueryType && (
+                        <p className="text-xs text-red-500 font-semibold">{formErrors.customQueryType}</p>
+                      )}
                     </div>
-                    {formErrors.state && <p className="text-[10px] font-bold text-red-500">{formErrors.state}</p>}
                   </div>
 
-                  <div className="space-y-1.5">
-                    <label className="block text-[13px] font-black uppercase tracking-wider text-slate-500">City *</label>
-                    <div className="relative">
-                      <MapPin className="pointer-events-none absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
-                      <select
-                        value={formFields.city}
-                        onChange={(e) => updateField("city", e.target.value)}
-                        disabled={!formFields.state}
-                        className="w-full appearance-none rounded-lg border border-slate-300 bg-white py-3 pl-11 pr-10 text-sm font-semibold text-slate-800 outline-none transition disabled:cursor-not-allowed disabled:bg-slate-100 focus:border-[#FF6B00]"
-                      >
-                        <option value="">Select City...</option>
-                        {cities.map((city) => (
-                          <option key={city} value={city}>
-                            {city}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    {formErrors.city && <p className="text-[10px] font-bold text-red-500">{formErrors.city}</p>}
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="block text-[13px] font-black uppercase tracking-wider text-slate-500">Query type *</label>
-                    <select
-                      value={formFields.queryType}
-                      onChange={(e) => updateField("queryType", e.target.value)}
-                      className={`w-full rounded-lg border bg-white px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition focus:border-[#FF6B00] ${
-                        formErrors.queryType ? "border-red-400 bg-red-50" : "border-slate-300"
-                      }`}
-                    >
-                      <option value="">Select Query Type...</option>
-                      {queryOptions.map((item) => (
-                        <option key={item} value={item}>
-                          {item}
-                        </option>
-                      ))}
-                    </select>
-                    {formErrors.queryType && <p className="text-[10px] font-bold text-red-500">{formErrors.queryType}</p>}
-                  </div>
-
-                  <div className="space-y-1.5 sm:col-span-2">
-                    <label className="block text-[13px] font-black uppercase tracking-wider text-slate-500">Message *</label>
-                    <div className="relative">
-                      <MessageSquareText className="pointer-events-none absolute left-4 top-4 h-4 w-4 text-slate-400" />
+                  {/* Message Row */}
+                  <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-3 md:gap-8 items-start">
+                    <label className="text-sm font-bold text-slate-700 md:pt-3">Message</label>
+                    <div className="space-y-1">
                       <textarea
                         value={formFields.message}
                         onChange={(e) => updateField("message", e.target.value)}
-                        placeholder="Describe your query in a few lines."
+                        placeholder="Enter"
                         rows={5}
-                        className={`w-full rounded-lg border py-3 pl-11 pr-4 text-sm font-semibold text-slate-800 outline-none transition focus:border-[#FF6B00] ${
-                          formErrors.message ? "border-red-400 bg-red-50" : "border-slate-300 bg-white"
+                        className={`w-full rounded-xl border bg-white px-4 py-3.5 text-sm font-semibold text-slate-800 outline-none transition focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/10 ${
+                          formErrors.message ? "border-red-400" : "border-slate-200"
                         }`}
                       />
+                      {formErrors.message && (
+                        <p className="text-xs text-red-500 font-semibold">{formErrors.message}</p>
+                      )}
                     </div>
-                    {formErrors.message && <p className="text-[10px] font-bold text-red-500">{formErrors.message}</p>}
                   </div>
-                </div>
 
-                <div className="flex flex-col gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:items-center sm:justify-between">
-                  <p className="text-[11px] text-slate-500">
-                    We create a ticket immediately after submission and notify the nodal desk.
-                  </p>
-                  <button
-                    type="submit"
-                    className="inline-flex items-center gap-2 rounded-md bg-[#FF6B00] px-6 py-3 text-xs font-black uppercase tracking-widest text-white transition hover:bg-[#e65f00]"
-                  >
-                    Submit Query
-                    <ArrowRight className="h-4 w-4" />
-                  </button>
-                </div>
+                  {/* Submit Row */}
+                  <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-3 md:gap-8 pt-4">
+                    <div className="hidden md:block" />
+                    <div>
+                      <button
+                        type="submit"
+                        className="inline-flex items-center justify-center gap-2 rounded-full bg-[#FF6B00] px-10 py-3.5 text-xs font-black uppercase tracking-widest text-white transition hover:bg-[#e65f00] shadow-md cursor-pointer"
+                      >
+                        Submit
+                        <ArrowRight className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                </form>
               </div>
-            </form>
-          ) : (
-            <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-6 shadow-sm">
-              <div className="flex items-start gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-white text-emerald-600 shadow-sm">
+            ) : (
+              /* Ticket confirmation card details */
+              <div className="bg-emerald-50 border border-emerald-200 rounded-[2rem] p-8 shadow-sm flex items-start gap-5">
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white text-emerald-600 shadow-xs border border-emerald-100">
                   <CheckCircle className="h-6 w-6" />
                 </div>
-                <div className="space-y-2">
-                  <p className="text-sm font-black uppercase tracking-wider text-emerald-700">Ticket generated</p>
-                  <p className="text-slate-700">
-                    Your query has been registered successfully. Keep the ticket ID below for follow-up.
+                <div className="space-y-3">
+                  <h3 className="text-md font-black uppercase tracking-wider text-emerald-850">
+                    Ticket generated successfully
+                  </h3>
+                  <p className="text-sm leading-6 text-slate-600 font-medium">
+                    Your nodal inquiry is registered. Keep the details below for tracking the ticket response.
                   </p>
-                  <div className="flex flex-wrap gap-3 pt-2">
-                    <div className="rounded-xl border border-emerald-200 bg-white px-4 py-3">
-                      <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Ticket ID</div>
-                      <div className="font-mono text-sm font-black text-[#0B2A5B]">{ticketDetails.id}</div>
+                  <div className="flex flex-wrap gap-4 pt-3">
+                    <div className="bg-white border border-emerald-200/60 rounded-2xl px-5 py-3 shadow-xs">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">
+                        Ticket ID
+                      </span>
+                      <span className="font-mono text-sm font-black text-[#0B2A5B] block mt-1">
+                        {ticketDetails.id}
+                      </span>
                     </div>
-                    <div className="rounded-xl border border-emerald-200 bg-white px-4 py-3">
-                      <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Submitted</div>
-                      <div className="text-sm font-black text-[#0B2A5B]">{ticketDetails.date}</div>
+                    <div className="bg-white border border-emerald-200/60 rounded-2xl px-5 py-3 shadow-xs">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">
+                        Submitted Date
+                      </span>
+                      <span className="text-sm font-black text-[#0B2A5B] block mt-1">
+                        {ticketDetails.date}
+                      </span>
                     </div>
+                  </div>
+                  <div className="pt-4">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFormFields({
+                          entityType: "",
+                          customEntityType: "",
+                          entityName: "",
+                          name: "",
+                          email: "",
+                          state: "",
+                          customState: "",
+                          city: "",
+                          customCity: "",
+                          queryType: "",
+                          customQueryType: "",
+                          message: "",
+                        });
+                        setTicketDetails(null);
+                      }}
+                      className="text-xs font-bold text-[#FF6B00] hover:underline"
+                    >
+                      Submit another query
+                    </button>
                   </div>
                 </div>
               </div>
-            </div>
-          )}
-        </div>
-
-        <div className="space-y-4 lg:col-span-4">
-          <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="border-b border-slate-100 pb-3">
-              <h3 className="text-sm font-black uppercase tracking-wider text-[#0B2A5B]">Helpdesk</h3>
-            </div>
-            <div className="mt-4 space-y-4 text-sm text-slate-600">
-              <div className="flex items-start gap-3">
-                <Phone className="mt-0.5 h-4 w-4 text-[#FF6B00]" />
-                <div>
-                  <div className="font-semibold text-slate-800">1800-115-565</div>
-                  <div className="text-[11px] text-slate-500">Mon-Sat, 10:00 AM - 6:00 PM IST</div>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <Mail className="mt-0.5 h-4 w-4 text-[#FF6B00]" />
-                <div>
-                  <div className="font-semibold text-slate-800">nodal-desk.bhaskar@nic.in</div>
-                  <div className="text-[11px] text-slate-500">Official correspondence channel</div>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <MapPin className="mt-0.5 h-4 w-4 text-[#FF6B00]" />
-                <div>
-                  <div className="font-semibold text-slate-800">Udyog Bhawan, New Delhi</div>
-                  <div className="text-[11px] text-slate-500">DPIIT nodal office</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-lg border border-slate-200 bg-slate-50 p-5 shadow-sm">
-            <h3 className="text-sm font-black uppercase tracking-wider text-[#0B2A5B]">What to include</h3>
-            <ul className="mt-4 space-y-3 text-sm text-slate-600">
-              <li className="flex gap-3">
-                <span className="mt-1 h-2 w-2 rounded-full bg-[#63C7C6]" />
-                Mention your startup or entity name if the query is program related.
-              </li>
-              <li className="flex gap-3">
-                <span className="mt-1 h-2 w-2 rounded-full bg-[#63C7C6]" />
-                Include the scheme or issue category to speed up routing.
-              </li>
-              <li className="flex gap-3">
-                <span className="mt-1 h-2 w-2 rounded-full bg-[#63C7C6]" />
-                Keep the message short, direct, and specific.
-              </li>
-            </ul>
+            )}
           </div>
         </div>
       </div>
-    </AuthShell>
+    </div>
   );
 };

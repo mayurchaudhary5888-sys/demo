@@ -5,7 +5,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, ChevronDown, LogIn, LogOut, User, Award, Eye, EyeOff, LayoutDashboard, Users, Bell, Settings } from "lucide-react";
+import { Menu, X, ChevronDown, LogIn, LogOut, User, Award, Eye, EyeOff, LayoutDashboard, Users, Bell, Settings, FileText } from "lucide-react";
 import { useAppState } from "../../context/AppContext";
 import { programCatalog } from "../../data/programCatalog";
 import { authApi } from "../../services/authApi";
@@ -151,6 +151,7 @@ export const Navbar: React.FC = () => {
 
   const profileLinks = [
     { label: "Dashboard", path: "/startup/dashboard", icon: <LayoutDashboard className="w-4 h-4" /> },
+    { label: "My Applications", path: "/startup/applications", icon: <FileText className="w-4 h-4" /> },
     { label: "Connections", path: "/startup/connections", icon: <Users className="w-4 h-4" /> },
     { label: "Notifications", path: "/startup/notifications", icon: <Bell className="w-4 h-4" /> },
   ];
@@ -174,7 +175,7 @@ export const Navbar: React.FC = () => {
     else if (!/[A-Z]/.test(regPassword) || !/[a-z]/.test(regPassword) || !/\d/.test(regPassword)) {
       errs.password = "Use uppercase, lowercase, and one number.";
     }
-    if (!regProgram) errs.selectedProgram = "Select one program.";
+    if (!regProgram) errs.selectedProgram = "Select one support.";
 
     if (Object.keys(errs).length > 0) {
       setRegErrors(errs);
@@ -746,7 +747,7 @@ export const Navbar: React.FC = () => {
                             regErrors.selectedProgram ? "border-red-500 bg-red-50/10" : "border-slate-300"
                           }`}
                         >
-                          <option value="">Select program</option>
+                          <option value="">Select support</option>
                           {programCatalog.map((program) => (
                             <option key={program.id} value={program.id}>
                               {program.name}

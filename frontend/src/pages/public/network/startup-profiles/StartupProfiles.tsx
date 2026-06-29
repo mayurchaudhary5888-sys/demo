@@ -15,19 +15,7 @@ export const StartupProfiles: React.FC = () => {
     <div className="min-h-[calc(100vh-7rem)] bg-slate-50" id="startup-profiles-static-page">
       <section className="bg-[#07184A] text-white">
         <div className="mx-auto max-w-[88rem] px-5 py-10 sm:px-8 lg:px-10">
-          <nav className="flex" aria-label="Breadcrumb">
-            <ol role="list" className="flex items-center space-x-2 text-xs font-bold text-white/65">
-              <li>
-                <Link to="/" className="hover:text-white">Home</Link>
-              </li>
-              <li>
-                <span className="mx-1 text-white/30">/</span>
-                <span className="text-white">Startup Profiles</span>
-              </li>
-            </ol>
-          </nav>
-
-          <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.42fr)] lg:items-end">
+          <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.42fr)] lg:items-end">
             <div className="space-y-4">
               <span className="text-xs font-black uppercase tracking-[0.26em] text-[#F9B233]">Verified Ecosystem Directory</span>
               <h1 className="max-w-4xl text-4xl font-black tracking-tight sm:text-5xl">

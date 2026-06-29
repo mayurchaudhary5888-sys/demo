@@ -28,7 +28,7 @@ export const ProgramInfoPage: React.FC = () => {
   const Icon = program.icon;
   const handleApply = () => {
     if (!user) {
-      showToast("Please login to apply for this program.", "info");
+      showToast("Please login to apply for this support.", "info");
       requestLogin();
       return;
     }
@@ -38,21 +38,6 @@ export const ProgramInfoPage: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8" id={`${program.slug}-info-page`}>
-      <nav className="flex" aria-label="Breadcrumb">
-        <ol role="list" className="flex items-center space-x-2 text-xs font-medium text-slate-500">
-          <li>
-            <Link to="/support" className="hover:text-[#0B2A5B] flex items-center gap-1">
-              <ArrowLeft className="h-3.5 w-3.5" />
-              <span>Programs</span>
-            </Link>
-          </li>
-          <li>
-            <span className="text-slate-300 mx-1">/</span>
-            <span className="text-[#0B2A5B] font-semibold">{program.name}</span>
-          </li>
-        </ol>
-      </nav>
-
       <section className="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
         <div className="p-6 sm:p-8 lg:p-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           <div className="lg:col-span-8 space-y-6">
@@ -69,7 +54,7 @@ export const ProgramInfoPage: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <DetailPanel title="Program Benefits">
+              <DetailPanel title="Support Benefits">
                 {program.benefits.map((item) => (
                   <li key={item} className="flex gap-2.5 text-sm leading-relaxed text-slate-700">
                     <CheckCircle2 className="h-4.5 w-4.5 text-[#FF6B00] shrink-0 mt-0.5" />
