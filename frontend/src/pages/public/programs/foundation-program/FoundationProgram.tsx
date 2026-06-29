@@ -141,6 +141,7 @@ export const FoundationProgram: React.FC<FoundationProgramProps> = ({ program, o
         startupId: user?.startupId || "",
         startupName: fields.organisationName,
         pitchDeckName: pitchDeck?.name || "PitchDeck.pdf",
+        _pitchDeckFile: pitchDeck,
       });
       setSuccessApplication({ id: created.id, programName: created.programName || program.name });
       setSuccessModalOpen(true);

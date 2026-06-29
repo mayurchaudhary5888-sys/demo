@@ -110,7 +110,8 @@ export const applicationSchema = z.object({
   incubator2: optionalString,
   incubator3: optionalString,
   incubatorPreferences: z.array(z.any()).optional(),
-});
+}).passthrough();
+
 
 export const applicationStatusSchema = z.object({
   status: z.enum(applicationStatuses),

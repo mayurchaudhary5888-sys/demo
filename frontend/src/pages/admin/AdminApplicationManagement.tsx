@@ -11,6 +11,7 @@ import { Timeline } from "../../components/common/Timeline";
 import { Application, ApplicationStatus } from "../../types";
 import { FileText, Eye, X, MessageSquare, CheckSquare } from "lucide-react";
 import { ApplicationDetailsModal } from "../../components/common/ApplicationDetailsModal";
+import { downloadStoredFile } from "../../utils/documentStorage";
 
 const IncubatorPrefForm: React.FC<{
   appId: string;
@@ -326,7 +327,12 @@ export const AdminApplicationManagement: React.FC = () => {
                       href="#"
                       onClick={(e) => {
                         e.preventDefault();
-                        showToast(`Simulated download of ${selectedApp.pitchDeckName}`, "info");
+                        const success = downloadStoredFile(selectedApp.id, "pitchDeck", selectedApp.pitchDeckName);
+                        if (!success) {
+                          showToast(`Simulated download of ${selectedApp.pitchDeckName}`, "info");
+                        } else {
+                          showToast(`Downloading ${selectedApp.pitchDeckName}`, "success");
+                        }
                       }}
                       className="text-[#FF6B00] font-bold hover:underline"
                     >
@@ -346,7 +352,12 @@ export const AdminApplicationManagement: React.FC = () => {
                         href="#"
                         onClick={(e) => {
                           e.preventDefault();
-                          showToast(`Simulated download of ${selectedApp.additionalDocumentsName}`, "info");
+                          const success = downloadStoredFile(selectedApp.id, "additionalDocuments", selectedApp.additionalDocumentsName);
+                          if (!success) {
+                            showToast(`Simulated download of ${selectedApp.additionalDocumentsName}`, "info");
+                          } else {
+                            showToast(`Downloading ${selectedApp.additionalDocumentsName}`, "success");
+                          }
                         }}
                         className="text-[#FF6B00] font-bold hover:underline"
                       >
