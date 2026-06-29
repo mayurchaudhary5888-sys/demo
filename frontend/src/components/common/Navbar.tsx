@@ -110,8 +110,16 @@ export const Navbar: React.FC = () => {
       setMobileMenuOpen(false);
     };
 
+    const showDeactivated = () => {
+      setShowDeactivatedModal(true);
+    };
+
     window.addEventListener("bsi:open-login", openLoginModal);
-    return () => window.removeEventListener("bsi:open-login", openLoginModal);
+    window.addEventListener("bsi:deactivated-account", showDeactivated);
+    return () => {
+      window.removeEventListener("bsi:open-login", openLoginModal);
+      window.removeEventListener("bsi:deactivated-account", showDeactivated);
+    };
   }, []);
 
   // ── Handle Login Form Submit ──
