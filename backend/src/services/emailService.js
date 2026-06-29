@@ -39,7 +39,7 @@ export const sendContactQueryEmail = async (queryData) => {
 
   const mailOptions = {
     from: env.smtpFrom,
-    to: "mayurchaudhary5888@gmail.com",
+    to: "helloitsmeparth@gmail.com",
     subject: `New Contact Query Received - ${queryData.id} [${queryData.subject || "General"}]`,
     html: `
       <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #e4eaf7; padding: 20px; border-radius: 10px;">
