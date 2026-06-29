@@ -281,7 +281,7 @@ export const InvestorProfiles: React.FC = () => {
           </Link>
 
           <Link
-            to="/portfolio/startups"
+            to="/startup_portfolio"
             className="group bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md hover:border-[#FF6B00]/30 transition-all flex items-center gap-4"
           >
             <div className="h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0 group-hover:bg-emerald-100 transition-colors">

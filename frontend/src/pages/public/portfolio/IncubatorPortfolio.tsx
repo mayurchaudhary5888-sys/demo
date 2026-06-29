@@ -57,7 +57,7 @@ export const IncubatorPortfolio: React.FC = () => {
                   This keeps incubator information accurate and avoids showing outdated local lists during active programme cycles.
                 </p>
                 <a
-                  href="https://seedfund.startupindia.gov.in/"
+                  href="https://seedfund.startupindia.gov.in/portfolio"
                   target="_blank"
                   rel="noreferrer"
                   className="mt-8 inline-flex items-center gap-3 rounded-md bg-[#FF6B00] px-6 py-3 text-xs font-black uppercase tracking-[0.18em] text-white shadow-[0_16px_36px_rgba(255,107,0,0.24)] transition hover:bg-[#ef5f00]"

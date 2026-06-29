@@ -27,7 +27,7 @@ export const PortfolioHero: React.FC<PortfolioHeroProps> = ({ eyebrow, title, de
 
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
-              to="/portfolio/incubators"
+              to="/portfolio"
               className={`inline-flex items-center gap-2 rounded-md px-5 py-3 text-xs font-black uppercase tracking-[0.18em] transition ${
                 active === "incubators" ? "bg-[#FF6B00] text-white" : "border border-white/18 text-white hover:bg-white/10"
               }`}
@@ -36,7 +36,7 @@ export const PortfolioHero: React.FC<PortfolioHeroProps> = ({ eyebrow, title, de
               <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
-              to="/portfolio/startups"
+              to="/startup_portfolio"
               className={`inline-flex items-center gap-2 rounded-md px-5 py-3 text-xs font-black uppercase tracking-[0.18em] transition ${
                 active === "startups" ? "bg-[#FF6B00] text-white" : "border border-white/18 text-white hover:bg-white/10"
               }`}
