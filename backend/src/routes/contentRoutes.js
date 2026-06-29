@@ -25,6 +25,7 @@ import {
   toggleStartupApproval,
   updateUserStatus,
   updateApplicationStatus,
+  updateApplicationIncubatorStatus,
   updateStartup,
   upsertNotification,
 } from "../controllers/contentController.js";
@@ -64,6 +65,7 @@ contentRoutes.get("/applications", requireAuth, listApplications);
 contentRoutes.get("/applications/:id", requireAuth, getApplication);
 contentRoutes.post("/applications", requireAuth, writeRateLimiter, validateBody(applicationSchema), createApplication);
 contentRoutes.patch("/admin/applications/:id/status", requireAuth, requireAdmin, writeRateLimiter, validateBody(applicationStatusSchema), updateApplicationStatus);
+contentRoutes.patch("/admin/applications/:id/incubator-status", requireAuth, requireAdmin, writeRateLimiter, updateApplicationIncubatorStatus);
 contentRoutes.get("/admin/users", requireAuth, requireAdmin, listUsers);
 contentRoutes.patch("/admin/users/:id/status", requireAuth, requireAdmin, writeRateLimiter, validateBody(userStatusSchema), updateUserStatus);
 

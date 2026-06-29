@@ -343,6 +343,49 @@ export const createApplication = async (req, res, next) => {
       throw new AppError("Your startup profile is missing. Please complete registration before applying.", 400);
     }
 
+    let incubatorPreferences = [];
+    if (req.body.programId === "startup-program") {
+      const currentDate = new Date().toISOString().split("T")[0];
+      const formattedSubmittedDate = new Date().toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric"
+      });
+      if (req.body.incubator1) {
+        incubatorPreferences.push({
+          incubatorName: req.body.incubator1,
+          preferenceOrder: 1,
+          status: "Pending Review",
+          submittedDate: formattedSubmittedDate,
+          completenessStatus: "In Progress",
+          comments: "Pending review",
+          commentsDate: currentDate
+        });
+      }
+      if (req.body.incubator2) {
+        incubatorPreferences.push({
+          incubatorName: req.body.incubator2,
+          preferenceOrder: 2,
+          status: "Submitted",
+          submittedDate: formattedSubmittedDate,
+          completenessStatus: "In Progress",
+          comments: "Pending review",
+          commentsDate: currentDate
+        });
+      }
+      if (req.body.incubator3) {
+        incubatorPreferences.push({
+          incubatorName: req.body.incubator3,
+          preferenceOrder: 3,
+          status: "Submitted",
+          submittedDate: formattedSubmittedDate,
+          completenessStatus: "In Progress",
+          comments: "Pending review",
+          commentsDate: currentDate
+        });
+      }
+    }
+
     const payload = {
       ...req.body,
       startupId,
@@ -353,6 +396,7 @@ export const createApplication = async (req, res, next) => {
       submittedDate: req.body.submittedDate || new Date().toISOString().split("T")[0],
       lastUpdated: req.body.lastUpdated || new Date().toISOString().split("T")[0],
       status: req.body.status || "Submitted",
+      incubatorPreferences,
       timeline: req.body.timeline || [
         {
           status: req.body.status || "Submitted",
@@ -423,6 +467,56 @@ export const updateApplicationStatus = async (req, res, next) => {
       });
     }
 
+    res.json({ success: true, data: app.toObject() });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const updateApplicationIncubatorStatus = async (req, res, next) => {
+  try {
+    const app = await ApplicationRecord.findOne(applicationLookup(req.params.id));
+    if (!app) throw new AppError("Application not found.", 404);
+
+    const { preferenceOrder, status, completenessStatus, comments } = req.body;
+    if (!preferenceOrder) {
+      throw new AppError("Preference order is required.", 400);
+    }
+
+    if (!app.incubatorPreferences) {
+      app.incubatorPreferences = [];
+    }
+
+    const pref = app.incubatorPreferences.find((p) => p.preferenceOrder === Number(preferenceOrder));
+    if (!pref) {
+      throw new AppError(`Preference order ${preferenceOrder} not found on this application.`, 404);
+    }
+
+    if (status) pref.status = status;
+    if (completenessStatus) pref.completenessStatus = completenessStatus;
+    if (comments) pref.comments = comments;
+
+    const currentDate = new Date().toISOString().split("T")[0];
+    const formattedCommentsDate = new Date().toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric"
+    });
+    pref.commentsDate = formattedCommentsDate;
+
+    app.lastUpdated = currentDate;
+
+    // Add to timeline
+    app.timeline = [
+      {
+        status: app.status,
+        timestamp: new Date().toLocaleString(),
+        remarks: `Incubator preference #${preferenceOrder} (${pref.incubatorName}) status updated to ${status || pref.status}.`,
+      },
+      ...(app.timeline || []),
+    ];
+
+    await app.save();
     res.json({ success: true, data: app.toObject() });
   } catch (err) {
     next(err);

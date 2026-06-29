@@ -101,6 +101,16 @@ export interface Program {
   description?: string;
 }
 
+export interface IncubatorPref {
+  incubatorName: string;
+  preferenceOrder: number;
+  status: "Submitted" | "Pending Review" | "Selected" | "Rejected";
+  submittedDate: string;
+  completenessStatus: string;
+  comments: string;
+  commentsDate: string;
+}
+
 export interface Application {
   id: string;
   programId: string;
@@ -124,6 +134,10 @@ export interface Application {
   submittedByName?: string;
   updatedAt?: string;
   createdAt?: string;
+  incubator1?: string;
+  incubator2?: string;
+  incubator3?: string;
+  incubatorPreferences?: IncubatorPref[];
   timeline: {
     status: ApplicationStatus;
     timestamp: string;

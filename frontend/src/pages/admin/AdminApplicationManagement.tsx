@@ -12,8 +12,91 @@ import { Application, ApplicationStatus } from "../../types";
 import { FileText, Eye, X, MessageSquare, CheckSquare } from "lucide-react";
 import { ApplicationDetailsModal } from "../../components/common/ApplicationDetailsModal";
 
+const IncubatorPrefForm: React.FC<{
+  appId: string;
+  pref: any;
+  onUpdate: (prefOrder: number, status: string, completeness: string, remarks: string) => Promise<void>;
+}> = ({ appId, pref, onUpdate }) => {
+  const [statusVal, setStatusVal] = useState(pref.status);
+  const [completenessVal, setCompletenessVal] = useState(pref.completenessStatus || "In Progress");
+  const [remarksVal, setRemarksVal] = useState(pref.comments || "");
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await onUpdate(pref.preferenceOrder, statusVal, completenessVal, remarksVal);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="bg-slate-50 p-4 rounded-lg border border-slate-205 space-y-3 text-xs">
+      <div className="flex justify-between items-center border-b border-slate-200/60 pb-1.5">
+        <h5 className="font-bold text-slate-800">
+          Preference {pref.preferenceOrder}: {pref.incubatorName}
+        </h5>
+        <span className="text-[10px] bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full font-bold">
+          Current: {pref.status}
+        </span>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="space-y-1">
+          <label className="block text-[10px] font-bold text-slate-400 uppercase">Status</label>
+          <select
+            value={statusVal}
+            onChange={(e) => setStatusVal(e.target.value)}
+            className="w-full p-2 bg-white border border-slate-300 rounded-md text-xs font-semibold text-slate-700 outline-none"
+          >
+            <option value="Submitted">Submitted</option>
+            <option value="Pending Review">Pending Review</option>
+            <option value="Selected">Selected</option>
+            <option value="Rejected">Rejected</option>
+          </select>
+        </div>
+
+        <div className="space-y-1">
+          <label className="block text-[10px] font-bold text-slate-400 uppercase">Completeness Check</label>
+          <select
+            value={completenessVal}
+            onChange={(e) => setCompletenessVal(e.target.value)}
+            className="w-full p-2 bg-white border border-slate-300 rounded-md text-xs font-semibold text-slate-700 outline-none"
+          >
+            <option value="In Progress">In Progress</option>
+            <option value="Completed">Completed</option>
+          </select>
+        </div>
+
+        <div className="space-y-1">
+          <label className="block text-[10px] font-bold text-slate-400 uppercase">Remarks / Feedback</label>
+          <input
+            type="text"
+            value={remarksVal}
+            onChange={(e) => setRemarksVal(e.target.value)}
+            placeholder="Add comments..."
+            className="w-full p-2 bg-white border border-slate-300 rounded-md text-xs font-semibold text-slate-700 outline-none"
+          />
+        </div>
+      </div>
+
+      <div className="flex justify-end pt-1">
+        <button
+          type="submit"
+          disabled={loading}
+          className="px-4 py-1.5 bg-[#F05A28] hover:bg-[#d9481b] disabled:opacity-50 text-white text-[10px] font-extrabold uppercase rounded-md shadow-xs transition-colors"
+        >
+          {loading ? "Saving..." : "Update Preference"}
+        </button>
+      </div>
+    </form>
+  );
+};
+
 export const AdminApplicationManagement: React.FC = () => {
-  const { applications, updateApplicationStatus, showToast } = useAppState();
+  const { applications, updateApplicationStatus, updateApplicationIncubatorStatus, showToast } = useAppState();
   const [selectedApp, setSelectedApp] = useState<Application | null>(null);
   const [statusInput, setStatusInput] = useState<ApplicationStatus | "">("");
   const [remarksInput, setRemarksInput] = useState("");
@@ -273,6 +356,60 @@ export const AdminApplicationManagement: React.FC = () => {
                   </div>
                 )}
               </div>
+
+              {/* Incubator Preference Reviews (Only for Startup Program) */}
+              {selectedApp.programId === "startup-program" && selectedApp.incubatorPreferences && (
+                <div className="border-t border-slate-100 pt-4 space-y-3">
+                  <h4 className="font-black text-[#0B2A5B] uppercase flex items-center gap-1.5">
+                    <CheckSquare className="w-4 h-4 text-[#FF6B00]" />
+                    <span>Incubator Preference Reviews</span>
+                  </h4>
+                  <div className="space-y-3">
+                    {selectedApp.incubatorPreferences.map((pref) => (
+                      <IncubatorPrefForm
+                        key={pref.preferenceOrder}
+                        appId={selectedApp.id}
+                        pref={pref}
+                        onUpdate={async (prefOrder, newStatus, newCompleteness, newRemarks) => {
+                          await updateApplicationIncubatorStatus(
+                            selectedApp.id,
+                            prefOrder,
+                            newStatus,
+                            newCompleteness,
+                            newRemarks
+                          );
+                          showToast(`Incubator Preference #${prefOrder} updated successfully.`, "success");
+                          
+                          // Update parent modal's state instantly
+                          setSelectedApp((prev) => {
+                            if (!prev) return null;
+                            const updatedPrefs = (prev.incubatorPreferences || []).map((p) => {
+                              if (p.preferenceOrder === prefOrder) {
+                                return {
+                                  ...p,
+                                  status: newStatus as any,
+                                  completenessStatus: newCompleteness,
+                                  comments: newRemarks,
+                                  commentsDate: new Date().toLocaleDateString("en-GB", {
+                                    day: "2-digit",
+                                    month: "short",
+                                    year: "numeric",
+                                  }),
+                                };
+                              }
+                              return p;
+                            });
+                            return {
+                              ...prev,
+                              incubatorPreferences: updatedPrefs,
+                            };
+                          });
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Status Update Form */}
               <form onSubmit={handleUpdateStatus} className="border-t border-slate-100 pt-4 space-y-3">

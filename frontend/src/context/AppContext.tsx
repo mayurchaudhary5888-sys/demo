@@ -61,9 +61,9 @@ interface AppContextValue {
   toggleProgramStatus: (programId: string) => void;
   addProgram: (program: any) => void;
 
-  // Application actions
   applyToProgram: (data: any) => Promise<Application>;
   updateApplicationStatus: (appId: string, status: ApplicationStatus, remarks?: string) => Promise<void>;
+  updateApplicationIncubatorStatus: (appId: string, preferenceOrder: number, status?: string, completenessStatus?: string, remarks?: string) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextValue | undefined>(undefined);
@@ -351,6 +351,26 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     [showToast]
   );
 
+  const updateApplicationIncubatorStatus = useCallback(
+    async (appId: string, preferenceOrder: number, status?: string, completenessStatus?: string, remarks?: string) => {
+      try {
+        const response = await contentApi.updateApplicationIncubatorStatus(appId, {
+          preferenceOrder,
+          status,
+          completenessStatus,
+          comments: remarks,
+        });
+        setApplications((prev) =>
+          prev.map((app) => (app.id === appId ? response : app))
+        );
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Failed to update incubator status.";
+        showToast(message, "error");
+      }
+    },
+    [showToast]
+  );
+
   const value: AppContextValue = {
     user,
     startups,
@@ -371,6 +391,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     addProgram,
     applyToProgram,
     updateApplicationStatus,
+    updateApplicationIncubatorStatus,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
