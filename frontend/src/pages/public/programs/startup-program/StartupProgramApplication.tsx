@@ -357,7 +357,7 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
         <div className="border-b border-[#E4EAF7] bg-[linear-gradient(135deg,rgba(11,42,91,0.98),rgba(43,47,134,0.98))] px-5 py-5 sm:px-8">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <p className="text-[11px] font-black uppercase tracking-[0.28em] text-white/60">Startup Program</p>
+              <p className="text-[11px] font-black uppercase tracking-[0.28em] text-white/60">Startup Support</p>
               <h1 className="mt-2 text-2xl font-black tracking-tight text-white sm:text-3xl">{program.name}</h1>
               <p className="mt-2 max-w-3xl text-sm leading-7 text-white/75">
                 Complete the 7-step application wizard. The form is full-screen, orange-accented, and saved as a single application on submit.
@@ -769,7 +769,7 @@ const FileUpload: React.FC<{
         Upload
       </label>
       <p className="mt-2 text-xs text-slate-500">{helper}</p>
-      {file && <p className="mt-2 text-xs font-bold text-emerald-700">Selected: {file.name}</p>}
+      {file && <p className="mt-2 text-xs font-bold text-[#FF6B00]">Selected: {file.name}</p>}
     </div>
   </div>
 );

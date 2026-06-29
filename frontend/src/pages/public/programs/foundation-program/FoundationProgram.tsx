@@ -128,7 +128,7 @@ export const FoundationProgram: React.FC<FoundationProgramProps> = ({ program, o
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!validate()) {
-      showToast("Please complete all required Foundation Program fields.", "error");
+      showToast("Please complete all required Foundation / CSR Support fields.", "error");
       return;
     }
 
@@ -159,11 +159,11 @@ export const FoundationProgram: React.FC<FoundationProgramProps> = ({ program, o
   return (
     <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm" id="foundation-application-form">
       <div className="border-b border-slate-100 bg-slate-50 px-6 py-8 md:px-8">
-        <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[#FF6B00]">Foundation Program</p>
-        <h3 className="mt-3 text-2xl font-black tracking-tight text-[#0B2A5B]">Apply for Foundation Support</h3>
+        <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[#FF6B00]">Foundation / CSR Support</p>
+        <h3 className="mt-3 text-2xl font-black tracking-tight text-[#0B2A5B]">Apply for Foundation / CSR Support</h3>
         <h4 className="mt-3 text-base font-extrabold text-slate-900">First step to getting started</h4>
         <p className="mt-3 max-w-4xl text-sm leading-7 text-slate-600">
-          Share your organisation, solution, users, and impact metrics in one form so the Foundation Program team can review your readiness and support fit.
+          Share your organisation, solution, users, and impact metrics in one form so the Foundation / CSR Support team can review your readiness and support fit.
         </p>
       </div>
 
@@ -182,7 +182,7 @@ export const FoundationProgram: React.FC<FoundationProgramProps> = ({ program, o
         <div className="space-y-2">
           <label className="block font-bold text-[#0B2A5B]">Please upload a detailed project pitch deck here *</label>
           <input type="file" onChange={handleFileChange} accept=".pdf,.ppt,.pptx" className="block w-full rounded-lg border border-slate-300 p-3 text-sm" />
-          {pitchDeck && <p className="text-xs font-bold text-emerald-700">Selected: {pitchDeck.name}</p>}
+          {pitchDeck && <p className="text-xs font-bold text-[#FF6B00]">Selected: {pitchDeck.name}</p>}
           {errors.pitchDeck && <p className="text-xs font-bold text-red-500">{errors.pitchDeck}</p>}
         </div>
 

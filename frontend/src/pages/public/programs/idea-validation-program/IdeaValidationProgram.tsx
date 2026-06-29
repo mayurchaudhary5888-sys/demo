@@ -112,7 +112,7 @@ export const IdeaValidationProgram: React.FC<IdeaValidationProgramProps> = ({ pr
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!validate()) {
-      showToast("Please complete all required Idea Validation fields.", "error");
+      showToast("Please complete all required Idea Validation Support fields.", "error");
       return;
     }
 
@@ -143,8 +143,8 @@ export const IdeaValidationProgram: React.FC<IdeaValidationProgramProps> = ({ pr
   return (
     <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm" id="idea-validation-application-form">
       <div className="border-b border-slate-100 bg-slate-50 px-6 py-8 md:px-8">
-        <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[#FF6B00]">Idea Validation Program</p>
-        <h3 className="mt-3 text-2xl font-black tracking-tight text-[#0B2A5B]">Apply for Startup Support</h3>
+        <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[#FF6B00]">Idea Validation Support</p>
+        <h3 className="mt-3 text-2xl font-black tracking-tight text-[#0B2A5B]">Apply for Idea Validation Support</h3>
         <h4 className="mt-3 text-base font-extrabold text-slate-900">First Step to Getting Started</h4>
         <p className="mt-3 max-w-4xl text-sm leading-7 text-slate-600">
           Welcome to your first step towards getting idea validation and incubation support. We know you are working hard on your startup, and we will be glad if this program can be a part of your success story.
@@ -189,7 +189,7 @@ export const IdeaValidationProgram: React.FC<IdeaValidationProgramProps> = ({ pr
             Attach a pitch deck or presentation, if you already have one (only pdf / pptx files, please) *
           </label>
           <input type="file" onChange={handleFileChange} accept=".pdf,.pptx" className="block w-full rounded-lg border border-slate-300 p-3 text-sm" />
-          {pitchDeck && <p className="text-xs font-bold text-emerald-700">Selected: {pitchDeck.name}</p>}
+          {pitchDeck && <p className="text-xs font-bold text-[#FF6B00]">Selected: {pitchDeck.name}</p>}
           {errors.pitchDeck && <p className="text-xs font-bold text-red-500">{errors.pitchDeck}</p>}
         </div>
 

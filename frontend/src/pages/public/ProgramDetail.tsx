@@ -315,7 +315,7 @@ export const ProgramDetail: React.FC = () => {
               <SimplePanel title="Benefits">
                 {prog.benefits.map((item) => (
                   <li key={item} className="flex gap-2.5 text-sm leading-6 text-slate-700">
-                    <CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-emerald-600" />
+                    <CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-[#FF6B00]" />
                     <span>{item}</span>
                   </li>
                 ))}
@@ -348,8 +348,8 @@ export const ProgramDetail: React.FC = () => {
 
           <aside className="space-y-5 lg:col-span-4 lg:sticky lg:top-28">
             <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-              <p className="text-[11px] font-black uppercase tracking-[0.22em] text-[#FF6B00]">Funding Support</p>
-              <p className="mt-2 text-2xl font-black text-[#0B2A5B]">{fundingLabel}</p>
+              <p className="text-[11px] font-black uppercase tracking-[0.22em] text-amber-300">Funding Support</p>
+              <p className="mt-2 text-2xl font-black">{fundingLabel}</p>
               <p className="mt-3 text-sm leading-6 text-slate-600">
                 Review the details and continue when your profile and documents are ready.
               </p>
@@ -421,7 +421,7 @@ export const ProgramDetail: React.FC = () => {
 
           {/* READ-ONLY AUTO-FILLED CHIPS */}
           <div className="bg-slate-50 p-4 rounded-lg border border-slate-150 space-y-3">
-            <span className="text-[10px] bg-[#0B2A5B]/10 text-[#0B2A5B] font-bold px-2 py-0.5 rounded font-mono uppercase">
+              <span className="text-[10px] bg-[#0B2A5B]/10 text-[#0B2A5B] font-bold px-2 py-0.5 rounded font-mono uppercase">
               Auto-filled enterprise profile tags
             </span>
             <div className="flex flex-wrap gap-2 pt-1 font-mono text-xs">
@@ -497,7 +497,7 @@ export const ProgramDetail: React.FC = () => {
                   onChange={(e) => setFields({ ...fields, currentStage: e.target.value })}
                   onBlur={(e) => handleBlurValidation("currentStage", e.target.value)}
                   className={`w-full p-2.5 bg-white border rounded-lg outline-none text-xs font-semibold text-slate-700 ${
-                    formErrors.currentStage ? "border-red-500" : "border-slate-350"
+                    formErrors.currentStage ? "border-red-500" : "border-slate-350 focus:border-[#0B2A5B]"
                   }`}
                   id="currentStage-select"
                 >
@@ -582,7 +582,7 @@ export const ProgramDetail: React.FC = () => {
                 </div>
 
                 {uploadedFile ? (
-                  <div className="p-2.5 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded flex items-center justify-between font-mono text-[11px]">
+                  <div className="p-2.5 bg-orange-50 border border-orange-200 text-[#0B2A5B] rounded flex items-center justify-between font-mono text-[11px]">
                     <span className="truncate max-w-[85%] font-semibold">✓ {uploadedFile.name} ({(uploadedFile.size/1024/1024).toFixed(2)} MB)</span>
                     <button type="button" onClick={() => setUploadedFile(null)} className="text-red-600 font-bold hover:underline">Remove</button>
                   </div>
@@ -614,7 +614,7 @@ export const ProgramDetail: React.FC = () => {
                 </div>
 
                 {additionalFile && (
-                  <div className="p-2.5 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded flex items-center justify-between font-mono text-[11px]">
+                  <div className="p-2.5 bg-orange-50 border border-orange-200 text-[#0B2A5B] rounded flex items-center justify-between font-mono text-[11px]">
                     <span className="truncate max-w-[85%] font-semibold">✓ {additionalFile.name}</span>
                     <button type="button" onClick={() => setAdditionalFile(null)} className="text-red-600 font-bold hover:underline">Remove</button>
                   </div>

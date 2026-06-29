@@ -332,7 +332,7 @@ export const MsmeProgramApplication: React.FC<MsmeProgramApplicationProps> = ({ 
       {/* Header Banner */}
       <div className="border-b border-slate-100 bg-slate-50 px-6 py-8 md:px-8">
         <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[#FF6B00]">MSME Support Program</p>
-        <h3 className="mt-3 text-2xl font-black tracking-tight text-[#0B2A5B]">MSME Capacity Building Form</h3>
+        <h3 className="mt-3 text-2xl font-black tracking-tight text-[#0B2A5B]">Apply for MSME Support</h3>
         <h4 className="mt-3 text-base font-extrabold text-slate-900">Unified Filing Page (Personal, Entity, & Project details)</h4>
         <p className="mt-3 max-w-4xl text-sm leading-7 text-slate-600">
           Please fill the operational details with absolute precision. Complete the 35 fields below to submit your business proposal directly to our screening committee.
@@ -514,7 +514,7 @@ export const MsmeProgramApplication: React.FC<MsmeProgramApplicationProps> = ({ 
                 <UploadCloud className="h-8 w-8 text-slate-400" />
                 <span className="mt-2 text-xs font-bold text-slate-600 text-center">Choose Image or PDF (Max 15MB)</span>
                 <input type="file" accept="image/*,.pdf" className="absolute inset-0 opacity-0 cursor-pointer" onChange={(e) => handleFileUpload(e, setPrototypePhotos, "prototypePhotos", ["image/*", ".pdf"])} />
-                {prototypePhotos && <p className="mt-2 text-[11px] font-bold text-emerald-600 text-center truncate w-full">{prototypePhotos.name}</p>}
+                {prototypePhotos && <p className="mt-2 text-[11px] font-bold text-[#FF6B00] text-center truncate w-full">{prototypePhotos.name}</p>}
               </div>
               {errors.prototypePhotos && <p className="text-xs font-bold text-red-500">{errors.prototypePhotos}</p>}
             </div>
@@ -526,7 +526,7 @@ export const MsmeProgramApplication: React.FC<MsmeProgramApplicationProps> = ({ 
                 <UploadCloud className="h-8 w-8 text-slate-400" />
                 <span className="mt-2 text-xs font-bold text-slate-600 text-center">Choose Image or PDF (Max 15MB)</span>
                 <input type="file" accept="image/*,.pdf" className="absolute inset-0 opacity-0 cursor-pointer" onChange={(e) => handleFileUpload(e, setBlockDiagram, "blockDiagram", ["image/*", ".pdf"])} />
-                {blockDiagram && <p className="mt-2 text-[11px] font-bold text-emerald-600 text-center truncate w-full">{blockDiagram.name}</p>}
+                {blockDiagram && <p className="mt-2 text-[11px] font-bold text-[#FF6B00] text-center truncate w-full">{blockDiagram.name}</p>}
               </div>
               {errors.blockDiagram && <p className="text-xs font-bold text-red-500">{errors.blockDiagram}</p>}
             </div>
@@ -538,7 +538,7 @@ export const MsmeProgramApplication: React.FC<MsmeProgramApplicationProps> = ({ 
                 <UploadCloud className="h-8 w-8 text-slate-400" />
                 <span className="mt-2 text-xs font-bold text-slate-600 text-center">Choose PDF, PPT, PPTX (Max 15MB)</span>
                 <input type="file" accept=".pdf,.ppt,.pptx" className="absolute inset-0 opacity-0 cursor-pointer" onChange={(e) => handleFileUpload(e, setPitchDeck, "pitchDeck", [".pdf", ".ppt", ".pptx"])} />
-                {pitchDeck && <p className="mt-2 text-[11px] font-bold text-emerald-600 text-center truncate w-full">{pitchDeck.name}</p>}
+                {pitchDeck && <p className="mt-2 text-[11px] font-bold text-[#FF6B00] text-center truncate w-full">{pitchDeck.name}</p>}
               </div>
               {errors.pitchDeck && <p className="text-xs font-bold text-red-500">{errors.pitchDeck}</p>}
             </div>
