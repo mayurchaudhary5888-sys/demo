@@ -9,6 +9,7 @@ import { Menu, X, ChevronDown, LogIn, LogOut, User, Award, Eye, EyeOff, LayoutDa
 import { useAppState } from "../../context/AppContext";
 import { programCatalog } from "../../data/programCatalog";
 import { authApi } from "../../services/authApi";
+import { AccountDeactivatedModal } from "./AccountDeactivatedModal";
 
 export const Navbar: React.FC = () => {
   const { user, login, logout, showToast } = useAppState();
@@ -30,6 +31,7 @@ export const Navbar: React.FC = () => {
   const [loginPassword, setLoginPassword] = useState("");
   const [loginErrors, setLoginErrors] = useState<Record<string, string>>({});
   const [loginLoading, setLoginLoading] = useState(false);
+  const [showDeactivatedModal, setShowDeactivatedModal] = useState(false);
 
   // Register Form input states
   const [regName, setRegName] = useState("");
@@ -141,7 +143,12 @@ export const Navbar: React.FC = () => {
         navigate("/startup/dashboard");
       }
     } catch (err: any) {
-      showToast(err.message || "Invalid account credentials entered.", "error");
+      if (err.message && err.message.includes("Something wrong happens")) {
+        setShowLoginModal(false);
+        setShowDeactivatedModal(true);
+      } else {
+        showToast(err.message || "Invalid account credentials entered.", "error");
+      }
     } finally {
       setLoginLoading(false);
     }
@@ -855,6 +862,11 @@ export const Navbar: React.FC = () => {
           </div>
         </div>
       )}
+
+      <AccountDeactivatedModal
+        open={showDeactivatedModal}
+        onClose={() => setShowDeactivatedModal(false)}
+      />
     </div>
   );
 };
