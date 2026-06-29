@@ -58,11 +58,11 @@ const contactFields = (profile: StartupProfile) => [
 
 export const StartupProfileSummaryCard: React.FC<StartupProfileSummaryCardProps> = ({ profile }) => {
   return (
-    <section className="overflow-hidden rounded-[28px] border border-[#D9DCF4] bg-[radial-gradient(circle_at_top_left,_rgba(255,255,255,0.98),_rgba(248,249,255,0.96)_38%,_rgba(231,236,255,0.88)_100%)]">
+    <section className="overflow-hidden rounded-xl border border-slate-200 bg-white">
       <div className="grid gap-0 xl:grid-cols-[300px_minmax(0,1fr)]">
-        <div className="border-b border-[#E4E8FB] bg-[linear-gradient(180deg,rgba(255,255,255,0.9),rgba(244,246,255,0.96))] p-8 xl:border-b-0 xl:border-r">
+        <div className="border-b border-slate-200 bg-slate-50/50 p-8 xl:border-b-0 xl:border-r-2 xl:border-slate-100">
           <div className="mx-auto flex max-w-[220px] flex-col items-center text-center">
-            <div className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-[26px] border border-white/80 bg-white">
+            <div className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-white">
               {profile.logoPreview || profile.logoUrl ? (
                 <img
                   src={profile.logoPreview || profile.logoUrl}
@@ -70,33 +70,33 @@ export const StartupProfileSummaryCard: React.FC<StartupProfileSummaryCardProps>
                   className="h-full w-full object-contain p-5"
                 />
               ) : (
-                <Building2 className="h-10 w-10 text-[#394B98]" />
+                <Building2 className="h-10 w-10 text-slate-400" />
               )}
             </div>
 
-            <h2 className="mt-5 text-lg font-black uppercase tracking-tight text-[#1A275B]">
+            <h2 className="mt-5 text-base font-bold tracking-tight text-[#0B2A5B]">
               {profile.legalName || profile.startupName || profile.name}
             </h2>
-            <p className="mt-2 text-sm font-medium leading-6 text-slate-600">
+            <p className="mt-2 text-xs font-semibold leading-5 text-slate-500">
               {profile.startupBrief || profile.description}
             </p>
 
             <div className="mt-5 flex w-full flex-wrap justify-center gap-2">
-              <span className="inline-flex items-center gap-1 rounded-full bg-[#EDF2FF] px-3 py-1 text-[11px] font-black uppercase tracking-wide text-[#394B98]">
-                <Sparkles className="h-3.5 w-3.5" />
+              <span className="inline-flex items-center gap-1 rounded-full bg-[#EDF2FF] px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-[#0B2A5B]">
+                <Sparkles className="h-3 w-3" />
                 {profile.stage}
               </span>
-              <span className="inline-flex items-center gap-1 rounded-full bg-[#FFF2E8] px-3 py-1 text-[11px] font-black uppercase tracking-wide text-[#DF6B15]">
-                <FileDigit className="h-3.5 w-3.5" />
+              <span className="inline-flex items-center gap-1 rounded-full bg-[#FFF2E8] px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-[#DF6B15]">
+                <FileDigit className="h-3 w-3" />
                 {profile.fundingStatus || profile.fundingType}
               </span>
             </div>
 
             <Link
               to="/startup/settings"
-              className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-[#2B2F86] px-5 py-3 text-sm font-black uppercase tracking-wide text-white transition hover:bg-[#21256A]"
+              className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#0B2A5B] hover:bg-[#07144A] px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-white transition shadow-sm"
             >
-              <Edit3 className="h-4 w-4" />
+              <Edit3 className="h-3.5 w-3.5" />
               Edit Profile
             </Link>
           </div>
@@ -104,38 +104,38 @@ export const StartupProfileSummaryCard: React.FC<StartupProfileSummaryCardProps>
 
         <div className="p-6 sm:p-8">
           <div className="grid gap-8 xl:grid-cols-2">
-            <div className="rounded-2xl border border-[#E7EBFB] bg-white/70 p-5">
+            <div className="rounded-xl border border-slate-200 bg-white p-5">
               <StartupProfileFieldGroup fields={primaryFields(profile)} />
             </div>
 
-            <div className="rounded-2xl border border-[#E7EBFB] bg-white/70 p-5">
+            <div className="rounded-xl border border-slate-200 bg-white p-5">
               <StartupProfileFieldGroup fields={secondaryFields(profile)} />
             </div>
           </div>
 
           <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
-            <div className="rounded-2xl border border-[#E7EBFB] bg-white/70 p-5">
-              <div className="mb-4 text-[11px] font-black uppercase tracking-[0.22em] text-[#5B64A8]">
-                Contact And Links
+            <div className="rounded-xl border border-slate-200 bg-white p-5">
+              <div className="mb-4 text-[10px] font-bold uppercase tracking-[0.22em] text-slate-400">
+                Contact and Links
               </div>
               <StartupProfileFieldGroup fields={contactFields(profile)} className="space-y-5" />
             </div>
 
             <div className="space-y-4">
-              <div className="rounded-2xl border border-[#E7EBFB] bg-white/70 p-5">
-                <div className="mb-3 text-[11px] font-black uppercase tracking-[0.22em] text-[#5B64A8]">
+              <div className="rounded-xl border border-slate-200 bg-white p-5">
+                <div className="mb-3 text-[10px] font-bold uppercase tracking-[0.22em] text-slate-400">
                   Services
                 </div>
-                <p className="text-sm font-semibold leading-7 text-slate-800">
+                <p className="text-xs font-bold leading-6 text-slate-700">
                   {formatList(profile.services || profile.supportRequired)}
                 </p>
               </div>
 
-              <div className="rounded-2xl border border-[#E7EBFB] bg-white/70 p-5">
-                <div className="mb-3 text-[11px] font-black uppercase tracking-[0.22em] text-[#5B64A8]">
+              <div className="rounded-xl border border-slate-200 bg-white p-5">
+                <div className="mb-3 text-[10px] font-bold uppercase tracking-[0.22em] text-slate-400">
                   Interests
                 </div>
-                <p className="text-sm font-semibold leading-7 text-slate-800">
+                <p className="text-xs font-bold leading-6 text-slate-700">
                   {formatList(profile.interests || profile.interestedPrograms)}
                 </p>
               </div>
