@@ -10,7 +10,6 @@ import { useAppState } from "../../context/AppContext";
 import { CommunityBridgeSection } from "../../components/home/CommunityBridgeSection";
 import { EcosystemPathwaysSection } from "../../components/home/EcosystemPathwaysSection";
 import { HowItWorksSection } from "../../components/home/HowItWorksSection";
-import { UpcomingProgramsSection } from "../../components/home/UpcomingProgramsSection";
 import { EcosystemStakeholdersSection } from "../../components/home/EcosystemStakeholdersSection";
 import { DisclaimerSection } from "../../components/home/DisclaimerSection";
 
@@ -302,7 +301,6 @@ export const Home: React.FC = () => {
       <CommunityBridgeSection />
       <EcosystemPathwaysSection />
       <HowItWorksSection />
-      <UpcomingProgramsSection />
       <EcosystemStakeholdersSection />
       <DisclaimerSection />
 

@@ -260,18 +260,18 @@ export const CommunityBridgeSection: React.FC = () => {
         {/* Middle Two-Column & Bottom Stats Bar Container */}
         <div id="community-details" className="space-y-12">
           {/* Two Columns Layout */}
-          <div className="grid gap-6 md:grid-cols-12 md:items-start max-w-6xl mx-auto">
+          <div className="grid gap-6 md:grid-cols-12 md:items-stretch max-w-6xl mx-auto">
             {/* Left Column: BHASKAR Community */}
-            <div className="community-reveal md:col-span-4 lg:col-span-5">
-              <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.1] flex flex-col">
+            <div className="community-reveal md:col-span-4 lg:col-span-5 md:flex md:h-full">
+              <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.05] flex h-full flex-col justify-center">
                 <span className="text-[#FF6B00]">BHASKAR</span>
                 <span className="text-[#07144A] mt-1">Community</span>
               </h2>
             </div>
 
             {/* Right Column: Description */}
-            <div className="community-reveal md:col-span-8 lg:col-span-7">
-              <p className="text-slate-600 text-sm sm:text-base md:text-[17px] leading-relaxed font-normal">
+            <div className="community-reveal md:col-span-8 lg:col-span-7 md:flex md:h-full md:items-center">
+              <p className="text-slate-600 text-sm sm:text-base md:text-[17px] leading-relaxed font-normal md:max-w-2xl">
                 Come and explore the diverse and dynamic innovation ecosystem
                 where groundbreaking ideas meet opportunities for growth. BHASKAR
                 offers a platform that connects you to a world of collaboration,
