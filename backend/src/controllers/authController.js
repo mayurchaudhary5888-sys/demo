@@ -107,6 +107,10 @@ export const login = async (req, res, next) => {
       throw new AppError("Please verify your email before logging in.", 403);
     }
 
+    if (user.role !== "admin" && user.isActive === false) {
+      throw new AppError("Something wrong happens. Contact support please.", 403);
+    }
+
     const token = signToken(user);
     const startupProfile = await syncStartupProfileRecord(user);
     res.json({
