@@ -12,6 +12,37 @@ import { getCatalogProgram, programCatalog } from "../../data/programCatalog";
 import { contentApi } from "../../services/contentApi";
 import type { Application } from "../../types";
 
+const formatDateNice = (dateStr: string) => {
+  if (!dateStr) return "";
+  try {
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return dateStr;
+    return date.toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "long",
+      year: "numeric"
+    });
+  } catch {
+    return dateStr;
+  }
+};
+
+const getReapplicationDate = (rejectedDateStr: string) => {
+  if (!rejectedDateStr) return "";
+  try {
+    const date = new Date(rejectedDateStr);
+    if (isNaN(date.getTime())) return "";
+    date.setDate(date.getDate() + 42); // add 42 days (6 weeks)
+    return date.toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "long",
+      year: "numeric"
+    });
+  } catch {
+    return "";
+  }
+};
+
 export const MyApplications: React.FC = () => {
   const { user, startups } = useAppState();
   const navigate = useNavigate();
@@ -173,6 +204,47 @@ export const MyApplications: React.FC = () => {
                       </button>
                     </div>
 
+                    {/* Date Summary Row */}
+                    {(() => {
+                      const prefs = startupAppForTab.incubatorPreferences || [];
+                      const allRejected = prefs.length > 0 && prefs.every((p) => p.status === "Rejected");
+                      
+                      // Find the latest rejection date
+                      let latestRejectionDate = startupAppForTab.lastUpdated || startupAppForTab.updatedAt || "";
+                      let maxTime = 0;
+                      prefs.forEach((p) => {
+                        const dStr = p.commentsDate || p.submittedDate || startupAppForTab.submittedDate;
+                        if (dStr) {
+                          const t = new Date(dStr).getTime();
+                          if (t > maxTime) {
+                            maxTime = t;
+                            latestRejectionDate = dStr;
+                          }
+                        }
+                      });
+
+                      const submittedDateFormatted = formatDateNice(startupAppForTab.submittedDate);
+                      const rejectedDateFormatted = allRejected ? formatDateNice(latestRejectionDate) : "—";
+                      const reapplyDateFormatted = allRejected ? getReapplicationDate(latestRejectionDate) : "—";
+
+                      return (
+                        <div className="px-6 py-5 border-b border-slate-200 grid grid-cols-1 sm:grid-cols-3 gap-6 bg-slate-50/50">
+                          <div className="space-y-1">
+                            <span className="text-xs font-semibold text-slate-500 block">Submitted Date</span>
+                            <span className="text-sm font-bold text-[#0B2A5B] block mt-1">{submittedDateFormatted || "—"}</span>
+                          </div>
+                          <div className="space-y-1">
+                            <span className="text-xs font-semibold text-slate-500 block">Rejected Date</span>
+                            <span className="text-sm font-bold text-[#0B2A5B] block mt-1">{rejectedDateFormatted}</span>
+                          </div>
+                          <div className="space-y-1">
+                            <span className="text-xs font-semibold text-slate-500 block">You are allowed to submit the new application from</span>
+                            <span className="text-sm font-bold text-[#0B2A5B] block mt-1">{reapplyDateFormatted}</span>
+                          </div>
+                        </div>
+                      );
+                    })()}
+
                     {/* Gray Title Bar: Incubator Preferences */}
                     <div className="bg-slate-50 border-b border-slate-200 px-6 py-2.5">
                       <h4 className="text-xs font-black text-slate-500 uppercase tracking-wider">
@@ -184,12 +256,18 @@ export const MyApplications: React.FC = () => {
                     <div className="divide-y divide-slate-150">
                       {(() => {
                         const prefs = startupAppForTab.incubatorPreferences || [];
-                        const filteredPrefs = prefs.filter((p) => {
-                          if (activeTab === "in_progress") return true;
-                          if (activeTab === "selected") return p.status === "Selected";
-                          if (activeTab === "rejected") return p.status === "Rejected";
-                          return true;
-                        });
+                        const allRejected = prefs.length > 0 && prefs.every((p) => p.status === "Rejected");
+                        
+                        let filteredPrefs: typeof prefs = [];
+                        if (allRejected) {
+                          if (activeTab === "rejected") {
+                            filteredPrefs = prefs;
+                          }
+                        } else {
+                          if (activeTab === "in_progress") {
+                            filteredPrefs = prefs;
+                          }
+                        }
 
                         if (filteredPrefs.length === 0) {
                           return (
