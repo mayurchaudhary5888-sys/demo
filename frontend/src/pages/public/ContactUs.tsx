@@ -439,7 +439,7 @@ export const ContactUs: React.FC = () => {
                   Your nodal inquiry has been registered. Keep the details below for tracking the ticket response.
                 </p>
 
-                <div className="grid grid-cols-2 gap-4 w-full mb-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full mb-8">
                   <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 text-left">
                     <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">
                       Ticket ID

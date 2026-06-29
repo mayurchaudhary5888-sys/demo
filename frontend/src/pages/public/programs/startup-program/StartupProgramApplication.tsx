@@ -500,7 +500,7 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
                         Name of Authorised representative<span className="text-red-500">*</span>
                       </label>
                     </div>
-                    <div className="md:col-span-8 grid grid-cols-2 gap-4">
+                    <div className="md:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <input
                           type="text"

@@ -199,14 +199,14 @@ export const AdminApplicationManagement: React.FC = () => {
   return (
     <div className="space-y-6" id="admin-applications-container">
       {/* Header */}
-      <div className="border-b border-slate-200 pb-3 flex justify-between items-center">
+      <div className="border-b border-slate-200 pb-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div className="space-y-1">
           <h3 className="text-md font-bold text-[#0B2A5B]">Sovereign Scheme Applications</h3>
           <p className="text-[11px] text-slate-500">
             Review and manage applications submitted by startups for central funding schemes and accelerators.
           </p>
         </div>
-        <span className="text-xs bg-[#0B2A5B] text-white font-mono font-bold uppercase py-0.5 px-2 rounded-full">
+        <span className="text-xs bg-[#0B2A5B] text-white font-mono font-bold uppercase py-0.5 px-2 rounded-full shrink-0">
           Total: {applications.length} applications
         </span>
       </div>
