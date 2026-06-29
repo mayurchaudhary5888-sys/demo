@@ -141,18 +141,20 @@ export const ContactUs: React.FC = () => {
   return (
     <div className="min-h-[calc(100vh-7rem)] bg-slate-50" id="contact-us-container">
       {/* Page Banner */}
-      <section className="bg-[#07184A] text-white">
-        <div className="mx-auto max-w-[88rem] px-5 py-10 sm:px-8 lg:px-10">
-          <div className="text-center">
-            <h1 className="text-4xl font-black tracking-tight sm:text-5xl">
-              Contact Us
-            </h1>
-          </div>
+      <section className="bg-white border-b border-slate-200 py-12">
+        <div className="mx-auto max-w-[88rem] px-5 sm:px-8 lg:px-10 text-center">
+          <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[#FF6B00]">Get in touch</p>
+          <h1 className="mt-2 text-3xl font-black tracking-tight text-[#0B2A5B] sm:text-4xl">
+            Contact Us
+          </h1>
+          <p className="mt-3 max-w-xl mx-auto text-xs font-semibold leading-relaxed text-slate-500">
+            Have queries about funding, registrations, or ecosystem support? Send us a ticket and our nodal team will respond.
+          </p>
         </div>
       </section>
 
       {/* Main Content */}
-      <div className="mx-auto max-w-5xl px-5 py-16 sm:px-8 lg:px-10">
+      <div className="mx-auto max-w-5xl px-5 py-12 sm:px-8 lg:px-10">
         <div className="w-full">
           {/* Form Side */}
           <div>
@@ -425,61 +427,61 @@ export const ContactUs: React.FC = () => {
                 </form>
               </div>
             ) : (
-              /* Ticket confirmation card details */
-              <div className="bg-emerald-50 border border-emerald-200 rounded-[2rem] p-8 shadow-sm flex items-start gap-5">
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white text-emerald-600 shadow-xs border border-emerald-100">
-                  <CheckCircle className="h-6 w-6" />
+              /* Ticket confirmation card details - Styled clean and aligned with home page cards */
+              <div className="bg-white border border-slate-200 rounded-3xl p-8 md:p-12 shadow-[0_20px_50px_rgba(69,84,155,0.04)] text-center max-w-xl mx-auto flex flex-col items-center">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#FFF5F2] text-[#FF6B00] mb-6">
+                  <CheckCircle className="h-8 w-8" />
                 </div>
-                <div className="space-y-3">
-                  <h3 className="text-md font-black uppercase tracking-wider text-emerald-850">
-                    Ticket generated successfully
-                  </h3>
-                  <p className="text-sm leading-6 text-slate-600 font-medium">
-                    Your nodal inquiry is registered. Keep the details below for tracking the ticket response.
-                  </p>
-                  <div className="flex flex-wrap gap-4 pt-3">
-                    <div className="bg-white border border-emerald-200/60 rounded-2xl px-5 py-3 shadow-xs">
-                      <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">
-                        Ticket ID
-                      </span>
-                      <span className="font-mono text-sm font-black text-[#0B2A5B] block mt-1">
-                        {ticketDetails.id}
-                      </span>
-                    </div>
-                    <div className="bg-white border border-emerald-200/60 rounded-2xl px-5 py-3 shadow-xs">
-                      <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">
-                        Submitted Date
-                      </span>
-                      <span className="text-sm font-black text-[#0B2A5B] block mt-1">
-                        {ticketDetails.date}
-                      </span>
-                    </div>
+                <h3 className="text-xl font-bold tracking-tight text-[#0B2A5B] mb-2">
+                  Query Submitted Successfully
+                </h3>
+                <p className="text-xs leading-6 text-slate-500 font-medium max-w-sm mb-8">
+                  Your nodal inquiry has been registered. Keep the details below for tracking the ticket response.
+                </p>
+
+                <div className="grid grid-cols-2 gap-4 w-full mb-8">
+                  <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 text-left">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+                      Ticket ID
+                    </span>
+                    <span className="font-mono text-sm font-bold text-[#0B2A5B] block mt-1">
+                      {ticketDetails.id}
+                    </span>
                   </div>
-                  <div className="pt-4">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setFormFields({
-                          entityType: "",
-                          customEntityType: "",
-                          entityName: "",
-                          name: "",
-                          email: "",
-                          state: "",
-                          customState: "",
-                          city: "",
-                          customCity: "",
-                          queryType: "",
-                          customQueryType: "",
-                          message: "",
-                        });
-                        setTicketDetails(null);
-                      }}
-                      className="text-xs font-bold text-[#FF6B00] hover:underline"
-                    >
-                      Submit another query
-                    </button>
+                  <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 text-left">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+                      Submitted Date
+                    </span>
+                    <span className="text-sm font-bold text-[#0B2A5B] block mt-1">
+                      {ticketDetails.date}
+                    </span>
                   </div>
+                </div>
+
+                <div className="flex flex-col items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFormFields({
+                        entityType: "",
+                        customEntityType: "",
+                        entityName: "",
+                        name: "",
+                        email: "",
+                        state: "",
+                        customState: "",
+                        city: "",
+                        customCity: "",
+                        queryType: "",
+                        customQueryType: "",
+                        message: "",
+                      });
+                      setTicketDetails(null);
+                    }}
+                    className="inline-flex items-center justify-center rounded-full bg-[#0B2A5B] hover:bg-[#102e68] text-white px-8 py-3.5 text-xs font-black uppercase tracking-widest transition-colors cursor-pointer shadow-sm"
+                  >
+                    Submit Another Query
+                  </button>
                 </div>
               </div>
             )}
