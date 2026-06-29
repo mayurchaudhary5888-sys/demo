@@ -294,7 +294,7 @@ export const Register: React.FC = () => {
       maxWidthClassName="max-w-[86rem]"
       showFooterNote={false}
       aside={
-        <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+        <div className="flex items-center gap-3 rounded-2xl border-2 border-slate-200 bg-slate-50 px-4 py-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#07184A] text-white">
             <Building2 className="h-5 w-5" />
           </div>
@@ -307,11 +307,12 @@ export const Register: React.FC = () => {
     >
       <div className="space-y-8">
 
-          <div className="mb-8 rounded-[24px] border border-slate-200 bg-slate-50 p-4">
+          {/* Stepper Progress Bar */}
+          <div className="mb-8 rounded-[24px] border-2 border-slate-100 bg-gradient-to-r from-slate-50/50 via-white to-slate-50/50 p-6 shadow-xs">
             <div className="relative mx-auto max-w-6xl">
-              <div className="absolute left-8 right-8 top-4 h-1 rounded-full bg-slate-200" />
+              <div className="absolute left-8 right-8 top-5 h-1 rounded-full bg-slate-200" />
               <div
-                className="absolute left-8 top-4 h-1 rounded-full bg-[#FF6B00] transition-all duration-500"
+                className="absolute left-8 top-5 h-1 rounded-full bg-gradient-to-r from-[#FF6B00] to-[#F9B233] transition-all duration-500"
                 style={{ width: `${((step - 1) / 3) * 100}%` }}
               />
               <div className="relative grid grid-cols-4 gap-3">
@@ -326,21 +327,21 @@ export const Register: React.FC = () => {
                       onClick={() => {
                         if (item.number < step) setStep(item.number);
                       }}
-                      className="flex flex-col items-center text-center"
+                      className="flex flex-col items-center text-center focus:outline-none"
                     >
                       <div
-                        className={`z-10 flex h-9 w-9 items-center justify-center rounded-full border-4 bg-white text-sm font-black transition-all ${
+                        className={`z-10 flex h-10 w-10 items-center justify-center rounded-full border-4 bg-white text-sm font-black transition-all duration-300 shadow-md ${
                           complete
                             ? "border-[#07184A] bg-[#07184A] text-white"
                             : active
-                              ? "border-[#FF6B00] text-[#07184A]"
-                              : "border-slate-300 text-slate-500"
+                              ? "border-[#FF6B00] text-[#FF6B00] ring-4 ring-[#FF6B00]/10"
+                              : "border-slate-200 text-slate-400 hover:border-slate-350"
                         }`}
                       >
-                        {complete ? <Check className="h-4 w-4" /> : item.number}
+                        {complete ? <Check className="h-4.5 w-4.5" /> : item.number}
                       </div>
-                      <div className="mt-2 text-[11px] uppercase tracking-wide text-slate-500">Step</div>
-                      <div className={`text-sm font-extrabold ${active ? "text-[#07184A]" : "text-slate-700"}`}>{item.title}</div>
+                      <div className="mt-2.5 text-[9px] font-black uppercase tracking-wider text-slate-400">Step</div>
+                      <div className={`text-xs sm:text-sm font-black mt-0.5 tracking-tight transition-colors ${active ? "text-[#07184A]" : "text-slate-500 hover:text-slate-750"}`}>{item.title}</div>
                     </button>
                   );
                 })}
@@ -358,7 +359,7 @@ export const Register: React.FC = () => {
                       Entity/company logo
                       <Info className="h-4 w-4 text-slate-300" />
                     </div>
-                    <label className="flex min-h-48 cursor-pointer items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-4 text-center transition hover:border-[#FF6B00] hover:bg-white">
+                    <label className="flex min-h-48 cursor-pointer items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-6 text-center transition-all duration-200 hover:border-[#FF6B00] hover:bg-white hover:shadow-xs">
                       <div className="space-y-3">
                         {logoPreview ? (
                           <img
@@ -400,10 +401,10 @@ export const Register: React.FC = () => {
                           key={option.label}
                           type="button"
                           onClick={() => updateField("hasCompanyLogo", option.value)}
-                          className={`rounded-full border px-5 py-2 text-sm font-bold transition ${
+                          className={`rounded-full border-2 px-6 py-2.5 text-xs sm:text-sm font-bold transition-all duration-200 ${
                             form.hasCompanyLogo === option.value
-                              ? "border-[#FF6B00] bg-[#FF6B00] text-white"
-                              : "border-slate-300 bg-white text-slate-600 hover:border-[#FF6B00]/50 hover:text-[#07184A]"
+                              ? "border-[#FF6B00] bg-gradient-to-r from-[#FF6B00] to-[#FF8C3D] text-white shadow-sm shadow-[#FF6B00]/15"
+                              : "border-slate-200 bg-white text-slate-600 hover:border-[#FF6B00]/40 hover:text-[#07184A] hover:bg-slate-50"
                           }`}
                         >
                           {option.label}
@@ -414,7 +415,7 @@ export const Register: React.FC = () => {
 
                   <div>
                     <label className="mb-2 block text-[13px] font-black uppercase tracking-wider text-slate-500">
-                      Funded/bootstraped?
+                      Funded/bootstrapped?
                     </label>
                     <div className="flex flex-wrap gap-3">
                       {fundingOptions.map((option) => (
@@ -422,10 +423,10 @@ export const Register: React.FC = () => {
                           key={option}
                           type="button"
                           onClick={() => updateField("fundingStatus", option)}
-                          className={`rounded-full border px-4 py-2 text-sm font-bold transition ${
+                          className={`rounded-full border-2 px-6 py-2.5 text-xs sm:text-sm font-bold transition-all duration-200 ${
                             form.fundingStatus === option
-                              ? "border-[#07184A] bg-[#07184A] text-white"
-                              : "border-slate-300 bg-white text-slate-600 hover:border-[#FF6B00]/50 hover:text-[#07184A]"
+                              ? "border-[#07184A] bg-[#07184A] text-white shadow-sm"
+                              : "border-slate-200 bg-white text-slate-600 hover:border-[#FF6B00]/40 hover:text-[#07184A] hover:bg-slate-50"
                           }`}
                         >
                           {option}
@@ -438,15 +439,15 @@ export const Register: React.FC = () => {
                 <div className="space-y-5">
                   <div>
                     <label className="mb-2 block text-[13px] font-black uppercase tracking-wider text-slate-500">
-                      Startup name
+                      Startup name <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
                       value={form.startupName}
                       onChange={(e) => updateField("startupName", e.target.value)}
                       placeholder="Enter startup name"
-                      className={`w-full rounded-xl border px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition focus:border-[#FF6B00] focus:shadow-[0_0_0_4px_rgba(255,107,0,0.08)] ${
-                        errors.startupName ? "border-red-400 bg-red-50" : "border-slate-300 bg-white"
+                      className={`w-full rounded-xl border-2 px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition duration-200 hover:border-slate-300 focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/8 focus:shadow-none ${
+                        errors.startupName ? "border-red-400 bg-red-50/10" : "border-slate-200 bg-white"
                       }`}
                     />
                     {errors.startupName && <p className="mt-1 text-xs font-bold text-red-500">{errors.startupName}</p>}
@@ -462,10 +463,10 @@ export const Register: React.FC = () => {
                           key={option}
                           type="button"
                           onClick={() => updateField("stage", option)}
-                          className={`rounded-xl border px-3 py-3 text-sm font-bold transition ${
+                          className={`rounded-xl border-2 px-3 py-3 text-xs sm:text-sm font-black tracking-tight transition-all duration-200 ${
                             form.stage === option
-                              ? "border-[#FF6B00] bg-[#FF6B00] text-white"
-                              : "border-slate-300 bg-white text-slate-600 hover:border-[#FF6B00]/50 hover:text-[#07184A]"
+                              ? "border-[#FF6B00] bg-gradient-to-r from-[#FF6B00] to-[#FF8C3D] text-white shadow-sm shadow-[#FF6B00]/15"
+                              : "border-slate-200 bg-white text-slate-600 hover:border-[#FF6B00]/40 hover:text-[#07184A] hover:bg-slate-50"
                           }`}
                         >
                           {option}
@@ -476,15 +477,15 @@ export const Register: React.FC = () => {
 
                   <div>
                     <label className="mb-2 block text-[13px] font-black uppercase tracking-wider text-slate-500">
-                      Brief
+                      Brief <span className="text-red-500">*</span>
                     </label>
                     <textarea
                       value={form.startupBrief}
                       onChange={(e) => updateField("startupBrief", e.target.value)}
                       rows={8}
-                      placeholder="Write a concise summary of what your startup does, who it serves, and what you need from the scheme."
-                      className={`w-full rounded-2xl border px-4 py-3 text-sm leading-6 font-medium text-slate-700 outline-none transition focus:border-[#FF6B00] focus:shadow-[0_0_0_4px_rgba(255,107,0,0.08)] ${
-                        errors.startupBrief ? "border-red-400 bg-red-50" : "border-slate-300 bg-white"
+                      placeholder="Write a concise summary of what your startup does, who it serves, and what you need from support."
+                      className={`w-full rounded-2xl border-2 px-4 py-3 text-sm leading-6 font-medium text-slate-750 outline-none transition duration-200 hover:border-slate-300 focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/8 focus:shadow-none ${
+                        errors.startupBrief ? "border-red-400 bg-red-50/10" : "border-slate-200 bg-white"
                       }`}
                     />
                     {errors.startupBrief && <p className="mt-1 text-xs font-bold text-red-500">{errors.startupBrief}</p>}
@@ -497,17 +498,17 @@ export const Register: React.FC = () => {
               <div className="grid gap-5 lg:grid-cols-2">
                 <div>
                   <label className="mb-2 block text-[13px] font-black uppercase tracking-wider text-slate-500">
-                    Email
+                    Email <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
-                    <Mail className="pointer-events-none absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
+                    <Mail className="pointer-events-none absolute left-4 top-4 h-4 w-4 text-slate-400" />
                     <input
                       type="email"
                       value={form.email}
                       onChange={(e) => updateField("email", e.target.value)}
                       placeholder="name@startup.in"
-                      className={`w-full rounded-xl border py-3 pl-11 pr-4 text-sm font-semibold text-slate-800 outline-none transition focus:border-[#FF6B00] focus:shadow-[0_0_0_4px_rgba(255,107,0,0.08)] ${
-                        errors.email ? "border-red-400 bg-red-50" : "border-slate-300 bg-white"
+                      className={`w-full rounded-xl border-2 py-3 pl-11 pr-4 text-sm font-semibold text-slate-800 outline-none transition duration-200 hover:border-slate-300 focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/8 focus:shadow-none ${
+                        errors.email ? "border-red-400 bg-red-50/10" : "border-slate-200 bg-white"
                       }`}
                     />
                   </div>
@@ -516,17 +517,17 @@ export const Register: React.FC = () => {
 
                 <div>
                   <label className="mb-2 block text-[13px] font-black uppercase tracking-wider text-slate-500">
-                    Mobile
+                    Mobile <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
-                    <Phone className="pointer-events-none absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
+                    <Phone className="pointer-events-none absolute left-4 top-4 h-4 w-4 text-slate-400" />
                     <input
                       type="tel"
                       value={form.mobile}
                       onChange={(e) => updateField("mobile", e.target.value)}
                       placeholder="10-digit mobile number"
-                      className={`w-full rounded-xl border py-3 pl-11 pr-4 text-sm font-semibold text-slate-800 outline-none transition focus:border-[#FF6B00] focus:shadow-[0_0_0_4px_rgba(255,107,0,0.08)] ${
-                        errors.mobile ? "border-red-400 bg-red-50" : "border-slate-300 bg-white"
+                      className={`w-full rounded-xl border-2 py-3 pl-11 pr-4 text-sm font-semibold text-slate-800 outline-none transition duration-200 hover:border-slate-300 focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/8 focus:shadow-none ${
+                        errors.mobile ? "border-red-400 bg-red-50/10" : "border-slate-200 bg-white"
                       }`}
                     />
                   </div>
@@ -535,39 +536,39 @@ export const Register: React.FC = () => {
 
                 <div>
                   <label className="mb-2 block text-[13px] font-black uppercase tracking-wider text-slate-500">
-                    Password
+                    Password <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
-                    <Lock className="pointer-events-none absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
+                    <Lock className="pointer-events-none absolute left-4 top-4 h-4 w-4 text-slate-400" />
                     <input
                       type="password"
                       value={form.password}
                       onChange={(e) => updateField("password", e.target.value)}
                       placeholder="Create a secure password"
                       autoComplete="new-password"
-                      className={`w-full rounded-xl border py-3 pl-11 pr-4 text-sm font-semibold text-slate-800 outline-none transition focus:border-[#FF6B00] focus:shadow-[0_0_0_4px_rgba(255,107,0,0.08)] ${
-                        errors.password ? "border-red-400 bg-red-50" : "border-slate-300 bg-white"
+                      className={`w-full rounded-xl border-2 py-3 pl-11 pr-4 text-sm font-semibold text-slate-800 outline-none transition duration-200 hover:border-slate-300 focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/8 focus:shadow-none ${
+                        errors.password ? "border-red-400 bg-red-50/10" : "border-slate-200 bg-white"
                       }`}
                     />
                   </div>
-                  <p className="mt-1 text-[11px] font-semibold text-slate-500">Minimum 8 characters with uppercase, lowercase, and a number.</p>
+                  <p className="mt-1.5 text-[10px] font-bold text-slate-500">Minimum 8 characters with uppercase, lowercase, and a number.</p>
                   {errors.password && <p className="mt-1 text-xs font-bold text-red-500">{errors.password}</p>}
                 </div>
 
                 <div>
                   <label className="mb-2 block text-[13px] font-black uppercase tracking-wider text-slate-500">
-                    Confirm password
+                    Confirm password <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
-                    <ShieldCheck className="pointer-events-none absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
+                    <ShieldCheck className="pointer-events-none absolute left-4 top-4 h-4 w-4 text-slate-400" />
                     <input
                       type="password"
                       value={form.confirmPassword}
                       onChange={(e) => updateField("confirmPassword", e.target.value)}
                       placeholder="Re-enter password"
                       autoComplete="new-password"
-                      className={`w-full rounded-xl border py-3 pl-11 pr-4 text-sm font-semibold text-slate-800 outline-none transition focus:border-[#FF6B00] focus:shadow-[0_0_0_4px_rgba(255,107,0,0.08)] ${
-                        errors.confirmPassword ? "border-red-400 bg-red-50" : "border-slate-300 bg-white"
+                      className={`w-full rounded-xl border-2 py-3 pl-11 pr-4 text-sm font-semibold text-slate-800 outline-none transition duration-200 hover:border-slate-300 focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/8 focus:shadow-none ${
+                        errors.confirmPassword ? "border-red-400 bg-red-50/10" : "border-slate-200 bg-white"
                       }`}
                     />
                   </div>
@@ -579,11 +580,11 @@ export const Register: React.FC = () => {
                     State
                   </label>
                   <div className="relative">
-                    <MapPin className="pointer-events-none absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
+                    <MapPin className="pointer-events-none absolute left-4 top-4 h-4 w-4 text-slate-400" />
                     <select
                       value={form.state}
                       onChange={(e) => updateField("state", e.target.value)}
-                      className="w-full appearance-none rounded-xl border border-slate-300 bg-white py-3 pl-11 pr-10 text-sm font-semibold text-slate-800 outline-none transition focus:border-[#FF6B00] focus:shadow-[0_0_0_4px_rgba(255,107,0,0.08)]"
+                      className="w-full appearance-none rounded-xl border-2 border-slate-200 bg-white py-3 pl-11 pr-10 text-sm font-semibold text-slate-800 outline-none transition duration-200 hover:border-slate-300 focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/8"
                     >
                       <option value="" disabled>
                         Select state
@@ -594,21 +595,21 @@ export const Register: React.FC = () => {
                         </option>
                       ))}
                     </select>
-                    <ChevronDown className="pointer-events-none absolute right-4 top-3.5 h-4 w-4 text-slate-400" />
+                    <ChevronDown className="pointer-events-none absolute right-4 top-4 h-4 w-4 text-slate-400" />
                   </div>
                 </div>
 
                 <div>
                   <label className="mb-2 block text-[13px] font-black uppercase tracking-wider text-slate-500">
-                    City
+                    City <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
                     value={form.city}
                     onChange={(e) => updateField("city", e.target.value)}
                     placeholder="City"
-                    className={`w-full rounded-xl border px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition focus:border-[#FF6B00] focus:shadow-[0_0_0_4px_rgba(255,107,0,0.08)] ${
-                      errors.city ? "border-red-400 bg-red-50" : "border-slate-300 bg-white"
+                    className={`w-full rounded-xl border-2 px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition duration-200 hover:border-slate-300 focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/8 focus:shadow-none ${
+                      errors.city ? "border-red-400 bg-red-50/10" : "border-slate-200 bg-white"
                     }`}
                   />
                   {errors.city && <p className="mt-1 text-xs font-bold text-red-500">{errors.city}</p>}
@@ -619,13 +620,13 @@ export const Register: React.FC = () => {
                     Website
                   </label>
                   <div className="relative">
-                    <Globe className="pointer-events-none absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
+                    <Globe className="pointer-events-none absolute left-4 top-4 h-4 w-4 text-slate-400" />
                     <input
                       type="text"
                       value={form.website}
                       onChange={(e) => updateField("website", e.target.value)}
                       placeholder="https://startup.example"
-                      className="w-full rounded-xl border border-slate-300 bg-white py-3 pl-11 pr-4 text-sm font-semibold text-slate-800 outline-none transition focus:border-[#FF6B00] focus:shadow-[0_0_0_4px_rgba(255,107,0,0.08)]"
+                      className="w-full rounded-xl border-2 border-slate-200 bg-white py-3 pl-11 pr-4 text-sm font-semibold text-slate-800 outline-none transition duration-200 hover:border-slate-300 focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/8"
                     />
                   </div>
                 </div>
@@ -639,7 +640,7 @@ export const Register: React.FC = () => {
                     value={form.appLink}
                     onChange={(e) => updateField("appLink", e.target.value)}
                     placeholder="Play Store or App Store link"
-                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition focus:border-[#FF6B00] focus:shadow-[0_0_0_4px_rgba(255,107,0,0.08)]"
+                    className="w-full rounded-xl border-2 border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition duration-200 hover:border-slate-300 focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/8"
                   />
                 </div>
               </div>
@@ -649,14 +650,14 @@ export const Register: React.FC = () => {
               <div className="grid gap-5 lg:grid-cols-2">
                 <div>
                   <label className="mb-2 block text-[13px] font-black uppercase tracking-wider text-slate-500">
-                    Industry
+                    Industry <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
                     <select
                       value={form.industry}
                       onChange={(e) => updateField("industry", e.target.value)}
-                      className={`w-full appearance-none rounded-xl border bg-white py-3 pl-4 pr-10 text-sm font-semibold text-slate-800 outline-none transition focus:border-[#FF6B00] focus:shadow-[0_0_0_4px_rgba(255,107,0,0.08)] ${
-                        errors.industry ? "border-red-400 bg-red-50" : "border-slate-300"
+                      className={`w-full appearance-none rounded-xl border-2 bg-white py-3 pl-4 pr-10 text-sm font-semibold text-slate-800 outline-none transition duration-200 hover:border-slate-300 focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/8 ${
+                        errors.industry ? "border-red-400 bg-red-50/10" : "border-slate-200"
                       }`}
                     >
                       <option value="" disabled>
@@ -668,21 +669,21 @@ export const Register: React.FC = () => {
                         </option>
                       ))}
                     </select>
-                    <ChevronDown className="pointer-events-none absolute right-4 top-3.5 h-4 w-4 text-slate-400" />
+                    <ChevronDown className="pointer-events-none absolute right-4 top-4 h-4 w-4 text-slate-400" />
                   </div>
                   {errors.industry && <p className="mt-1 text-xs font-bold text-red-500">{errors.industry}</p>}
                 </div>
 
-                  <div>
-                    <label className="mb-2 block text-[13px] font-black uppercase tracking-wider text-slate-500">
-                      Sector
+                <div>
+                  <label className="mb-2 block text-[13px] font-black uppercase tracking-wider text-slate-500">
+                    Sector <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
                     <select
                       value={form.sector}
                       onChange={(e) => updateField("sector", e.target.value)}
-                      className={`w-full appearance-none rounded-xl border bg-white py-3 pl-4 pr-10 text-sm font-semibold text-slate-800 outline-none transition focus:border-[#FF6B00] focus:shadow-[0_0_0_4px_rgba(255,107,0,0.08)] ${
-                        errors.sector ? "border-red-400 bg-red-50" : "border-slate-300"
+                      className={`w-full appearance-none rounded-xl border-2 bg-white py-3 pl-4 pr-10 text-sm font-semibold text-slate-800 outline-none transition duration-200 hover:border-slate-300 focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/8 ${
+                        errors.sector ? "border-red-400 bg-red-50/10" : "border-slate-200"
                       }`}
                     >
                       <option value="" disabled>
@@ -694,40 +695,40 @@ export const Register: React.FC = () => {
                         </option>
                       ))}
                     </select>
-                    <ChevronDown className="pointer-events-none absolute right-4 top-3.5 h-4 w-4 text-slate-400" />
+                    <ChevronDown className="pointer-events-none absolute right-4 top-4 h-4 w-4 text-slate-400" />
                   </div>
-                    {errors.sector && <p className="mt-1 text-xs font-bold text-red-500">{errors.sector}</p>}
-                  </div>
+                  {errors.sector && <p className="mt-1 text-xs font-bold text-red-500">{errors.sector}</p>}
+                </div>
 
-                  <div>
-                    <label className="mb-2 block text-[13px] font-black uppercase tracking-wider text-slate-500">
-                      Select program *
-                    </label>
-                    <div className="relative">
-                      <select
-                        value={form.selectedProgram}
-                        onChange={(e) => updateField("selectedProgram", e.target.value)}
-                        className={`w-full appearance-none rounded-xl border bg-white py-3 pl-4 pr-10 text-sm font-semibold text-slate-800 outline-none transition focus:border-[#FF6B00] focus:shadow-[0_0_0_4px_rgba(255,107,0,0.08)] ${
-                          errors.selectedProgram ? "border-red-400 bg-red-50" : "border-slate-300"
-                        }`}
-                      >
-                        <option value="">Select a program</option>
-                        {programCatalog.map((program) => (
-                          <option key={program.id} value={program.id}>
-                            {program.name}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronDown className="pointer-events-none absolute right-4 top-3.5 h-4 w-4 text-slate-400" />
-                    </div>
-                    {errors.selectedProgram && <p className="mt-1 text-xs font-bold text-red-500">{errors.selectedProgram}</p>}
+                <div>
+                  <label className="mb-2 block text-[13px] font-black uppercase tracking-wider text-slate-500">
+                    Select support <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={form.selectedProgram}
+                      onChange={(e) => updateField("selectedProgram", e.target.value)}
+                      className={`w-full appearance-none rounded-xl border-2 bg-white py-3 pl-4 pr-10 text-sm font-semibold text-slate-800 outline-none transition duration-200 hover:border-slate-300 focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/8 ${
+                        errors.selectedProgram ? "border-red-400 bg-red-50/10" : "border-slate-200"
+                      }`}
+                    >
+                      <option value="">Select support</option>
+                      {programCatalog.map((program) => (
+                        <option key={program.id} value={program.id}>
+                          {program.name}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="pointer-events-none absolute right-4 top-4 h-4 w-4 text-slate-400" />
                   </div>
+                  {errors.selectedProgram && <p className="mt-1 text-xs font-bold text-red-500">{errors.selectedProgram}</p>}
+                </div>
 
                 <div className="lg:col-span-2">
                   <label className="mb-2 block text-[13px] font-black uppercase tracking-wider text-slate-500">
-                    Services
+                    Services <span className="text-red-500">*</span>
                   </label>
-                  <div className="flex flex-wrap gap-2 rounded-2xl border border-slate-300 bg-white p-4">
+                  <div className="flex flex-wrap gap-2.5 rounded-2xl border-2 border-slate-200 bg-white p-4">
                     {serviceOptions.map((option) => {
                       const active = form.services.includes(option);
                       return (
@@ -735,8 +736,10 @@ export const Register: React.FC = () => {
                           key={option}
                           type="button"
                           onClick={() => toggleListValue("services", option)}
-                          className={`rounded-md px-3 py-2 text-xs font-bold transition ${
-                            active ? "bg-[#07184A] text-white" : "bg-slate-100 text-slate-700 hover:bg-[#FFF4EC] hover:text-[#07184A]"
+                          className={`rounded-lg px-4.5 py-2 text-xs font-black tracking-tight transition-all duration-200 ${
+                            active 
+                              ? "bg-[#07184A] text-white shadow-sm" 
+                              : "bg-slate-100 text-slate-700 hover:bg-[#FFF4EC] hover:text-[#07184A]"
                           }`}
                         >
                           {option}
@@ -756,7 +759,7 @@ export const Register: React.FC = () => {
                     value={form.udhyogAadhaar}
                     onChange={(e) => updateField("udhyogAadhaar", e.target.value)}
                     placeholder="Udyog Aadhaar number"
-                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition focus:border-[#FF6B00] focus:shadow-[0_0_0_4px_rgba(255,107,0,0.08)]"
+                    className="w-full rounded-xl border-2 border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition duration-200 hover:border-slate-300 focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/8"
                   />
                 </div>
 
@@ -769,7 +772,7 @@ export const Register: React.FC = () => {
                     value={form.cin}
                     onChange={(e) => updateField("cin", e.target.value)}
                     placeholder="CIN"
-                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition focus:border-[#FF6B00] focus:shadow-[0_0_0_4px_rgba(255,107,0,0.08)]"
+                    className="w-full rounded-xl border-2 border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition duration-200 hover:border-slate-300 focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/8"
                   />
                 </div>
 
@@ -781,7 +784,7 @@ export const Register: React.FC = () => {
                     <select
                       value={form.nature}
                       onChange={(e) => updateField("nature", e.target.value)}
-                      className="w-full appearance-none rounded-xl border border-slate-300 bg-white py-3 pl-4 pr-10 text-sm font-semibold text-slate-800 outline-none transition focus:border-[#FF6B00] focus:shadow-[0_0_0_4px_rgba(255,107,0,0.08)]"
+                      className="w-full appearance-none rounded-xl border-2 border-slate-200 bg-white py-3 pl-4 pr-10 text-sm font-semibold text-slate-800 outline-none transition duration-200 hover:border-slate-300 focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/8"
                     >
                       <option value="" disabled>
                         Select nature
@@ -792,21 +795,21 @@ export const Register: React.FC = () => {
                         </option>
                       ))}
                     </select>
-                    <ChevronDown className="pointer-events-none absolute right-4 top-3.5 h-4 w-4 text-slate-400" />
+                    <ChevronDown className="pointer-events-none absolute right-4 top-4 h-4 w-4 text-slate-400" />
                   </div>
                 </div>
 
                 <div>
                   <label className="mb-2 block text-[13px] font-black uppercase tracking-wider text-slate-500">
-                    Legal name
+                    Legal name <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
                     value={form.legalName}
                     onChange={(e) => updateField("legalName", e.target.value)}
                     placeholder="Legal entity name"
-                    className={`w-full rounded-xl border px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition focus:border-[#FF6B00] focus:shadow-[0_0_0_4px_rgba(255,107,0,0.08)] ${
-                      errors.legalName ? "border-red-400 bg-red-50" : "border-slate-300 bg-white"
+                    className={`w-full rounded-xl border-2 px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition duration-200 hover:border-slate-300 focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/8 focus:shadow-none ${
+                      errors.legalName ? "border-red-400 bg-red-50/10" : "border-slate-200 bg-white"
                     }`}
                   />
                   {errors.legalName && <p className="mt-1 text-xs font-bold text-red-500">{errors.legalName}</p>}
@@ -818,7 +821,7 @@ export const Register: React.FC = () => {
               <div className="space-y-8">
                 <div>
                   <div className="mb-3 text-[13px] font-black uppercase tracking-wider text-slate-500">
-                    You are interested in...
+                    You are interested in... <span className="text-red-500">*</span>
                   </div>
                   <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     {interestOptions.map((option) => {
@@ -828,10 +831,10 @@ export const Register: React.FC = () => {
                           key={option}
                           type="button"
                           onClick={() => toggleListValue("interests", option)}
-                          className={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-bold transition ${
+                          className={`flex items-center gap-3 rounded-2xl border-2 px-4 py-3.5 text-sm font-bold transition-all duration-200 ${
                             active
-                              ? "border-[#FF6B00] bg-[#FF6B00] text-white"
-                              : "border-slate-300 bg-white text-slate-600 hover:border-[#FF6B00]/50 hover:text-[#07184A]"
+                              ? "border-[#FF6B00] bg-gradient-to-r from-[#FF6B00] to-[#FF8C3D] text-white shadow-sm shadow-[#FF6B00]/15"
+                              : "border-slate-200 bg-white text-slate-600 hover:border-[#FF6B00]/50 hover:text-[#07184A]"
                           }`}
                         >
                           <span
@@ -849,18 +852,18 @@ export const Register: React.FC = () => {
                   {errors.interests && <p className="mt-2 text-xs font-bold text-red-500">{errors.interests}</p>}
                 </div>
 
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                <div className="rounded-2xl border-2 border-slate-150 bg-slate-50/50 p-5 shadow-xs">
                   <div className="mb-3 flex items-center gap-2 text-sm font-black uppercase tracking-wider text-slate-600">
                     <FileText className="h-4 w-4 text-[#FF6B00]" />
                     Terms of use
                   </div>
-                  <div className="max-h-64 overflow-auto rounded-xl border border-slate-200 bg-white p-4 text-sm leading-6 text-slate-600">
+                  <div className="max-h-64 overflow-auto rounded-xl border border-slate-150 bg-white p-4 text-xs sm:text-sm leading-6 text-slate-650 shadow-xs">
                     <p className="mb-4">
-                      This official registration form collects the information required to review your startup profile and determine scheme
-                      eligibility. The data you provide is used for verification, contact, and program routing.
+                      This official registration form collects the information required to review your startup profile and determine support
+                      eligibility. The data you provide is used for verification, contact, and support routing.
                     </p>
                     <p className="mb-4">
-                      The portal may update program rules, documentation requirements, and review timelines from time to time. Please make
+                      The portal may update support rules, documentation requirements, and review timelines from time to time. Please make
                       sure the details entered here are complete and accurate.
                     </p>
                     <p>
@@ -868,24 +871,24 @@ export const Register: React.FC = () => {
                       to the terms and conditions for processing and verification.
                     </p>
                   </div>
-                  <label className="mt-4 flex items-center gap-3 text-sm font-bold text-slate-700">
+                  <label className="mt-4 flex items-center gap-3 text-sm font-bold text-slate-700 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={form.agreeTerms}
                       onChange={(e) => updateField("agreeTerms", e.target.checked)}
-                      className="h-5 w-5 rounded border-slate-300 text-[#FF6B00] focus:ring-[#FF6B00]"
+                      className="h-5 w-5 rounded border-2 border-slate-350 text-[#FF6B00] focus:ring-[#FF6B00] cursor-pointer"
                     />
-                    I agree to Terms & Conditions
+                    I agree to Terms & Conditions <span className="text-red-500">*</span>
                   </label>
                   {errors.agreeTerms && <p className="mt-2 text-xs font-bold text-red-500">{errors.agreeTerms}</p>}
                 </div>
               </div>
             )}
 
-            <div className="flex flex-col gap-3 border-t border-slate-200 pt-6 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-3 border-t-2 border-slate-100 pt-6 sm:flex-row sm:items-center sm:justify-between">
               <Link
                 to="/"
-                className="inline-flex items-center gap-2 text-sm font-bold text-[#07184A] hover:text-[#FF6B00]"
+                className="inline-flex items-center gap-2 text-sm font-extrabold text-[#07184A] hover:text-[#FF6B00] transition duration-200"
               >
                 Already registered? Use the login button in the header
               </Link>
@@ -895,7 +898,7 @@ export const Register: React.FC = () => {
                   type="button"
                   onClick={handleBack}
                   disabled={step === 1}
-                  className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-5 py-3 text-xs font-black uppercase tracking-wider text-slate-600 transition hover:border-[#07184A] hover:text-[#07184A] disabled:cursor-not-allowed disabled:opacity-40"
+                  className="inline-flex items-center gap-2 rounded-xl border-2 border-slate-200 bg-white px-5 py-3 text-xs font-black uppercase tracking-wider text-slate-600 transition-all hover:border-[#07184A] hover:text-[#07184A] disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   <ArrowLeft className="h-4 w-4" />
                   Back
@@ -905,7 +908,7 @@ export const Register: React.FC = () => {
                   <button
                     type="button"
                     onClick={handleNext}
-                    className="inline-flex items-center gap-2 rounded-md bg-[#FF6B00] px-6 py-3 text-xs font-black uppercase tracking-wider text-white shadow-[0_14px_30px_rgba(255,107,0,0.18)] transition hover:bg-[#ef5f00]"
+                    className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#FF6B00] to-[#FF8C3D] hover:from-[#E05E00] hover:to-[#FF6B00] px-6 py-3 text-xs font-black uppercase tracking-wider text-white shadow-md shadow-[#FF6B00]/15 hover:scale-[1.01] active:scale-[0.99] transition-all"
                   >
                     Next
                     <ArrowRight className="h-4 w-4" />
@@ -914,7 +917,7 @@ export const Register: React.FC = () => {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="inline-flex items-center gap-2 rounded-md bg-[#07184A] px-6 py-3 text-xs font-black uppercase tracking-wider text-white shadow-[0_14px_30px_rgba(7,24,74,0.18)] transition hover:bg-[#0B2A5B] disabled:cursor-not-allowed disabled:opacity-60"
+                    className="inline-flex items-center gap-2 rounded-xl bg-[#07184A] hover:bg-[#0F2462] px-6 py-3 text-xs font-black uppercase tracking-wider text-white shadow-md shadow-[#07184A]/10 hover:scale-[1.01] active:scale-[0.99] transition-all disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {loading ? "Processing..." : "Register"}
                     <Check className="h-4 w-4" />
