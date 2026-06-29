@@ -127,3 +127,20 @@ html {
 .animate-marquee:hover {
   animation-play-state: paused;
 }
+
+/* Custom card scrollbar with brand orange thumb */
+.custom-card-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-card-scrollbar::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+.custom-card-scrollbar::-webkit-scrollbar-thumb {
+  background: #FF6B00;
+  border-radius: 4px;
+}
+.custom-card-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #e65f00;
+}
+

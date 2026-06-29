@@ -9,7 +9,7 @@ const requestLogin = () => {
 };
 
 export const ProgramsListing: React.FC = () => {
-  const { user, showToast, startups } = useAppState();
+  const { user, showToast, startups, applications } = useAppState();
   const navigate = useNavigate();
 
   const myStartup = user?.startupId ? startups.find((s) => s.id === user.startupId) : null;
@@ -67,61 +67,123 @@ export const ProgramsListing: React.FC = () => {
         </div>
       </section>
 
-      <div className="mx-auto max-w-[88rem] px-5 py-8 sm:px-8 lg:px-10">
-      <section className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-6" id="programs-listing-grid">
+      <div className="mx-auto max-w-[88rem] px-5 py-16 sm:px-8 lg:px-10">
+      <section className="grid grid-cols-1 gap-x-8 gap-y-16 md:grid-cols-2 lg:grid-cols-3" id="programs-listing-grid">
         {displayedPrograms.map((program) => {
           const Icon = program.icon;
+
+          // Check if there is an application for this program
+          const userApp = user ? applications.find((app) => app.programId === program.id) : null;
+          
+          // Determine status text and colors
+          let statusInfo = { text: "Apply Now", color: "text-red-600", bg: "bg-red-50", appId: "" };
+          
+          if (!user) {
+            statusInfo = { text: "Apply Now", color: "text-red-600", bg: "bg-red-50", appId: "" };
+          } else if (userApp) {
+            statusInfo = {
+              text: userApp.status,
+              color: userApp.status === "Rejected" ? "text-red-600" : "text-emerald-600",
+              bg: userApp.status === "Rejected" ? "bg-red-50" : "bg-emerald-50",
+              appId: userApp.id
+            };
+          } else {
+            // Logged in, not applied yet
+            // To mimic the mock exactly (some show "Apply Now", some show "Eligible"):
+            // If it's a mentorship track, show "Apply Now" (red). Else show "Eligible" (green).
+            if (program.id === "idea-validation-program" || program.id === "foundation-program") {
+              statusInfo = { text: "Apply Now", color: "text-red-600", bg: "bg-red-50", appId: "" };
+            } else {
+              statusInfo = { text: "Eligible", color: "text-emerald-600", bg: "bg-emerald-50", appId: "" };
+            }
+          }
 
           return (
             <article
               key={program.slug}
-              className="group relative flex min-h-[390px] flex-col overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm transition duration-300 hover:-translate-y-0.5 hover:border-[#FF6B00]/40 hover:shadow-md md:col-span-1 xl:col-span-2"
+              className="group relative flex flex-col pt-12 bg-white border border-slate-200 rounded-[2rem] shadow-sm hover:shadow-md transition duration-300"
               id={`program-card-${program.slug}`}
             >
-              <div className="flex flex-1 flex-col p-5">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-orange-100 bg-orange-50 text-[#FF6B00] transition group-hover:bg-[#FF6B00] group-hover:text-white">
-                    <Icon className="h-6 w-6" />
-                  </div>
-                  <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-emerald-700">
-                    Open
-                  </span>
-                </div>
-
-                <div className="mt-5 space-y-3">
-                  <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">{program.partner}</p>
-                  <h2 className="text-xl font-black leading-tight text-[#0B2A5B]">{program.name}</h2>
-                  <p className="inline-flex rounded-md bg-orange-50 px-3 py-1 text-xs font-extrabold text-[#FF6B00]">{program.funding}</p>
-                  <p className="text-sm leading-7 text-slate-600">{program.shortDescription}</p>
-                </div>
-
-                <div className="mt-5 space-y-2.5">
-                  {program.focusAreas.slice(0, 3).map((area) => (
-                    <div key={area} className="flex items-center gap-2.5 text-xs font-bold text-slate-600">
-                      <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
-                      <span>{area}</span>
-                    </div>
-                  ))}
+              {/* Circular Logo/Badge Container centered at top border */}
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 rounded-full border border-slate-200 bg-white shadow-[0_4px_12px_rgba(0,0,0,0.05)] flex items-center justify-center z-10 p-1">
+                <div className="w-full h-full rounded-full bg-slate-50 flex items-center justify-center border border-slate-100/80 overflow-hidden">
+                  {(program as any).logoUrl ? (
+                    <img src={(program as any).logoUrl} alt={program.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <Icon className="h-7 w-7 text-slate-500 transition-colors group-hover:text-[#FF6B00]" />
+                  )}
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 border-t border-slate-100 bg-slate-50 p-4">
-                <Link
-                  to={`/support/${program.slug}`}
-                  className="inline-flex items-center justify-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-3 text-xs font-black text-[#0B2A5B] transition-colors hover:border-[#0B2A5B]/30 hover:bg-slate-100"
-                  id={`see-more-${program.slug}`}
-                >
-                  Details
-                  <ArrowRight className="h-3.5 w-3.5" />
-                </Link>
-                <button
-                  type="button"
-                  onClick={() => handleApply(program.slug)}
-                  className="rounded-md bg-[#FF6B00] px-3 py-3 text-xs font-black text-white transition-colors hover:bg-[#e65f00]"
-                  id={`apply-now-${program.slug}`}
-                >
-                  Apply Now
-                </button>
+              {/* Title band with rounded-t corners matching the card's rounded-[2rem] */}
+              <div className="w-full bg-[#FFF5F2] border-b border-slate-100 py-5 px-6 text-center rounded-t-[2rem]">
+                <h2 className="text-lg font-black text-[#0B2A5B] leading-tight tracking-tight">{program.name}</h2>
+              </div>
+
+              {/* Card Body */}
+              <div className="flex-1 flex flex-col p-6 pb-5">
+                {/* Scrollable description box matching the orange scrollbar */}
+                <div className="h-32 overflow-y-auto pr-1 text-sm leading-7 text-slate-600 text-center font-medium custom-card-scrollbar">
+                  {program.shortDescription}
+                </div>
+
+                {/* Status Section */}
+                <div className="mt-6 border-t border-slate-100 pt-5 w-full flex items-center justify-center">
+                  {statusInfo.appId ? (
+                    <div className="grid grid-cols-2 gap-4 w-full text-center divide-x divide-slate-100">
+                      <div className="flex flex-col items-center justify-center">
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Status</span>
+                        <span className={`mt-1 text-base font-black tracking-tight block ${statusInfo.color}`}>
+                          {statusInfo.text}
+                        </span>
+                      </div>
+                      <div className="flex flex-col items-center justify-center pl-2">
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Application No</span>
+                        <span className="mt-1 text-base font-black tracking-tight text-slate-800 block font-mono">
+                          {statusInfo.appId.slice(-6).toUpperCase()}
+                        </span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center flex flex-col items-center justify-center">
+                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Status</span>
+                      <span className={`mt-1 text-base font-black tracking-tight block ${statusInfo.color}`}>
+                        {statusInfo.text}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Bottom Buttons (Footer) */}
+              <div className="border-t border-slate-100 bg-[#FCFDFE] py-4 px-6 rounded-b-[2rem]">
+                {statusInfo.appId ? (
+                  <div className="flex items-center justify-between gap-4">
+                    <Link
+                      to="/startup/dashboard"
+                      className="text-xs font-black text-[#0B2A5B] hover:text-[#FF6B00] transition"
+                    >
+                      View Status
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => handleApply(program.slug)}
+                      className="text-xs font-black text-[#0B2A5B] hover:text-[#FF6B00] transition cursor-pointer"
+                    >
+                      Learn More
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex justify-center w-full">
+                    <button
+                      type="button"
+                      onClick={() => handleApply(program.slug)}
+                      className="text-xs font-black text-[#0B2A5B] hover:text-[#FF6B00] transition cursor-pointer"
+                    >
+                      Learn More
+                    </button>
+                  </div>
+                )}
               </div>
             </article>
           );
