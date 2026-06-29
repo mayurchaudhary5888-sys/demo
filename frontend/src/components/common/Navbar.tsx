@@ -610,9 +610,9 @@ export const Navbar: React.FC = () => {
                 </div>
 
                 <div className="space-y-5 z-10 w-full">
-                  <div className="space-y-1">
-                    <h2 className="text-2xl font-black text-[#1E293B] tracking-tight">LOGIN</h2>
-                    <p className="text-[10px] text-slate-500 font-bold leading-normal">
+                  <div className="space-y-1 text-center md:text-left">
+                    <h2 className="text-2xl font-black text-[#1E293B] tracking-tight text-center">LOGIN</h2>
+                    <p className="text-[10px] text-slate-500 font-bold leading-normal text-center">
                       You can also access your account using your Startup India credentials.
                     </p>
                   </div>
@@ -624,8 +624,8 @@ export const Navbar: React.FC = () => {
                         value={loginEmail}
                         onChange={(e) => setLoginEmail(e.target.value)}
                         placeholder="Please enter your email address"
-                        className={`w-full px-3 py-2.5 border rounded-lg text-xs font-semibold text-slate-700 outline-none focus:border-[#F05A28] ${
-                          loginErrors.email ? "border-red-500 bg-red-50/10" : "border-slate-300"
+                        className={`w-full px-3 py-2.5 border-2 rounded-lg text-xs font-semibold text-slate-700 outline-none border-[#F05A28] ${
+                          loginErrors.email ? "bg-red-50/10 border-red-500" : ""
                         }`}
                       />
                       {loginErrors.email && (
@@ -640,8 +640,8 @@ export const Navbar: React.FC = () => {
                           value={loginPassword}
                           onChange={(e) => setLoginPassword(e.target.value)}
                           placeholder="Please enter your password"
-                          className={`w-full px-3 py-2.5 border rounded-lg text-xs font-semibold text-slate-700 outline-none focus:border-[#F05A28] pr-10 ${
-                            loginErrors.password ? "border-red-500 bg-red-50/10" : "border-slate-300"
+                          className={`w-full px-3 py-2.5 border-2 rounded-lg text-xs font-semibold text-slate-700 outline-none border-[#F05A28] pr-10 ${
+                            loginErrors.password ? "bg-red-50/10 border-red-500" : ""
                           }`}
                         />
                         <button
@@ -657,10 +657,7 @@ export const Navbar: React.FC = () => {
                       )}
                     </div>
 
-                    <div className="flex items-center justify-between">
-                      <span className="text-[9px] text-slate-400 font-bold bg-slate-50 px-2 py-0.5 rounded border border-slate-100">
-                        Admin: admin@startupindia.gov.in / admin@123
-                      </span>
+                    <div className="flex justify-end">
                       <button
                         type="button"
                         onClick={() => showToast("Password restoration parameters set to email.", "info")}
@@ -679,6 +676,37 @@ export const Navbar: React.FC = () => {
                     </button>
                   </form>
 
+                  {/* Google Login Section matching screenshot */}
+                  <div className="text-center pt-2 space-y-2 z-10 relative">
+                    <span className="text-[10px] text-slate-600 font-extrabold tracking-wide block">
+                      Login with others
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => showToast("Google Single Sign-On is currently under sandbox mode.", "info")}
+                      className="w-full max-w-xs mx-auto flex items-center justify-center bg-white hover:bg-slate-50 text-slate-700 font-extrabold py-2.5 px-4 border-2 border-slate-200 rounded-full shadow-sm text-xs transition duration-200"
+                    >
+                      <svg className="w-3.5 h-3.5 mr-2" viewBox="0 0 24 24">
+                        <path
+                          fill="#EA4335"
+                          d="M5.266 9.765A7.077 7.077 0 0 1 12 4.909c1.69 0 3.218.6 4.418 1.582L19.91 3C17.782 1.145 15.055 0 12 0 7.336 0 3.327 2.682 1.386 6.586l3.88 3.179z"
+                        />
+                        <path
+                          fill="#FBBC05"
+                          d="M1.386 6.586A11.947 11.947 0 0 0 0 12c0 1.92.455 3.736 1.259 5.355l4.027-3.127A7.072 7.072 0 0 1 4.909 12c0-1.527.482-2.955 1.309-4.145L1.386 6.586z"
+                        />
+                        <path
+                          fill="#4285F4"
+                          d="M12 24c3.245 0 5.973-1.073 7.964-2.918l-3.864-3c-1.127.755-2.564 1.209-4.1 1.209-3.155 0-5.836-2.127-6.791-5.027l-4.027 3.127C3.127 21.145 7.182 24 12 24z"
+                        />
+                        <path
+                          fill="#34A853"
+                          d="M23.49 12.273c0-.818-.082-1.609-.227-2.382H12v4.518h6.464a5.536 5.536 0 0 1-2.4 3.636l3.864 3c2.264-2.09 3.564-5.164 3.564-8.773z"
+                        />
+                      </svg>
+                      Login with <span className="font-black ml-1">Google</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             ) : (
@@ -688,7 +716,7 @@ export const Navbar: React.FC = () => {
                   <div className="space-y-1">
                     <h2 className="text-2xl font-black text-[#1E293B] tracking-tight">REGISTER</h2>
                     <p className="text-[10px] text-slate-500 font-bold leading-normal">
-                      Configure your secure founder profile to file scheme applications.
+                      Configure your secure founder profile to file support applications.
                     </p>
                   </div>
 
@@ -788,73 +816,64 @@ export const Navbar: React.FC = () => {
               </div>
             )}
 
-            {/* RIGHT COLUMN: Soft yellow brand info box with gold borders */}
-            <div className="w-full md:w-2/5 p-6 sm:p-8 bg-[#FFFDF4] border-t md:border-t-0 md:border-l border-[#FCD34D]/40 flex flex-col justify-between items-center text-center gap-6">
+            {/* RIGHT COLUMN: Soft yellow brand info box with gold borders wrapper matching screenshot */}
+            <div className="w-full md:w-2/5 p-4 sm:p-5 bg-[#FFFDF4] border-t md:border-t-0 md:border-l border-[#FCD34D]/40">
               
-              {/* BHASKAR brand stack */}
-              <div className="space-y-3 w-full">
-                <img
-                  src="/logos/bhaskar.jpeg"
-                  alt="BHASKAR"
-                  className="mx-auto h-20 w-auto max-w-[180px] object-contain"
-                />
+              <div className="border-2 border-[#FCD34D] rounded-3xl p-6 bg-white w-full h-full flex flex-col justify-between items-center text-center gap-6 min-h-[380px]">
+                {/* BHASKAR brand stack */}
+                <div className="space-y-3 w-full">
+                  <img
+                    src="/logos/bhaskar.jpeg"
+                    alt="BHASKAR"
+                    className="mx-auto h-20 w-auto max-w-[180px] object-contain"
+                  />
 
-                <div className="space-y-1">
-                  <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Welcome to</span>
-                  <h3 className="text-base font-black text-[#1E293B]">BHASKAR</h3>
-                  <span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest font-mono block leading-tight">
-                    Bharat Startup Knowledge Access Registry
-                  </span>
-                  <p className="text-[9px] text-[#F05A28] font-extrabold tracking-wide pt-1">
-                    Innovate. Connect. Thrive.
-                  </p>
-                  <span className="text-[7.5px] text-slate-400 font-bold uppercase block tracking-wider">
-                    A Startup India Initiative
-                  </span>
+                  <div className="space-y-1">
+                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Welcome to</span>
+                    <h3 className="text-base font-black text-[#1E293B]">BHASKAR</h3>
+                    <span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest font-mono block leading-tight">
+                      Bharat Startup Knowledge Access Registry
+                    </span>
+                    <p className="text-[9px] text-[#F05A28] font-extrabold tracking-wide pt-1">
+                      Innovate. Connect. Thrive.
+                    </p>
+                  </div>
                 </div>
-              </div>
 
-              {/* Action Box to switch modalMode */}
-              <div className="bg-white border border-slate-150 rounded-xl p-3 shadow-sm w-full max-w-[210px] z-10">
-                {modalMode === "login" ? (
-                  <>
-                    <p className="text-[10px] font-bold text-slate-500">Don't have an account?</p>
-                    <button
-                      onClick={() => {
-                        setShowLoginModal(false);
-                        setRegErrors({});
-                        navigate("/register");
-                      }}
-                      className="text-xs font-black text-[#F05A28] hover:underline cursor-pointer block mt-1 mx-auto"
-                    >
-                      Register Now
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <p className="text-[10px] font-bold text-slate-500">Already registered?</p>
-                    <button
-                      onClick={() => {
-                        setModalMode("login");
-                        setLoginErrors({});
-                      }}
-                      className="text-xs font-black text-[#F05A28] hover:underline cursor-pointer block mt-1 mx-auto"
-                    >
-                      Login Now
-                    </button>
-                  </>
-                )}
-              </div>
+                {/* Action Box to switch modalMode */}
+                <div className="bg-white border border-slate-150 rounded-xl p-3 shadow-md w-full max-w-[210px] z-10">
+                  {modalMode === "login" ? (
+                    <>
+                      <p className="text-[10px] font-bold text-slate-500">Don't have an account?</p>
+                      <button
+                        onClick={() => {
+                          setShowLoginModal(false);
+                          setRegErrors({});
+                          navigate("/register");
+                        }}
+                        className="text-xs font-black text-[#F05A28] hover:underline cursor-pointer block mt-1.5 mx-auto"
+                      >
+                        Register Now
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-[10px] font-bold text-slate-500">Already registered?</p>
+                      <button
+                        onClick={() => {
+                          setModalMode("login");
+                          setLoginErrors({});
+                        }}
+                        className="text-xs font-black text-[#F05A28] hover:underline cursor-pointer block mt-1.5 mx-auto"
+                      >
+                        Login Now
+                      </button>
+                    </>
+                  )}
+                </div>
 
-              {/* DPIIT logo bottom panel */}
-              <div className="w-full border-t border-[#FCD34D]/25 pt-4">
-                <svg viewBox="0 0 240 60" className="h-9 mx-auto opacity-80">
-                  <path d="M15,40 C15,20 35,20 35,40 Z" fill="#78909C" />
-                  <rect x="22" y="40" width="6" height="15" fill="#546E7A" />
-                  <rect x="15" y="52" width="20" height="4" fill="#37474F" />
-                  <text x="45" y="30" fontFamily="sans-serif" fontSize="16" fontWeight="bold" fill="#37474F">DPIIT</text>
-                  <text x="45" y="46" fontFamily="sans-serif" fontSize="10.5" fontWeight="bold" fill="#1B5E20">#startupindia</text>
-                </svg>
+                {/* Bottom spacer (DPIIT logo completely removed) */}
+                <div className="w-full h-1" />
               </div>
 
             </div>
