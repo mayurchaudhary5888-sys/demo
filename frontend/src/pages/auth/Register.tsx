@@ -21,6 +21,8 @@ import {
   Upload,
   Users,
   Lock,
+  AlertTriangle,
+  X,
 } from "lucide-react";
 import { AuthShell } from "../../components/auth/AuthShell";
 import { useAppState } from "../../context/AppContext";
@@ -76,6 +78,7 @@ export const Register: React.FC = () => {
   const navigate = useNavigate();
 
   const [step, setStep] = useState(1);
+  const [userExistsModalOpen, setUserExistsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [logoPreview, setLogoPreview] = useState<string>("");
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -135,15 +138,6 @@ export const Register: React.FC = () => {
       if (!form.mobile.trim()) nextErrors.mobile = "Mobile number is required.";
       else if (!/^\d{10}$/.test(form.mobile)) nextErrors.mobile = "Enter a 10-digit mobile number.";
 
-      if (!form.password) nextErrors.password = "Password is required.";
-      else if (form.password.length < 8) nextErrors.password = "Password must be at least 8 characters.";
-      else if (!/[A-Z]/.test(form.password) || !/[a-z]/.test(form.password) || !/\d/.test(form.password)) {
-        nextErrors.password = "Use uppercase, lowercase, and one number.";
-      }
-
-      if (!form.confirmPassword) nextErrors.confirmPassword = "Confirm your password.";
-      else if (form.confirmPassword !== form.password) nextErrors.confirmPassword = "Passwords do not match.";
-
       if (!form.city.trim()) nextErrors.city = "City is required.";
     }
 
@@ -156,6 +150,15 @@ export const Register: React.FC = () => {
     }
 
     if (targetStep === 4) {
+      if (!form.password) nextErrors.password = "Password is required.";
+      else if (form.password.length < 8) nextErrors.password = "Password must be at least 8 characters.";
+      else if (!/[A-Z]/.test(form.password) || !/[a-z]/.test(form.password) || !/\d/.test(form.password)) {
+        nextErrors.password = "Use uppercase, lowercase, and one number.";
+      }
+
+      if (!form.confirmPassword) nextErrors.confirmPassword = "Confirm your password.";
+      else if (form.confirmPassword !== form.password) nextErrors.confirmPassword = "Passwords do not match.";
+
       if (!form.interests.length) nextErrors.interests = "Select at least one interest.";
       if (!form.agreeTerms) nextErrors.agreeTerms = "You need to agree to the terms.";
     }
@@ -180,11 +183,11 @@ export const Register: React.FC = () => {
 
     if (mergedErrors.startupName || mergedErrors.startupBrief) {
       setStep(1);
-    } else if (mergedErrors.email || mergedErrors.mobile || mergedErrors.password || mergedErrors.confirmPassword || mergedErrors.city) {
+    } else if (mergedErrors.email || mergedErrors.mobile || mergedErrors.city) {
       setStep(2);
     } else if (mergedErrors.industry || mergedErrors.sector || mergedErrors.selectedProgram || mergedErrors.services || mergedErrors.legalName) {
       setStep(3);
-    } else if (mergedErrors.interests || mergedErrors.agreeTerms) {
+    } else if (mergedErrors.password || mergedErrors.confirmPassword || mergedErrors.interests || mergedErrors.agreeTerms) {
       setStep(4);
     }
 
@@ -278,15 +281,21 @@ export const Register: React.FC = () => {
 
       showToast("Registration details saved. Please verify your email.", "success");
       navigate(`/verify-otp?email=${encodeURIComponent(form.email)}`);
-    } catch {
-      showToast("Registration failed. Please try again.", "error");
+    } catch (error: any) {
+      const msg = error instanceof Error ? error.message : "Registration failed. Please try again.";
+      if (msg.toLowerCase().includes("already exists") || msg.toLowerCase().includes("already exits")) {
+        setUserExistsModalOpen(true);
+      } else {
+        showToast(msg, "error");
+      }
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <AuthShell
+    <>
+      <AuthShell
       badge="startup registration"
       title="Register your startup in four steps"
       description="Share your startup profile, contact details, category information, and participation interests to move into verification."
@@ -531,47 +540,6 @@ export const Register: React.FC = () => {
                     />
                   </div>
                   {errors.mobile && <p className="mt-1 text-xs font-bold text-red-500">{errors.mobile}</p>}
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-[13px] font-black uppercase tracking-wider text-slate-500">
-                    Password <span className="text-red-500">*</span>
-                  </label>
-                  <div className="relative">
-                    <Lock className="pointer-events-none absolute left-4 top-4 h-4 w-4 text-slate-400" />
-                    <input
-                      type="password"
-                      value={form.password}
-                      onChange={(e) => updateField("password", e.target.value)}
-                      placeholder="Create a secure password"
-                      autoComplete="new-password"
-                      className={`w-full rounded-xl border-2 py-3 pl-11 pr-4 text-sm font-semibold text-slate-800 outline-none transition duration-200 hover:border-slate-300 focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/8 focus:shadow-none ${
-                        errors.password ? "border-red-400 bg-red-50/10" : "border-slate-200 bg-white"
-                      }`}
-                    />
-                  </div>
-                  <p className="mt-1.5 text-[10px] font-bold text-slate-500">Minimum 8 characters with uppercase, lowercase, and a number.</p>
-                  {errors.password && <p className="mt-1 text-xs font-bold text-red-500">{errors.password}</p>}
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-[13px] font-black uppercase tracking-wider text-slate-500">
-                    Confirm password <span className="text-red-500">*</span>
-                  </label>
-                  <div className="relative">
-                    <ShieldCheck className="pointer-events-none absolute left-4 top-4 h-4 w-4 text-slate-400" />
-                    <input
-                      type="password"
-                      value={form.confirmPassword}
-                      onChange={(e) => updateField("confirmPassword", e.target.value)}
-                      placeholder="Re-enter password"
-                      autoComplete="new-password"
-                      className={`w-full rounded-xl border-2 py-3 pl-11 pr-4 text-sm font-semibold text-slate-800 outline-none transition duration-200 hover:border-slate-300 focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/8 focus:shadow-none ${
-                        errors.confirmPassword ? "border-red-400 bg-red-50/10" : "border-slate-200 bg-white"
-                      }`}
-                    />
-                  </div>
-                  {errors.confirmPassword && <p className="mt-1 text-xs font-bold text-red-500">{errors.confirmPassword}</p>}
                 </div>
 
                 <div>
@@ -851,6 +819,49 @@ export const Register: React.FC = () => {
                   {errors.interests && <p className="mt-2 text-xs font-bold text-red-500">{errors.interests}</p>}
                 </div>
 
+                <div className="grid gap-5 lg:grid-cols-2">
+                  <div>
+                    <label className="mb-2 block text-[13px] font-black uppercase tracking-wider text-slate-500">
+                      Password <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <Lock className="pointer-events-none absolute left-4 top-4 h-4 w-4 text-slate-400" />
+                      <input
+                        type="password"
+                        value={form.password}
+                        onChange={(e) => updateField("password", e.target.value)}
+                        placeholder="Create a secure password"
+                        autoComplete="new-password"
+                        className={`w-full rounded-xl border-2 py-3 pl-11 pr-4 text-sm font-semibold text-slate-800 outline-none transition duration-200 hover:border-slate-300 focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/8 focus:shadow-none ${
+                          errors.password ? "border-red-400 bg-red-50/10" : "border-slate-200 bg-white"
+                        }`}
+                      />
+                    </div>
+                    <p className="mt-1.5 text-[10px] font-bold text-slate-500">Minimum 8 characters with uppercase, lowercase, and a number.</p>
+                    {errors.password && <p className="mt-1 text-xs font-bold text-red-500">{errors.password}</p>}
+                  </div>
+
+                  <div>
+                    <label className="mb-2 block text-[13px] font-black uppercase tracking-wider text-slate-500">
+                      Confirm password <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <ShieldCheck className="pointer-events-none absolute left-4 top-4 h-4 w-4 text-slate-400" />
+                      <input
+                        type="password"
+                        value={form.confirmPassword}
+                        onChange={(e) => updateField("confirmPassword", e.target.value)}
+                        placeholder="Re-enter password"
+                        autoComplete="new-password"
+                        className={`w-full rounded-xl border-2 py-3 pl-11 pr-4 text-sm font-semibold text-slate-800 outline-none transition duration-200 hover:border-slate-300 focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/8 focus:shadow-none ${
+                          errors.confirmPassword ? "border-red-400 bg-red-50/10" : "border-slate-200 bg-white"
+                        }`}
+                      />
+                    </div>
+                    {errors.confirmPassword && <p className="mt-1 text-xs font-bold text-red-500">{errors.confirmPassword}</p>}
+                  </div>
+                </div>
+
                 <div className="rounded-2xl border-2 border-slate-150 bg-slate-50/50 p-5 shadow-xs">
                   <div className="mb-3 flex items-center gap-2 text-sm font-black uppercase tracking-wider text-slate-600">
                     <FileText className="h-4 w-4 text-[#FF6B00]" />
@@ -884,14 +895,7 @@ export const Register: React.FC = () => {
               </div>
             )}
 
-            <div className="flex flex-col gap-3 border-t-2 border-slate-100 pt-6 sm:flex-row sm:items-center sm:justify-between">
-              <Link
-                to="/"
-                className="inline-flex items-center gap-2 text-sm font-extrabold text-[#07184A] hover:text-[#FF6B00] transition duration-200"
-              >
-                Already registered? Use the login button in the header
-              </Link>
-
+            <div className="flex flex-col gap-3 border-t-2 border-slate-100 pt-6 sm:flex-row sm:items-center sm:justify-end">
               <div className="flex items-center gap-3">
                 <button
                   type="button"
@@ -927,5 +931,39 @@ export const Register: React.FC = () => {
           </form>
         </div>
       </AuthShell>
+
+      {userExistsModalOpen && (
+        <div className="fixed inset-0 z-[1200] flex items-center justify-center bg-slate-950/60 px-4 py-6 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="relative w-full max-w-md overflow-hidden rounded-[28px] border border-red-200 bg-white shadow-[0_30px_120px_rgba(15,23,42,0.35)] animate-in zoom-in-95 duration-200">
+            <button
+              type="button"
+              onClick={() => setUserExistsModalOpen(false)}
+              className="absolute right-4 top-4 z-10 rounded-full border border-slate-200 bg-white p-2 text-slate-400 transition hover:text-slate-700"
+              aria-label="Close notice"
+            >
+              <X className="h-4 w-4" />
+            </button>
+
+            <div className="px-6 py-10 text-center">
+              <div className="mx-auto mb-5 flex h-18 w-18 items-center justify-center rounded-full bg-red-50 text-red-650">
+                <AlertTriangle className="h-10 w-10 animate-bounce" />
+              </div>
+              <p className="text-[11px] font-black uppercase tracking-[0.28em] text-red-700">Registration Error</p>
+              <h2 className="mt-3 text-2xl font-black tracking-tight text-[#0B2A5B]">User Already Exists</h2>
+              <p className="mx-auto mt-4 max-w-sm text-sm leading-7 text-slate-650">
+                This user is already exists. If you have already registered, please try logging in or resetting your password.
+              </p>
+              <button
+                type="button"
+                onClick={() => setUserExistsModalOpen(false)}
+                className="mt-7 rounded-full bg-[#F05A28] px-6 py-3 text-xs font-black uppercase tracking-wider text-white transition hover:bg-[#d9481b] active:scale-95 shadow-md shadow-[#F05A28]/25"
+              >
+                Okay, I understand
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 };

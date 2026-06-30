@@ -40,6 +40,11 @@ const issueRegistrationOtp = async (email) => {
 export const register = async (req, res, next) => {
   try {
     const email = normalizeEmail(req.body.email);
+    const existingUser = await User.findOne({ email });
+    if (existingUser && existingUser.isEmailVerified) {
+      throw new AppError("This user is already exists.", 409);
+    }
+
     const startupId = req.body.startupId || `startup-${Date.now()}`;
     const startupProfile = req.body.startupProfile
       ? normalizeStartupProfile({
