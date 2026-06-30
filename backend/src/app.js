@@ -1,16 +1,22 @@
 import express from "express";
 import cookieParser from "cookie-parser";
 import morgan from "morgan";
+import path from "path";
+import { fileURLToPath } from "url";
 import { authRoutes } from "./routes/authRoutes.js";
 import { contentRoutes } from "./routes/contentRoutes.js";
 import { apiRateLimiter, securityMiddleware } from "./middleware/security.js";
 import { errorHandler, notFound } from "./utils/errors.js";
 import { env } from "./config/env.js";
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 export const app = express();
 
 app.set("trust proxy", 1);
 app.use(securityMiddleware);
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 app.use(express.json({ limit: "6mb" }));
 app.use(express.urlencoded({ extended: true, limit: "6mb" }));
 app.use(cookieParser());
