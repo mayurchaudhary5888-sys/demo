@@ -5,7 +5,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { UploadCloud, ArrowRight, Circle, CircleCheckBig, FileText } from "lucide-react";
+import { UploadCloud, ArrowRight, Circle, CircleCheckBig, FileText, X, Calendar } from "lucide-react";
 import { useAppState } from "../../../../context/AppContext";
 import type { Application, Program } from "../../../../types";
 import { ApplicationSuccessModal } from "../../../../components/common/ApplicationSuccessModal";
@@ -22,9 +22,12 @@ type StartupProgramApplicationProps = {
 
 type TeamMember = {
   name: string;
-  role: string;
-  email: string;
-  mobile: string;
+  aadhaarNumber: string;
+};
+
+type TeamRow = {
+  teamName: string;
+  employeeCount: number;
 };
 
 type StartupWizardFields = {
@@ -54,6 +57,7 @@ type StartupWizardFields = {
   linkedInUrl: string;
   teamMembers: TeamMember[];
   fullTimeEmployees: number;
+  teams: TeamRow[];
   raisedFunding: "Yes" | "No";
   fundingAmount: string;
   fundingInstrument: string;
@@ -61,12 +65,21 @@ type StartupWizardFields = {
   incubator2: string;
   incubator3: string;
   pitchDeckName?: string;
+  marketReportName?: string;
   videoUrl: string;
   otherDocumentName?: string;
   declarationAccepted: boolean;
+  fundsDeploymentPlan: FundsDeploymentPlan[];
 };
 
-const entityOptions = ["Private Limited Company", "LLP", "Partnership", "Proprietorship", "Section 8 / Non-profit", "Other"];
+type FundsDeploymentPlan = {
+  expenseBucket: string;
+  amount: string;
+  startDate: string;
+  endDate: string;
+};
+
+const entityOptions = ["Private Limited Company", "LLP", "Partnership", "Section 8 / Non-profit"];
 const fundingInstrumentOptions = ["Grant", "Equity", "Debt", "Convertible", "Bootstrapped", "Other"];
 const incubatorOptions = incubatorPreferences as string[];
 type StartupApplicationRecord = Application & Partial<StartupWizardFields> & Record<string, any>;
@@ -79,16 +92,38 @@ const splitName = (name = "") => {
 const yesNoValue = (value: unknown, fallback: "Yes" | "No"): "Yes" | "No" => (value === "Yes" || value === "No" ? value : fallback);
 
 const normalizeTeamMembers = (value: unknown): TeamMember[] => {
-  if (!Array.isArray(value)) return [{ name: "", role: "", email: "", mobile: "" }];
+  if (!Array.isArray(value)) return [{ name: "", aadhaarNumber: "" }];
   const members = value
     .map((member) => ({
       name: String(member?.name || ""),
-      role: String(member?.role || ""),
-      email: String(member?.email || ""),
-      mobile: String(member?.mobile || ""),
+      aadhaarNumber: String(member?.aadhaarNumber || ""),
     }))
-    .filter((member) => member.name || member.role || member.email || member.mobile);
-  return members.length ? members : [{ name: "", role: "", email: "", mobile: "" }];
+    .filter((member) => member.name || member.aadhaarNumber);
+  return members.length ? members : [{ name: "", aadhaarNumber: "" }];
+};
+
+const normalizeTeams = (value: unknown): TeamRow[] => {
+  if (!Array.isArray(value)) return [{ teamName: "", employeeCount: 1 }];
+  const teams = value
+    .map((t) => ({
+      teamName: String(t?.teamName || ""),
+      employeeCount: Number(t?.employeeCount || 1),
+    }))
+    .filter((t) => t.teamName || t.employeeCount);
+  return teams.length ? teams : [{ teamName: "", employeeCount: 1 }];
+};
+
+const normalizeFundsDeploymentPlan = (value: unknown): FundsDeploymentPlan[] => {
+  if (!Array.isArray(value)) return [{ expenseBucket: "", amount: "", startDate: "30/06/2026", endDate: "30/06/2026" }];
+  const plans = value
+    .map((p) => ({
+      expenseBucket: String(p?.expenseBucket || ""),
+      amount: String(p?.amount || ""),
+      startDate: String(p?.startDate || "30/06/2026"),
+      endDate: String(p?.endDate || "30/06/2026"),
+    }))
+    .filter((p) => p.expenseBucket || p.amount || p.startDate || p.endDate);
+  return plans.length ? plans : [{ expenseBucket: "", amount: "", startDate: "30/06/2026", endDate: "30/06/2026" }];
 };
 
 const initialFields = (
@@ -122,6 +157,7 @@ const initialFields = (
   linkedInUrl: application?.linkedInUrl || "",
   teamMembers: normalizeTeamMembers(application?.teamMembers),
   fullTimeEmployees: Number(application?.fullTimeEmployees || application?.teamSize || 1),
+  teams: normalizeTeams(application?.teams),
   raisedFunding: yesNoValue(application?.raisedFunding, "No"),
   fundingAmount: application?.fundingAmount || "",
   fundingInstrument: application?.fundingInstrument || "",
@@ -129,9 +165,11 @@ const initialFields = (
   incubator2: application?.incubator2 || application?.incubatorPreferences?.find((pref: any) => pref.preferenceOrder === 2)?.incubatorName || "",
   incubator3: application?.incubator3 || application?.incubatorPreferences?.find((pref: any) => pref.preferenceOrder === 3)?.incubatorName || "",
   pitchDeckName: application?.pitchDeckName || "",
+  marketReportName: application?.marketReportName || "",
   videoUrl: application?.videoUrl || "",
   otherDocumentName: application?.otherDocumentName || application?.additionalDocumentsName || "",
   declarationAccepted: application?.declarationAccepted ?? true,
+  fundsDeploymentPlan: normalizeFundsDeploymentPlan(application?.fundsDeploymentPlan),
 });
 
 export const StartupProgramApplication: React.FC<StartupProgramApplicationProps> = ({ program, onCancel, mode = "apply", application = null }) => {
@@ -145,12 +183,21 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
     initialFields(user || undefined, userStartup?.startupName || userStartup?.name || "", applicationRecord)
   );
   const [pitchDeckFile, setPitchDeckFile] = useState<File | null>(null);
+  const [marketReportFile, setMarketReportFile] = useState<File | null>(null);
   const [otherFile, setOtherFile] = useState<File | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [successModalOpen, setSuccessModalOpen] = useState(false);
   const [successApplication, setSuccessApplication] = useState<{ id: string; programName: string } | null>(null);
   const [profileReviewOpen, setProfileReviewOpen] = useState(false);
+  const [priorFundingNA, setPriorFundingNA] = useState(true);
+  const [priorFundings, setPriorFundings] = useState([
+    { date: "30/06/2026", amount: "", instrument: "", agencyName: "", agencyType: "" }
+  ]);
+
+  const addPriorFunding = () => {
+    setPriorFundings([...priorFundings, { date: "30/06/2026", amount: "", instrument: "", agencyName: "", agencyType: "" }]);
+  };
 
   const steps = useMemo(
     () => [
@@ -168,6 +215,7 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
   useEffect(() => {
     setFields(initialFields(user || undefined, userStartup?.startupName || userStartup?.name || "", applicationRecord));
     setPitchDeckFile(null);
+    setMarketReportFile(null);
     setOtherFile(null);
     setErrors({});
     setStep(0);
@@ -194,7 +242,7 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
 
   const addTeamMember = () => {
     if (isViewMode) return;
-    updateField("teamMembers", [...fields.teamMembers, { name: "", role: "", email: "", mobile: "" }]);
+    updateField("teamMembers", [...fields.teamMembers, { name: "", aadhaarNumber: "" }]);
   };
 
   const updateTeamMember = (index: number, field: keyof TeamMember, value: string) => {
@@ -207,7 +255,46 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
   const removeTeamMember = (index: number) => {
     if (isViewMode) return;
     const next = fields.teamMembers.filter((_, i) => i !== index);
-    updateField("teamMembers", next.length ? next : [{ name: "", role: "", email: "", mobile: "" }]);
+    updateField("teamMembers", next.length ? next : [{ name: "", aadhaarNumber: "" }]);
+  };
+
+  const addFundsDeploymentPlan = () => {
+    if (isViewMode) return;
+    updateField("fundsDeploymentPlan", [
+      ...fields.fundsDeploymentPlan,
+      { expenseBucket: "", amount: "", startDate: "30/06/2026", endDate: "30/06/2026" },
+    ]);
+  };
+
+  const removeFundsDeploymentPlan = (index: number) => {
+    if (isViewMode) return;
+    const next = fields.fundsDeploymentPlan.filter((_, i) => i !== index);
+    updateField("fundsDeploymentPlan", next.length ? next : [{ expenseBucket: "", amount: "", startDate: "30/06/2026", endDate: "30/06/2026" }]);
+  };
+
+  const updateFundsDeploymentPlan = (index: number, key: keyof FundsDeploymentPlan, value: string) => {
+    if (isViewMode) return;
+    const next = [...fields.fundsDeploymentPlan];
+    next[index] = { ...next[index], [key]: value };
+    updateField("fundsDeploymentPlan", next);
+  };
+
+  const addTeam = () => {
+    if (isViewMode) return;
+    updateField("teams", [...fields.teams, { teamName: "", employeeCount: 1 }]);
+  };
+
+  const updateTeam = (index: number, field: keyof TeamRow, value: any) => {
+    if (isViewMode) return;
+    const next = [...fields.teams];
+    next[index] = { ...next[index], [field]: value };
+    updateField("teams", next);
+  };
+
+  const removeTeam = (index: number) => {
+    if (isViewMode) return;
+    const next = fields.teams.filter((_, i) => i !== index);
+    updateField("teams", next.length ? next : [{ teamName: "", employeeCount: 1 }]);
   };
 
   const setIncubatorPreference = (preferenceOrder: number, incubatorName: string) => {
@@ -260,6 +347,7 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
       if (!fields.email.trim()) nextErrors.email = "Email is required.";
     }
     if (step === 1) {
+      if (!fields.dpiitNumber.trim()) nextErrors.dpiitNumber = "DPIIT Recognition Number is required.";
       if (!fields.entityName.trim()) nextErrors.entityName = "Entity name is required.";
       if (!fields.natureOfEntity) nextErrors.natureOfEntity = "Nature of entity is required.";
       if (!fields.incorporationDate) nextErrors.incorporationDate = "Incorporation date is required.";
@@ -282,11 +370,14 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
       if (!hasMember) nextErrors.teamMembers = "Add at least one promoter name.";
     }
     if (step === 4) {
-      if (fields.raisedFunding === "Yes" && !fields.fundingAmount.trim()) {
+      if (!fields.fundingAmount.trim()) {
         nextErrors.fundingAmount = "Funding amount is required.";
       }
-      if (fields.raisedFunding === "Yes" && !fields.fundingInstrument) {
+      if (!fields.fundingInstrument) {
         nextErrors.fundingInstrument = "Funding instrument is required.";
+      }
+      if (!fields.fundsDeploymentPlan || fields.fundsDeploymentPlan.length === 0 || fields.fundsDeploymentPlan.some(p => !p.expenseBucket.trim() || !p.amount.trim() || !p.startDate.trim() || !p.endDate.trim())) {
+        nextErrors.fundsDeploymentPlan = "Please fill in all funds deployment plan fields.";
       }
     }
     if (step === 5) {
@@ -306,6 +397,7 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
     if (!fields.designation.trim()) nextErrors.designation = "Designation is required.";
     if (!fields.mobile.trim()) nextErrors.mobile = "Mobile number is required.";
     if (!fields.email.trim()) nextErrors.email = "Email is required.";
+    if (!fields.dpiitNumber.trim()) nextErrors.dpiitNumber = "DPIIT Recognition Number is required.";
     if (!fields.entityName.trim()) nextErrors.entityName = "Entity name is required.";
     if (!fields.natureOfEntity) nextErrors.natureOfEntity = "Nature of entity is required.";
     if (!fields.incorporationDate) nextErrors.incorporationDate = "Incorporation date is required.";
@@ -320,16 +412,24 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
     if (!fields.marketSize.trim()) nextErrors.marketSize = "Market size is required.";
     if (!fields.scalePlan.trim()) nextErrors.scalePlan = "Scale plan is required.";
     if (!fields.revenueModel.trim()) nextErrors.revenueModel = "Revenue model is required.";
-    if (!fields.teamMembers.some((member) => member.name.trim() || member.role.trim() || member.email.trim() || member.mobile.trim())) {
-      nextErrors.teamMembers = "Add at least one team member.";
+    if (!fields.teamMembers || fields.teamMembers.length === 0 || fields.teamMembers.some((member) => !member.name.trim() || !member.aadhaarNumber.trim())) {
+      nextErrors.teamMembers = "Please fill in all promoter details.";
+    }
+    if (!fields.teams || fields.teams.length === 0 || fields.teams.some((team) => !team.teamName.trim())) {
+      nextErrors.teams = "Please fill in all team names.";
     }
     if (!fields.raisedFunding) nextErrors.raisedFunding = "Select funding status.";
-    if (fields.raisedFunding === "Yes" && !fields.fundingAmount.trim()) nextErrors.fundingAmount = "Funding amount is required.";
-    if (fields.raisedFunding === "Yes" && !fields.fundingInstrument) nextErrors.fundingInstrument = "Select funding instrument.";
+    if (!fields.fundingAmount.trim()) nextErrors.fundingAmount = "Funding amount is required.";
+    if (!fields.fundingInstrument) nextErrors.fundingInstrument = "Select funding instrument.";
+    if (!fields.fundsDeploymentPlan || fields.fundsDeploymentPlan.length === 0 || fields.fundsDeploymentPlan.some(p => !p.expenseBucket.trim() || !p.amount.trim() || !p.startDate.trim() || !p.endDate.trim())) {
+      nextErrors.fundsDeploymentPlan = "Please fill in all funds deployment plan fields.";
+    }
     if (!fields.incubator1) nextErrors.incubator1 = "Select incubator preference 1.";
     if (!fields.incubator2) nextErrors.incubator2 = "Select incubator preference 2.";
     if (!fields.incubator3) nextErrors.incubator3 = "Select incubator preference 3.";
     if (!pitchDeckFile && !fields.pitchDeckName) nextErrors.pitchDeck = "Upload a pitch deck.";
+    if (!marketReportFile && !fields.marketReportName) nextErrors.marketReport = "Upload a market research report.";
+    if (!otherFile && !fields.otherDocumentName) nextErrors.otherDocument = "Upload a financial projection report.";
     if (!fields.declarationAccepted) nextErrors.declarationAccepted = "Declaration is required.";
 
     return nextErrors;
@@ -346,7 +446,7 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
 
   const handlePrevious = () => setStep((prev) => Math.max(prev - 1, 0));
 
-  const handleFile = (file: File | null, kind: "pitch" | "other") => {
+  const handleFile = (file: File | null, kind: "pitch" | "market" | "other") => {
     if (isViewMode) return;
     if (!file) return;
     if (file.size > 15 * 1024 * 1024) {
@@ -361,9 +461,22 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
         delete next.pitchDeck;
         return next;
       });
+    } else if (kind === "market") {
+      setMarketReportFile(file);
+      updateField("marketReportName", file.name);
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next.marketReport;
+        return next;
+      });
     } else {
       setOtherFile(file);
       updateField("otherDocumentName", file.name);
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next.otherDocument;
+        return next;
+      });
     }
   };
 
@@ -381,10 +494,10 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
         ["authorFirstName", "authorLastName", "designation", "mobile", "email"],
         ["entityName", "natureOfEntity", "incorporationDate", "panNumber", "state", "city", "address"],
         ["problemStatement", "valueProposition", "uniqueSellingPoint", "targetCustomer", "marketSize", "scalePlan", "revenueModel"],
-        ["teamMembers"],
-        ["raisedFunding", "fundingAmount", "fundingInstrument"],
+        ["teamMembers", "teams"],
+        ["raisedFunding", "fundingAmount", "fundingInstrument", "fundsDeploymentPlan"],
         ["incubator1", "incubator2", "incubator3"],
-        ["pitchDeck", "declarationAccepted"],
+        ["pitchDeck", "marketReport", "otherDocument", "declarationAccepted"],
       ];
       const firstErrorIndex = stepOrder.findIndex((keys) =>
         keys.some((key) => Object.keys(allErrors).some((errorKey) => errorKey === key || errorKey.startsWith(`${key}.`)))
@@ -397,14 +510,17 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
     try {
       const created = await applyToProgram({
         ...fields,
+        fullTimeEmployees: fields.teams.reduce((sum, t) => sum + t.employeeCount, 0),
         programId: program.id,
         programName: program.name,
         startupId: user?.startupId || "",
         startupName: fields.entityName || userStartup?.startupName || userStartup?.name || "Startup",
         selectedProgram: program.id,
         pitchDeckName: pitchDeckFile?.name || "PitchDeck.pdf",
+        marketReportName: marketReportFile?.name || "MarketReport.pdf",
         additionalDocumentsName: otherFile?.name,
         _pitchDeckFile: pitchDeckFile,
+        _marketReportFile: marketReportFile,
         _additionalDocumentsFile: otherFile,
       });
       setSuccessApplication({ id: created.id, programName: created.programName || program.name });
@@ -424,8 +540,8 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
 
   return (
     <div className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8" id="startup-program-application">
-      <div className="max-w-4xl mx-auto bg-white rounded-3xl border border-slate-200/80 shadow-[0_12px_40px_rgba(15,23,42,0.06)] overflow-hidden">
-        
+      <div className="max-w-6xl mx-auto bg-white rounded-3xl border border-slate-200/80 shadow-[0_12px_40px_rgba(15,23,42,0.06)] overflow-hidden">
+
         {/* Header Block */}
         <div className="text-center py-10 bg-slate-50 border-b border-slate-200">
           <h1 className="text-3xl font-black text-[#0B2A5B] tracking-tight">Startup Application</h1>
@@ -437,14 +553,14 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
 
         {/* Horizontal Stepper */}
         <div className="border-b border-slate-200 bg-white py-8 px-4 relative">
-          <div className="max-w-3xl mx-auto relative">
+          <div className="max-w-5xl mx-auto relative">
             {/* Connecting line */}
             <div className="absolute top-[10px] left-[5%] right-[5%] h-[1.5px] bg-[#FCE5B2] z-0" />
-            <div 
+            <div
               className="absolute top-[10px] left-[5%] h-[1.5px] bg-[#FDBA74] z-0 transition-all duration-300"
               style={{ width: `${(step / (steps.length - 1)) * 90}%` }}
             />
-            
+
             <div className="relative z-10 flex justify-between">
               {steps.map((label, index) => {
                 const active = index === step;
@@ -457,24 +573,22 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
                     className="flex flex-col items-center flex-1 group focus:outline-none"
                   >
                     <div
-                      className={`w-[22px] h-[22px] rounded-full flex items-center justify-center border-2 transition-all duration-300 ${
-                        active 
+                      className={`w-[22px] h-[22px] rounded-full flex items-center justify-center border-2 transition-all duration-300 ${active
                           ? "border-[#F05A28] bg-[#FCD88C] shadow-sm"
                           : done
                             ? "border-[#F05A28] bg-[#F05A28]"
                             : "border-[#FCD88C] bg-white"
-                      }`}
+                        }`}
                     >
                       {active && <div className="w-[10px] h-[10px] rounded-full bg-[#F05A28]" />}
                       {done && <CircleCheckBig className="h-3.5 w-3.5 text-white" />}
                     </div>
-                    
-                    <span 
-                      className={`mt-3 text-[10px] font-extrabold max-w-[110px] text-center transition-all duration-300 leading-tight ${
-                        active 
-                          ? "text-[#0B2A5B] font-black underline decoration-2 underline-offset-4" 
+
+                    <span
+                      className={`mt-3 text-[10px] font-extrabold max-w-[110px] text-center transition-all duration-300 leading-tight ${active
+                          ? "text-[#0B2A5B] font-black"
                           : "text-slate-400 group-hover:text-slate-600"
-                      }`}
+                        }`}
                     >
                       {label}
                     </span>
@@ -488,11 +602,11 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
         {/* Wizard Form */}
         <form onSubmit={handleSubmit} className="p-8 space-y-8 bg-white">
           <div className="space-y-6">
-            
+
             {step === 0 && (
               <StepSection title="Authorized Representative" subtitle="Who is filing this application?">
                 <div className="space-y-1">
-                  
+
                   {/* Name of Authorised representative */}
                   <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start py-4 border-b border-slate-100">
                     <div className="md:col-span-4 pt-2">
@@ -508,9 +622,8 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
                           value={fields.authorFirstName}
                           onChange={(e) => updateField("authorFirstName", e.target.value)}
                           readOnly={isViewMode}
-                          className={`w-full rounded-lg border bg-[#EDF0F5] px-4 py-2.5 text-sm text-slate-800 outline-none transition-all font-semibold ${
-                            errors.authorFirstName ? "border-red-500 bg-red-50/30" : "border-slate-200 focus:border-[#F05A28] focus:bg-white"
-                          } ${isViewMode ? "opacity-75 cursor-not-allowed" : ""}`}
+                          className={`w-full rounded-lg border bg-[#EDF0F5] px-4 py-2.5 text-sm text-slate-800 outline-none transition-all font-semibold ${errors.authorFirstName ? "border-red-500 bg-red-50/30" : "border-slate-200 focus:border-[#F05A28] focus:bg-white"
+                            } ${isViewMode ? "opacity-75 cursor-not-allowed" : ""}`}
                         />
                         {errors.authorFirstName && <p className="text-red-500 font-bold text-xs mt-1">{errors.authorFirstName}</p>}
                       </div>
@@ -521,9 +634,8 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
                           value={fields.authorLastName}
                           onChange={(e) => updateField("authorLastName", e.target.value)}
                           readOnly={isViewMode}
-                          className={`w-full rounded-lg border bg-[#EDF0F5] px-4 py-2.5 text-sm text-slate-800 outline-none transition-all font-semibold ${
-                            errors.authorLastName ? "border-red-500 bg-red-50/30" : "border-slate-200 focus:border-[#F05A28] focus:bg-white"
-                          } ${isViewMode ? "opacity-75 cursor-not-allowed" : ""}`}
+                          className={`w-full rounded-lg border bg-[#EDF0F5] px-4 py-2.5 text-sm text-slate-800 outline-none transition-all font-semibold ${errors.authorLastName ? "border-red-500 bg-red-50/30" : "border-slate-200 focus:border-[#F05A28] focus:bg-white"
+                            } ${isViewMode ? "opacity-75 cursor-not-allowed" : ""}`}
                         />
                         {errors.authorLastName && <p className="text-red-500 font-bold text-xs mt-1">{errors.authorLastName}</p>}
                       </div>
@@ -557,9 +669,8 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
                           value={fields.mobile}
                           onChange={(e) => updateField("mobile", e.target.value)}
                           readOnly={isViewMode}
-                          className={`w-full rounded-lg border bg-[#EDF0F5] px-4 py-2.5 text-sm text-slate-800 outline-none transition-all font-semibold ${
-                            errors.mobile ? "border-red-500 bg-red-50/30" : "border-slate-200 focus:border-[#F05A28] focus:bg-white"
-                          } ${isViewMode ? "opacity-75 cursor-not-allowed" : ""}`}
+                          className={`w-full rounded-lg border bg-[#EDF0F5] px-4 py-2.5 text-sm text-slate-800 outline-none transition-all font-semibold ${errors.mobile ? "border-red-500 bg-red-50/30" : "border-slate-200 focus:border-[#F05A28] focus:bg-white"
+                            } ${isViewMode ? "opacity-75 cursor-not-allowed" : ""}`}
                         />
                         {errors.mobile && <p className="text-red-500 font-bold text-xs mt-1">{errors.mobile}</p>}
                       </div>
@@ -576,27 +687,22 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
                     required
                   />
 
-                  {/* Board Resolution / Authorisation letter / PoA */}
+                  {/* AoA/MoA */}
                   <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start py-4 border-b border-slate-100 last:border-b-0">
                     <div className="md:col-span-4 pt-2">
                       <label className="text-sm font-extrabold text-[#0B2A5B]">
-                        Board Resolution / Authorisation letter / PoA<span className="text-red-500">*</span>
+                        Memorandum of Association (MOA)/Articles of Association (AOA)<span className="text-red-500 ml-0.5">*</span>
                       </label>
                     </div>
                     <div className="md:col-span-8 space-y-3">
                       {isViewMode ? (
                         <div className="flex flex-col items-center justify-center border border-slate-200 rounded-lg bg-slate-50 p-4 max-w-sm">
                           <FileText className="h-6 w-6 text-[#FF6B00]" />
-                          <span className="mt-1 text-xs font-bold text-slate-650">BoardResolution.pdf</span>
+                          <span className="mt-1 text-xs font-bold text-slate-650">AoA_MoA.pdf</span>
                           <span className="text-[10px] text-slate-400 font-bold mt-0.5 uppercase">Download File</span>
                         </div>
                       ) : (
                         <>
-                          <div>
-                            <span className="text-xs font-bold text-[#F05A28] underline cursor-pointer">
-                              Sample Download
-                            </span>
-                          </div>
                           <div>
                             <button
                               type="button"
@@ -606,9 +712,6 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
                             </button>
                           </div>
                           <p className="text-xs text-slate-400 font-bold">Supported file format - PDF only</p>
-                          <p className="text-xs text-slate-500 font-medium leading-relaxed">
-                            For the person filling this form and signing other self-declaration documents from authorised signatory of the applicant for filling and representing the organisation for this application
-                          </p>
                         </>
                       )}
                     </div>
@@ -625,6 +728,7 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
                     value={fields.dpiitNumber}
                     onChange={(value) => updateField("dpiitNumber", value)}
                     readOnly={isViewMode}
+                    required
                   />
                   <Input
                     label="Name of the Entity"
@@ -697,6 +801,7 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
                     onChange={(value) => updateField("technologyStartup", value)}
                     disabled={isViewMode}
                     required
+                    description="Startups should be using technology in it’s core product or service or business model or distribution model or methodology to solve the problem being targetted"
                   />
                   <TextArea
                     label="What is the problem you are solving?"
@@ -776,7 +881,7 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
                   <Input
                     label="Name & Background of the CEO"
                     value={fields.authorFirstName ? `${fields.authorFirstName} ${fields.authorLastName}`.trim() : ""}
-                    onChange={() => {}}
+                    onChange={() => { }}
                     readOnly
                     required
                   />
@@ -788,108 +893,160 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
                   />
 
                   {/* Promoter details list */}
-                  <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-4">
-                    <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                      <div>
-                        <h4 className="text-sm font-bold text-[#0B2A5B]">Promoter Details</h4>
-                        <p className="text-xs text-slate-500 font-medium">Add at least one promoter or founding member.</p>
-                      </div>
-                      {!isViewMode && (
-                        <button
-                          type="button"
-                          onClick={addTeamMember}
-                          className="rounded-full border border-[#F05A28] px-4 py-1.5 text-xs font-black uppercase tracking-wider text-[#F05A28] hover:bg-orange-50 transition"
-                        >
-                          Add Promoter
-                        </button>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-slate-100">
+                    <div className="md:col-span-1">
+                      <label className="text-sm font-extrabold text-[#0B2A5B]">
+                        Promoter Details
+                        <span className="text-red-500 ml-0.5">*</span>
+                      </label>
+                      <p className="text-xs text-slate-400 font-semibold mt-1">
+                        Fill in details of each promoter of the startup.
+                      </p>
+                      {errors.teamMembers && (
+                        <p className="text-red-500 font-bold text-[11px] mt-1">{errors.teamMembers}</p>
                       )}
                     </div>
-                    
-                    <div className="space-y-4">
-                      {fields.teamMembers.map((member, index) => (
-                        <div key={index} className="bg-slate-50/50 p-4 rounded-xl border border-slate-200 space-y-3">
-                          <div className="flex justify-between items-center">
-                            <span className="text-xs font-black text-slate-400 uppercase tracking-wider">Promoter #{index + 1}</span>
-                            {!isViewMode && (
-                              <button
-                                type="button"
-                                onClick={() => removeTeamMember(index)}
-                                className="text-xs font-bold text-red-500 hover:underline"
-                              >
-                                Remove
-                              </button>
-                            )}
+                    <div className="md:col-span-2 space-y-4">
+                      {/* Headers */}
+                      <div className="flex gap-4 items-center">
+                        <div className="w-1/2 text-xs font-bold text-slate-700">Name of Promoter</div>
+                        <div className="w-1/2 text-xs font-bold text-slate-700">Aadhaar Card Number</div>
+                      </div>
+
+                      {/* Rows */}
+                      <div className="space-y-3">
+                        {fields.teamMembers.map((member, index) => (
+                          <div key={index} className="flex gap-4 items-center">
+                            <div className="w-1/2">
+                              <input
+                                type="text"
+                                value={member.name}
+                                placeholder="Enter Promoter Name"
+                                onChange={(e) => updateTeamMember(index, "name", e.target.value)}
+                                readOnly={isViewMode}
+                                className="w-full bg-slate-50 border border-slate-200 rounded px-3 py-2 text-xs text-slate-700 font-semibold outline-none focus:border-[#F05A28] focus:bg-white transition"
+                              />
+                            </div>
+                            <div className="w-1/2 flex items-center justify-between gap-3">
+                              <input
+                                type="text"
+                                value={member.aadhaarNumber}
+                                placeholder="Enter Aadhaar Number"
+                                onChange={(e) => updateTeamMember(index, "aadhaarNumber", e.target.value)}
+                                readOnly={isViewMode}
+                                className="w-full bg-slate-50 border border-slate-200 rounded px-3 py-2 text-xs text-slate-700 font-semibold outline-none focus:border-[#F05A28] focus:bg-white transition"
+                              />
+                              
+                              {!isViewMode && fields.teamMembers.length > 1 && (
+                                <button
+                                  type="button"
+                                  onClick={() => removeTeamMember(index)}
+                                  className="text-slate-400 hover:text-red-500 transition px-2"
+                                  title="Remove Promoter"
+                                >
+                                  <X className="h-4 w-4" />
+                                </button>
+                              )}
+                            </div>
                           </div>
-                          <div className="grid gap-4 md:grid-cols-2">
-                            <label className="block space-y-1">
-                              <span className="text-xs font-bold text-slate-600">Name</span>
-                              <input
-                                  type="text"
-                                  value={member.name}
-                                  onChange={(e) => updateTeamMember(index, "name", e.target.value)}
-                                  readOnly={isViewMode}
-                                  className="w-full bg-[#EDF0F5] border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 outline-none focus:border-[#F05A28] focus:bg-white transition-all font-semibold"
-                                />
-                            </label>
-                            <label className="block space-y-1">
-                              <span className="text-xs font-bold text-slate-600">Role</span>
-                              <input
-                                  type="text"
-                                  value={member.role}
-                                  onChange={(e) => updateTeamMember(index, "role", e.target.value)}
-                                  readOnly={isViewMode}
-                                  className="w-full bg-[#EDF0F5] border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 outline-none focus:border-[#F05A28] focus:bg-white transition-all font-semibold"
-                                />
-                            </label>
-                            <label className="block space-y-1">
-                              <span className="text-xs font-bold text-slate-600">Email</span>
-                              <input
-                                  type="text"
-                                  value={member.email}
-                                  onChange={(e) => updateTeamMember(index, "email", e.target.value)}
-                                  readOnly={isViewMode}
-                                  className="w-full bg-[#EDF0F5] border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 outline-none focus:border-[#F05A28] focus:bg-white transition-all font-semibold"
-                                />
-                            </label>
-                            <label className="block space-y-1">
-                              <span className="text-xs font-bold text-slate-600">Mobile</span>
-                              <input
-                                  type="text"
-                                  value={member.mobile}
-                                  onChange={(e) => updateTeamMember(index, "mobile", e.target.value)}
-                                  readOnly={isViewMode}
-                                  className="w-full bg-[#EDF0F5] border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 outline-none focus:border-[#F05A28] focus:bg-white transition-all font-semibold"
-                                />
-                            </label>
-                          </div>
+                        ))}
+                      </div>
+
+                      {!isViewMode && (
+                        <div className="pt-2">
+                          <button
+                            type="button"
+                            onClick={addTeamMember}
+                            className="text-xs font-bold text-[#F05A28] hover:text-[#d04a18] transition flex items-center gap-1"
+                          >
+                            + Add Promoter
+                          </button>
                         </div>
-                      ))}
+                      )}
                     </div>
                   </div>
 
-                  <FormRow label="No. of full-time employees" required>
-                    <div className="flex items-center gap-3">
-                      <button
-                        type="button"
-                        disabled={isViewMode}
-                        onClick={() => updateField("fullTimeEmployees", Math.max(1, fields.fullTimeEmployees - 1))}
-                        className="h-8 w-8 rounded-full border border-[#F05A28] text-[#F05A28] font-bold disabled:opacity-40 flex items-center justify-center hover:bg-orange-50 transition"
-                      >
-                        -
-                      </button>
-                      <span className="min-w-[60px] rounded-lg bg-slate-100 px-4 py-2 text-center font-bold text-slate-800">
-                        {fields.fullTimeEmployees}
-                      </span>
-                      <button
-                        type="button"
-                        disabled={isViewMode}
-                        onClick={() => updateField("fullTimeEmployees", fields.fullTimeEmployees + 1)}
-                        className="h-8 w-8 rounded-full border border-[#F05A28] text-[#F05A28] font-bold disabled:opacity-40 flex items-center justify-center hover:bg-orange-50 transition"
-                      >
-                        +
-                      </button>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6 border-t border-slate-100">
+                    <div className="md:col-span-1">
+                      <label className="text-sm font-extrabold text-[#0B2A5B]">
+                        List of all teams along with the number of full-time employees in each team
+                        <span className="text-red-500 ml-0.5">*</span>
+                      </label>
+                      {errors.teams && (
+                        <p className="text-red-500 font-bold text-[11px] mt-1">{errors.teams}</p>
+                      )}
                     </div>
-                  </FormRow>
+                    <div className="md:col-span-2 space-y-4">
+                      <div className="flex gap-4 items-center">
+                        <div className="w-1/2 text-xs font-bold text-slate-700">Team Name</div>
+                        <div className="w-1/2 text-xs font-bold text-slate-700">No. of full time employees</div>
+                      </div>
+
+                      <div className="space-y-3">
+                        {fields.teams.map((team, index) => (
+                          <div key={index} className="flex gap-4 items-center">
+                            <div className="w-1/2">
+                              <input
+                                type="text"
+                                value={team.teamName}
+                                placeholder="Enter Team Name"
+                                onChange={(e) => updateTeam(index, "teamName", e.target.value)}
+                                readOnly={isViewMode}
+                                className="w-full bg-slate-50 border border-slate-200 rounded px-3 py-2 text-xs text-slate-700 font-semibold outline-none focus:border-[#F05A28] focus:bg-white transition"
+                              />
+                            </div>
+                            <div className="w-1/2 flex items-center justify-between gap-3">
+                              <div className="flex items-center gap-3">
+                                <button
+                                  type="button"
+                                  disabled={isViewMode}
+                                  onClick={() => updateTeam(index, "employeeCount", Math.max(1, team.employeeCount - 1))}
+                                  className="w-7 h-7 rounded-full bg-slate-100 border border-slate-200 text-[#0B2A5B] font-bold flex items-center justify-center hover:bg-slate-200 transition disabled:opacity-50"
+                                >
+                                  -
+                                </button>
+                                <div className="w-14 h-9 flex items-center justify-center border border-slate-200 bg-slate-50 text-slate-700 font-bold rounded text-xs">
+                                  {team.employeeCount}
+                                </div>
+                                <button
+                                  type="button"
+                                  disabled={isViewMode}
+                                  onClick={() => updateTeam(index, "employeeCount", team.employeeCount + 1)}
+                                  className="w-7 h-7 rounded-full bg-slate-100 border border-slate-200 text-[#0B2A5B] font-bold flex items-center justify-center hover:bg-slate-200 transition disabled:opacity-50"
+                                >
+                                  +
+                                </button>
+                              </div>
+                              
+                              {!isViewMode && fields.teams.length > 1 && (
+                                <button
+                                  type="button"
+                                  onClick={() => removeTeam(index)}
+                                  className="text-slate-400 hover:text-red-500 transition px-2"
+                                  title="Remove Team"
+                                >
+                                  <X className="h-4 w-4" />
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {!isViewMode && (
+                        <div className="pt-2">
+                          <button
+                            type="button"
+                            onClick={addTeam}
+                            className="text-xs font-bold text-[#F05A28] hover:text-[#d04a18] transition flex items-center gap-1"
+                          >
+                            + Add Team
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </StepSection>
             )}
@@ -898,33 +1055,302 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
               <StepSection title="Funding Details" subtitle="Share the current capital and funding profile.">
                 <div className="space-y-1">
                   <Toggle
-                    label="Have you cumulatively received more than ₹10 lakhs?"
+                    label="Have you cumulatively received more than ₹10 lakhs of monetary support under any Central or State government scheme?"
                     value={fields.raisedFunding}
                     onChange={(value) => updateField("raisedFunding", value)}
                     disabled={isViewMode}
                     required
+                    description="Startup should not have received more than Rs 10 lakh of monetary support under any other Central or State Government scheme. This does not include prize money from competitions and grand challenges, subsidized working space, founder monthly allowance, access to labs, or access to prototyping facility"
                   />
-                  <Input
-                    label="Current Funding Requirement"
-                    value={fields.fundingAmount}
-                    onChange={(value) => updateField("fundingAmount", value)}
-                    error={errors.fundingAmount}
-                    readOnly={isViewMode}
-                  />
-                  <Select
-                    label="Funding Instrument"
-                    value={fields.fundingInstrument}
-                    onChange={(value) => updateField("fundingInstrument", value)}
-                    error={errors.fundingInstrument}
-                    options={fundingInstrumentOptions}
-                    disabled={isViewMode}
-                  />
-                  <Input
-                    label="Your current revenue / traction note"
-                    value={fields.revenueModel}
-                    onChange={(value) => updateField("revenueModel", value)}
-                    readOnly={isViewMode}
-                  />
+                  <FormRow label="Current Funding Requirement" required>
+                    <div className="space-y-4">
+                      {/* Instrument applying for */}
+                      <div className="space-y-2">
+                        <span className="block text-xs font-bold text-slate-700">Instrument applying for</span>
+                        <div className="flex gap-6 items-center">
+                          {(["Grant", "Convertible Debenture", "Debt"] as const).map((opt) => (
+                            <label key={opt} className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-655">
+                              <input
+                                type="radio"
+                                name="fundingInstrument"
+                                value={opt}
+                                checked={fields.fundingInstrument === opt}
+                                disabled={isViewMode}
+                                onChange={() => updateField("fundingInstrument", opt)}
+                                className="h-4 w-4 text-[#F05A28] border-slate-300 focus:ring-[#F05A28] accent-[#F05A28]"
+                              />
+                              <span>{opt}</span>
+                            </label>
+                          ))}
+                        </div>
+                        {errors.fundingInstrument && (
+                          <p className="text-red-500 font-bold text-[11px] mt-1">{errors.fundingInstrument}</p>
+                        )}
+                      </div>
+
+                      {/* Description */}
+                      <div className="space-y-1.5 text-[11px] text-slate-500 font-medium leading-relaxed">
+                        <p>
+                          <strong className="text-slate-650 font-bold">Grant:</strong> It is for Proof of Concept or prototype development or product trials.
+                        </p>
+                        <p>
+                          <strong className="text-slate-650 font-bold">Convertible Debentures/Debt/Debt-linked Instruments:</strong> They are for market entry, commercialization or scaling up
+                        </p>
+                      </div>
+
+                      {/* Quantum of Funds Required */}
+                      <div className="space-y-2">
+                        <span className="block text-xs font-bold text-slate-700">Quantum of Funds Required</span>
+                        <div className="flex items-center gap-3">
+                          <input
+                            type="text"
+                            value={fields.fundingAmount}
+                            onChange={(e) => updateField("fundingAmount", e.target.value)}
+                            disabled={isViewMode}
+                            placeholder="Enter Amount"
+                            className="bg-slate-50 border border-slate-200 rounded px-3 py-2 text-xs text-slate-700 font-semibold outline-none focus:border-[#F05A28] focus:bg-white transition w-44"
+                          />
+                          <span className="text-xs text-slate-400 font-semibold">Enter in (₹)</span>
+                        </div>
+                        {errors.fundingAmount && (
+                          <p className="text-red-500 font-bold text-[11px] mt-1">{errors.fundingAmount}</p>
+                        )}
+                      </div>
+                    </div>
+                  </FormRow>
+
+                  <FormRow label="Prior Funding Details">
+                    <div className="space-y-4">
+                      {/* Checkbox NA */}
+                      <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-700">
+                        <input
+                          type="checkbox"
+                          checked={priorFundingNA}
+                          onChange={(e) => setPriorFundingNA(e.target.checked)}
+                          className="h-4 w-4 rounded text-[#F05A28] border-slate-300 focus:ring-[#F05A28] accent-[#F05A28]"
+                        />
+                        <span>NA</span>
+                      </label>
+
+                      <p className="text-xs text-slate-400 font-semibold">
+                        Please give details of all the funding details received by the startup across different rounds of funding.
+                      </p>
+
+                      <div className="space-y-4">
+                        {priorFundings.map((funding, idx) => (
+                          <div key={idx} className="space-y-4 relative">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                              <div className="space-y-1">
+                                <label className="block text-[11px] font-bold text-slate-700">Date</label>
+                                <div className="relative">
+                                  <input
+                                    type="text"
+                                    value={funding.date}
+                                    disabled={priorFundingNA || isViewMode}
+                                    onChange={(e) => {
+                                      const next = [...priorFundings];
+                                      next[idx].date = e.target.value;
+                                      setPriorFundings(next);
+                                    }}
+                                    className="w-full bg-slate-50 disabled:bg-slate-100 disabled:text-slate-400 border border-slate-200 rounded px-3 py-2 text-xs text-slate-700 font-semibold outline-none focus:border-[#F05A28] transition"
+                                    placeholder="DD/MM/YYYY"
+                                  />
+                                  <Calendar className="absolute right-2.5 top-2.5 h-4 w-4 text-slate-400 pointer-events-none" />
+                                </div>
+                              </div>
+                              <div className="space-y-1">
+                                <label className="block text-[11px] font-bold text-slate-700">Amount (in ₹)</label>
+                                <input
+                                  type="text"
+                                  value={funding.amount}
+                                  disabled={priorFundingNA || isViewMode}
+                                  onChange={(e) => {
+                                    const next = [...priorFundings];
+                                    next[idx].amount = e.target.value;
+                                    setPriorFundings(next);
+                                  }}
+                                  className="w-full bg-slate-50 disabled:bg-slate-100 disabled:text-slate-400 border border-slate-200 rounded px-3 py-2 text-xs text-slate-700 font-semibold outline-none focus:border-[#F05A28] transition"
+                                  placeholder="Enter Amount"
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <label className="block text-[11px] font-bold text-slate-700">Financial Instrument</label>
+                                <select
+                                  value={funding.instrument}
+                                  disabled={priorFundingNA || isViewMode}
+                                  onChange={(e) => {
+                                    const next = [...priorFundings];
+                                    next[idx].instrument = e.target.value;
+                                    setPriorFundings(next);
+                                  }}
+                                  className="w-full bg-slate-50 disabled:bg-slate-100 disabled:text-slate-400 border border-slate-200 rounded px-3 py-2 text-xs text-slate-700 font-semibold outline-none focus:border-[#F05A28] transition"
+                                >
+                                  <option value="">Select</option>
+                                  <option value="Grant">Grant</option>
+                                  <option value="Equity">Equity</option>
+                                  <option value="Debt">Debt</option>
+                                  <option value="Convertible Debenture">Convertible Debenture</option>
+                                </select>
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="space-y-1">
+                                <label className="block text-[11px] font-bold text-slate-700">Name of Funding Agency</label>
+                                <input
+                                  type="text"
+                                  value={funding.agencyName}
+                                  disabled={priorFundingNA || isViewMode}
+                                  onChange={(e) => {
+                                    const next = [...priorFundings];
+                                    next[idx].agencyName = e.target.value;
+                                    setPriorFundings(next);
+                                  }}
+                                  className="w-full bg-slate-50 disabled:bg-slate-100 disabled:text-slate-400 border border-slate-200 rounded px-3 py-2 text-xs text-slate-700 font-semibold outline-none focus:border-[#F05A28] transition"
+                                  placeholder="Enter Name"
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <label className="block text-[11px] font-bold text-slate-700">Funding Agency Type</label>
+                                <select
+                                  value={funding.agencyType}
+                                  disabled={priorFundingNA || isViewMode}
+                                  onChange={(e) => {
+                                    const next = [...priorFundings];
+                                    next[idx].agencyType = e.target.value;
+                                    setPriorFundings(next);
+                                  }}
+                                  className="w-full bg-slate-50 disabled:bg-slate-100 disabled:text-slate-400 border border-slate-200 rounded px-3 py-2 text-xs text-slate-700 font-semibold outline-none focus:border-[#F05A28] transition"
+                                >
+                                  <option value="">Select</option>
+                                  <option value="Government">Government</option>
+                                  <option value="Private VC">Private VC</option>
+                                  <option value="Angel Investor">Angel Investor</option>
+                                  <option value="Other">Other</option>
+                                </select>
+                              </div>
+                            </div>
+
+                            {!priorFundingNA && !isViewMode && priorFundings.length > 1 && (
+                              <div className="pt-1 flex justify-end">
+                                <button
+                                  type="button"
+                                  onClick={() => setPriorFundings(priorFundings.filter((_, i) => i !== idx))}
+                                  className="text-[11px] font-bold text-red-500 hover:underline"
+                                >
+                                  Remove
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+
+                      {!priorFundingNA && !isViewMode && (
+                        <div className="pt-2">
+                          <button
+                            type="button"
+                            onClick={addPriorFunding}
+                            className="text-xs font-bold text-[#F05A28] hover:text-[#d04a18] transition flex items-center gap-1"
+                          >
+                            + Add More
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </FormRow>
+
+                  <FormRow label="Funds Deployment Plan with Broad Expense Categories" required>
+                    <div className="space-y-6">
+                      {fields.fundsDeploymentPlan.map((plan, idx) => (
+                        <div key={idx} className="space-y-4 p-4 bg-slate-50/50 rounded-xl border border-slate-200 relative">
+                          {!isViewMode && fields.fundsDeploymentPlan.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => removeFundsDeploymentPlan(idx)}
+                              className="absolute top-2 right-2 text-slate-400 hover:text-red-500 font-black text-sm"
+                              title="Remove category"
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
+                          )}
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-1">
+                              <label className="block text-[11px] font-bold text-slate-700">Expense Bucket</label>
+                              <input
+                                type="text"
+                                value={plan.expenseBucket}
+                                disabled={isViewMode}
+                                onChange={(e) => updateFundsDeploymentPlan(idx, "expenseBucket", e.target.value)}
+                                className="w-full bg-white border border-slate-200 rounded px-3 py-2 text-xs text-slate-700 font-semibold outline-none focus:border-[#F05A28] transition"
+                                placeholder="Enter Expense Category"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="block text-[11px] font-bold text-slate-700">Amount</label>
+                              <input
+                                type="text"
+                                value={plan.amount}
+                                disabled={isViewMode}
+                                onChange={(e) => updateFundsDeploymentPlan(idx, "amount", e.target.value)}
+                                className="w-full bg-white border border-slate-200 rounded px-3 py-2 text-xs text-slate-700 font-semibold outline-none focus:border-[#F05A28] transition"
+                                placeholder="Enter Amount"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-1">
+                              <label className="block text-[11px] font-bold text-slate-700">Deployment Start Date</label>
+                              <div className="relative">
+                                <input
+                                  type="text"
+                                  value={plan.startDate}
+                                  disabled={isViewMode}
+                                  onChange={(e) => updateFundsDeploymentPlan(idx, "startDate", e.target.value)}
+                                  className="w-full bg-white border border-slate-200 rounded px-3 py-2 text-xs text-slate-700 font-semibold outline-none focus:border-[#F05A28] transition"
+                                  placeholder="DD/MM/YYYY"
+                                />
+                                <Calendar className="absolute right-2.5 top-2.5 h-4 w-4 text-slate-400 pointer-events-none" />
+                              </div>
+                            </div>
+                            <div className="space-y-1">
+                              <label className="block text-[11px] font-bold text-slate-700">Deployment End Date</label>
+                              <div className="relative">
+                                <input
+                                  type="text"
+                                  value={plan.endDate}
+                                  disabled={isViewMode}
+                                  onChange={(e) => updateFundsDeploymentPlan(idx, "endDate", e.target.value)}
+                                  className="w-full bg-white border border-slate-200 rounded px-3 py-2 text-xs text-slate-700 font-semibold outline-none focus:border-[#F05A28] transition"
+                                  placeholder="DD/MM/YYYY"
+                                />
+                                <Calendar className="absolute right-2.5 top-2.5 h-4 w-4 text-slate-400 pointer-events-none" />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+
+                      {errors.fundsDeploymentPlan && (
+                        <p className="text-red-500 font-bold text-[11px] mt-1">{errors.fundsDeploymentPlan}</p>
+                      )}
+
+                      {!isViewMode && (
+                        <div className="pt-2">
+                          <button
+                            type="button"
+                            onClick={addFundsDeploymentPlan}
+                            className="text-xs font-bold text-[#F05A28] hover:text-[#d04a18] transition flex items-center gap-1"
+                          >
+                            + Add More
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </FormRow>
+
                 </div>
               </StepSection>
             )}
@@ -932,8 +1358,14 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
             {step === 5 && (
               <StepSection title="Incubator Preference" subtitle="Choose your preferred incubators in order.">
                 <div className="space-y-4">
-                  <div className="rounded-xl border border-[#FCD88C] bg-[#FFF8E7] p-4 text-xs font-semibold text-slate-700 leading-relaxed">
-                    Please note that once your application is submitted, you cannot modify incubator preferences, or the amount and instrument of funding requested.
+                  <div className="rounded-xl border border-[#FCD88C] bg-[#FFF8E7] p-4 text-xs font-semibold text-slate-700 leading-relaxed space-y-3">
+                    <p>
+                      <span className="text-red-500 font-bold">Note: </span>
+                      Please note that once your application is submitted, you cannot modify your incubator preferences, or the amount and instrument of funding requested. If your application is selected by more than one preferred incubator, it will be allocated to the highest preferred incubator that you selected and cannot be shifted to another incubator.
+                    </p>
+                    <p>
+                      Before submitting the application, we encourage startups to carefully review our portfolio.This will help applicant startups to make an informed decision about the incubator preferences based on relevant parameters such as sector alignment, available funding balance, city/state, or any other relevant parameters. You may also contact the incubators directly using the contact details provided in the portfolio selection.
+                    </p>
                   </div>
                   <div className="space-y-1">
                     <Select
@@ -970,7 +1402,7 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
 
             {step === 6 && (
               <StepSection title="Upload Documents" subtitle="Final attachments before submit.">
-                <div className="space-y-1">
+                <div className="space-y-4">
                   {isViewMode ? (
                     <FormRow label="Pitch Deck of your Business Idea" required>
                       <div 
@@ -978,7 +1410,7 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
                         className="flex flex-col items-center justify-center border border-slate-200 rounded-lg bg-slate-50 p-4 transition-colors hover:bg-slate-100 cursor-pointer max-w-sm"
                       >
                         <FileText className="h-6 w-6 text-[#FF6B00]" />
-                        <span className="mt-1 text-xs font-bold text-slate-650 text-center truncate w-full">
+                        <span className="mt-1 text-xs font-bold text-slate-655 text-center truncate w-full">
                           {fields.pitchDeckName || "PitchDeck.pdf"}
                         </span>
                         <span className="text-[10px] text-slate-400 font-bold mt-0.5 uppercase">Click to Download</span>
@@ -992,9 +1424,9 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
                       onFile={handleFile}
                       kind="pitch"
                       helper="Supported format - PDF only | Max size: 15 MB"
-                      sampleText="Download Sample Pitch Deck"
                       disabled={isViewMode}
                       required
+                      error={errors.pitchDeck}
                     />
                   )}
 
@@ -1006,9 +1438,38 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
                   />
 
                   {isViewMode ? (
-                    fields.otherDocumentName ? (
-                      <FormRow label="Other relevant document">
+                    fields.marketReportName ? (
+                      <FormRow label="Market Research Report of your Company" required>
                         <div 
+                          onClick={() => handleDownloadFile("marketReport", fields.marketReportName || "MarketReport.pdf")}
+                          className="flex flex-col items-center justify-center border border-slate-200 rounded-lg bg-slate-50 p-4 transition-colors hover:bg-slate-100 cursor-pointer max-w-sm"
+                        >
+                          <FileText className="h-6 w-6 text-[#FF6B00]" />
+                          <span className="mt-1 text-xs font-bold text-slate-650 text-center truncate w-full">
+                            {fields.marketReportName}
+                          </span>
+                          <span className="text-[10px] text-slate-400 font-bold mt-0.5 uppercase">Click to Download</span>
+                        </div>
+                      </FormRow>
+                    ) : null
+                  ) : (
+                    <FileUpload
+                      label="Upload Market research report of your company"
+                      file={marketReportFile}
+                      fileName={fields.marketReportName}
+                      onFile={handleFile}
+                      kind="market"
+                      helper="Supported format - PDF only | Max size: 15 MB"
+                      disabled={isViewMode}
+                      required
+                      error={errors.marketReport}
+                    />
+                  )}
+
+                  {isViewMode ? (
+                    fields.otherDocumentName ? (
+                      <FormRow label="Financial Projection Report Document" required>
+                        <div
                           onClick={() => handleDownloadFile("otherDocument", fields.otherDocumentName || "Attachment.pdf")}
                           className="flex flex-col items-center justify-center border border-slate-200 rounded-lg bg-slate-50 p-4 transition-colors hover:bg-slate-100 cursor-pointer max-w-sm"
                         >
@@ -1022,13 +1483,15 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
                     ) : null
                   ) : (
                     <FileUpload
-                      label="Upload any other relevant document (Optional)"
+                      label="Upload financial projection report document"
                       file={otherFile}
                       fileName={fields.otherDocumentName}
                       onFile={handleFile}
                       kind="other"
                       helper="Supported format - PDF only | Max size: 15 MB"
                       disabled={isViewMode}
+                      required
+                      error={errors.otherDocument}
                     />
                   )}
 
@@ -1041,8 +1504,8 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
                         disabled={isViewMode}
                         className="mt-1.5 h-4 w-4 rounded border-slate-350 text-[#F05A28] focus:ring-[#F05A28]"
                       />
-                      <span className="font-semibold text-xs text-slate-650">
-                        We are in compliance with the provisions of the various Acts, Rules, Regulations, Guidelines, Standards applicable to the entity from time to time. All information provided by us is true, correct and complete.
+                      <span className="font-semibold text-xs text-slate-655">
+                        We are in compliance with the provisions of the various Acts, Rules, Regulations, Guidelines, Standards applicable to the entity from time to time. All information provided by us in the application is true, correct and complete and no information material to the subject matter of this form has been suppressed or concealed.
                       </span>
                     </label>
                     {errors.declarationAccepted && (
@@ -1055,9 +1518,9 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
 
             {/* Footer Buttons Bar */}
             <div className="flex items-center justify-between gap-3 border-t border-slate-200 pt-6 mt-8">
-              <button 
-                type="button" 
-                onClick={onCancel} 
+              <button
+                type="button"
+                onClick={onCancel}
                 className="rounded-full border-2 border-[#5B75A6] px-8 py-2 text-sm font-bold uppercase text-[#5B75A6] hover:bg-slate-50 transition-colors duration-200"
               >
                 {isViewMode ? "Close" : "Cancel"}
@@ -1118,10 +1581,6 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
 
 const StepSection: React.FC<{ title: string; subtitle: string; children: React.ReactNode }> = ({ title, subtitle, children }) => (
   <div className="space-y-6">
-    <div className="border-b border-slate-200 pb-3">
-      <h2 className="text-lg font-black text-[#0B2A5B]">{title}</h2>
-      <p className="mt-1 text-xs font-semibold text-slate-400">{subtitle}</p>
-    </div>
     <div className="bg-white">{children}</div>
   </div>
 );
@@ -1162,9 +1621,8 @@ const Input: React.FC<{
       readOnly={readOnly}
       aria-readonly={readOnly}
       onChange={(event) => onChange(event.target.value)}
-      className={`w-full rounded-lg border bg-[#EDF0F5] px-4 py-2.5 text-sm text-slate-800 outline-none transition-all font-semibold ${
-        error ? "border-red-500 bg-red-50/30" : "border-slate-200 focus:border-[#F05A28] focus:bg-white"
-      } ${readOnly ? "opacity-75 cursor-not-allowed" : ""}`}
+      className={`w-full rounded-lg border bg-[#EDF0F5] px-4 py-2.5 text-sm text-slate-800 outline-none transition-all font-semibold ${error ? "border-red-500 bg-red-50/30" : "border-slate-200 focus:border-[#F05A28] focus:bg-white"
+        } ${readOnly ? "opacity-75 cursor-not-allowed" : ""}`}
     />
   </FormRow>
 );
@@ -1184,9 +1642,8 @@ const TextArea: React.FC<{
       readOnly={readOnly}
       aria-readonly={readOnly}
       onChange={(event) => onChange(event.target.value)}
-      className={`w-full rounded-lg border bg-[#EDF0F5] px-4 py-2.5 text-sm text-slate-800 outline-none transition-all font-semibold ${
-        error ? "border-red-500 bg-red-50/30" : "border-slate-200 focus:border-[#F05A28] focus:bg-white"
-      } ${readOnly ? "opacity-75 cursor-not-allowed" : ""}`}
+      className={`w-full rounded-lg border bg-[#EDF0F5] px-4 py-2.5 text-sm text-slate-800 outline-none transition-all font-semibold ${error ? "border-red-500 bg-red-50/30" : "border-slate-200 focus:border-[#F05A28] focus:bg-white"
+        } ${readOnly ? "opacity-75 cursor-not-allowed" : ""}`}
     />
   </FormRow>
 );
@@ -1205,9 +1662,8 @@ const Select: React.FC<{
       value={value}
       disabled={disabled}
       onChange={(event) => onChange(event.target.value)}
-      className={`w-full rounded-lg border bg-[#EDF0F5] px-4 py-2.5 text-sm text-slate-800 outline-none transition-all font-semibold ${
-        error ? "border-red-500 bg-red-50/30" : "border-slate-200 focus:border-[#F05A28] focus:bg-white"
-      } ${disabled ? "cursor-not-allowed opacity-75" : ""}`}
+      className={`w-full rounded-lg border bg-[#EDF0F5] px-4 py-2.5 text-sm text-slate-800 outline-none transition-all font-semibold ${error ? "border-red-500 bg-red-50/30" : "border-slate-200 focus:border-[#F05A28] focus:bg-white"
+        } ${disabled ? "cursor-not-allowed opacity-75" : ""}`}
     >
       <option value="">Select</option>
       {options.map((option) => (
@@ -1225,22 +1681,25 @@ const Toggle: React.FC<{
   onChange: (value: "Yes" | "No") => void;
   disabled?: boolean;
   required?: boolean;
-}> = ({ label, value, onChange, disabled = false, required = false }) => (
+  description?: string;
+}> = ({ label, value, onChange, disabled = false, required = false, description }) => (
   <FormRow label={label} required={required}>
-    <div className="inline-flex rounded-full border border-[#FDBA74] bg-[#FFF4EA] p-1">
-      {(["Yes", "No"] as const).map((option) => (
-        <button
-          key={option}
-          type="button"
-          disabled={disabled}
-          onClick={() => onChange(option)}
-          className={`rounded-full px-4 py-1.5 text-xs font-black uppercase tracking-wider transition ${
-            value === option ? "bg-[#F05A28] text-white" : "text-slate-500"
-          } ${disabled ? "cursor-not-allowed opacity-70" : ""}`}
-        >
-          {option}
-        </button>
-      ))}
+    <div className="space-y-2">
+      <div className="inline-flex rounded-full border border-[#FDBA74] bg-[#FFF4EA] p-1">
+        {(["Yes", "No"] as const).map((option) => (
+          <button
+            key={option}
+            type="button"
+            disabled={disabled}
+            onClick={() => onChange(option)}
+            className={`rounded-full px-4 py-1.5 text-xs font-black uppercase tracking-wider transition ${value === option ? "bg-[#F05A28] text-white" : "text-slate-500"
+              } ${disabled ? "cursor-not-allowed opacity-70" : ""}`}
+          >
+            {option}
+          </button>
+        ))}
+      </div>
+      {description && <p className="text-xs text-slate-500 font-semibold leading-relaxed">{description}</p>}
     </div>
   </FormRow>
 );
@@ -1251,12 +1710,13 @@ const FileUpload: React.FC<{
   sampleText?: string;
   file: File | null;
   fileName?: string;
-  kind: "pitch" | "other";
-  onFile: (file: File | null, kind: "pitch" | "other") => void;
+  kind: "pitch" | "market" | "other";
+  onFile: (file: File | null, kind: "pitch" | "market" | "other") => void;
   disabled?: boolean;
   required?: boolean;
-}> = ({ label, helper, sampleText, file, fileName, kind, onFile, disabled = false, required = false }) => (
-  <FormRow label={label} required={required}>
+  error?: string;
+}> = ({ label, helper, sampleText, file, fileName, kind, onFile, disabled = false, required = false, error }) => (
+  <FormRow label={label} required={required} error={error}>
     <div className="space-y-3">
       <div className="flex items-center gap-4">
         <input
@@ -1269,9 +1729,8 @@ const FileUpload: React.FC<{
         />
         <label
           htmlFor={`${kind}-file-input`}
-          className={`inline-flex items-center gap-2 rounded-full border border-[#0B2A5B] px-6 py-2 text-xs font-black uppercase tracking-wider text-[#0B2A5B] hover:bg-slate-50 transition ${
-            disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"
-          }`}
+          className={`inline-flex items-center gap-2 rounded-full border border-[#0B2A5B] px-6 py-2 text-xs font-black uppercase tracking-wider text-[#0B2A5B] hover:bg-slate-50 transition ${disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"
+            }`}
         >
           Upload
         </label>

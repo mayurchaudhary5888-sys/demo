@@ -304,6 +304,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           teamSize: data.teamSize,
           fundingStatus: data.fundingStatus,
           pitchDeckName: data.pitchDeckName || "PitchDeck.pdf",
+          marketReportName: data.marketReportName,
           additionalDocumentsName: data.additionalDocumentsName,
         });
 
@@ -314,6 +315,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (appId) {
           if (data._pitchDeckFile) {
             saveFileToLocalStorage(appId, "pitchDeck", data._pitchDeckFile).catch(console.error);
+          }
+          if (data._marketReportFile) {
+            saveFileToLocalStorage(appId, "marketReport", data._marketReportFile).catch(console.error);
           }
           if (data._prototypePhotosFile) {
             saveFileToLocalStorage(appId, "prototypePhotos", data._prototypePhotosFile).catch(console.error);
