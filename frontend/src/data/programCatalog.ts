@@ -85,7 +85,7 @@ export const programCatalog: CatalogProgram[] = [
     slug: "foundation-program",
     name: "Foundation / CSR Support",
     partner: "BHASKAR",
-    funding: "Up to ₹40 lakh grant",
+    funding: "Up to ₹40 lakh grant | CSR Funding via Corporate Partners",
     tagline: "Secure grants and CSR backing for purpose-led work.",
     shortDescription: "Support is provided to Foundations, Section 8 Companies, NGOs, and Social Enterprises to secure grants and CSR funding from corporate and institutional partners. We help with funding strategy, proposal development.",
     longDescription:
