@@ -1,5 +1,6 @@
 import { StartupProfile } from "../models/StartupProfile.js";
 import { uploadLogoToCloudinary } from "../utils/cloudinary.js";
+import { saveLogoLocally } from "../utils/localUpload.js";
 
 const cleanString = (value, fallback = "") => {
   if (typeof value !== "string") return fallback;
@@ -20,7 +21,7 @@ const resolveRegisteredAt = (value) => {
   return Number.isNaN(parsed) ? Date.now() : parsed;
 };
 
-export const ensureNoBase64Logos = async (profile) => {
+export const ensureNoBase64Logos = async (profile, req) => {
   if (!profile) return profile;
 
   // check logoUrl
@@ -33,9 +34,20 @@ export const ensureNoBase64Logos = async (profile) => {
       profile.logoUrl = res.secureUrl;
       profile.logoPreview = res.secureUrl;
     } catch (err) {
-      console.error("Failed to auto-upload base64 logoUrl:", err);
-      profile.logoUrl = "";
-      profile.logoPreview = "";
+      console.warn("Failed to auto-upload base64 logoUrl to Cloudinary. Saving locally:", err.message);
+      try {
+        const res = await saveLogoLocally({
+          dataUri: profile.logoUrl,
+          filename: profile.logoName || "logo.png",
+          req,
+        });
+        profile.logoUrl = res.secureUrl;
+        profile.logoPreview = res.secureUrl;
+      } catch (localErr) {
+        console.error("Failed to save logoUrl locally:", localErr);
+        profile.logoUrl = "";
+        profile.logoPreview = "";
+      }
     }
   }
 
@@ -52,9 +64,20 @@ export const ensureNoBase64Logos = async (profile) => {
         profile.logoUrl = res.secureUrl;
         profile.logoPreview = res.secureUrl;
       } catch (err) {
-        console.error("Failed to auto-upload base64 logoPreview:", err);
-        profile.logoUrl = "";
-        profile.logoPreview = "";
+        console.warn("Failed to auto-upload base64 logoPreview to Cloudinary. Saving locally:", err.message);
+        try {
+          const res = await saveLogoLocally({
+            dataUri: profile.logoPreview,
+            filename: profile.logoName || "logo.png",
+            req,
+          });
+          profile.logoUrl = res.secureUrl;
+          profile.logoPreview = res.secureUrl;
+        } catch (localErr) {
+          console.error("Failed to save logoPreview locally:", localErr);
+          profile.logoUrl = "";
+          profile.logoPreview = "";
+        }
       }
     }
   }

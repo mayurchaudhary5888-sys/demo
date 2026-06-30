@@ -241,7 +241,6 @@ export const Register: React.FC = () => {
           uploadedLogoUrl = uploadedLogo.secureUrl;
         } catch (uploadError) {
           console.warn("Logo upload failed. Using local/fallback preview.", uploadError);
-          showToast("Logo upload skipped (Cloudinary is not configured). Continuing registration.", "warning");
           uploadedLogoUrl = logoPreview;
         }
       }
