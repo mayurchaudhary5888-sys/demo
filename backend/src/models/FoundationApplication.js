@@ -33,7 +33,10 @@ const foundationApplicationSchema = new mongoose.Schema(
     ],
 
     // Specific Fields
+    supportType: String,
+    supportTypeOther: String,
     focusArea: String,
+    focusAreaOther: String,
     applicantName: String,
     designation: String,
     email: String,
@@ -41,6 +44,7 @@ const foundationApplicationSchema = new mongoose.Schema(
     organisationName: String,
     establishmentYear: String,
     innovationArea: String,
+    innovationAreaOther: String,
     users: [String],
     beneficiaries: [String],
     impactApproach: String,

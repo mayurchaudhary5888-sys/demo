@@ -29,7 +29,7 @@ export const programCatalog: CatalogProgram[] = [
     longDescription:
       "Support is provided to help early-stage startups and student innovators develop Proof of Concept (PoC) and Minimum Viable Product (MVP). Eligible startups may also receive grant support to build prototypes, validate their ideas, and transform innovative concepts into market-ready solutions.",
     benefits: [
-      "Grant support of up to ₹10 lakhs (subject to scheme guidelines).",
+      "Grant support of up to ₹10 lakhs.",
       "Funding for PoC and MVP development.",
       "Prototype design, testing, and product validation support.",
       "Assistance in technology development and commercialization.",
