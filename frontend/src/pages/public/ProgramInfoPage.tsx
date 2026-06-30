@@ -1,6 +1,6 @@
-import React from "react";
-import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, ArrowRight, CheckCircle2, FileText } from "lucide-react";
+import React, { useState } from "react";
+import { Link, Navigate, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { ArrowLeft, ArrowRight, CheckCircle2, FileText, X } from "lucide-react";
 import { useAppState } from "../../context/AppContext";
 import { getCatalogProgram } from "../../data/programCatalog";
 
@@ -11,8 +11,13 @@ const requestLogin = () => {
 export const ProgramInfoPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const program = getCatalogProgram(slug);
-  const { user, showToast, startups } = useAppState();
+  const { user, showToast, startups, applications } = useAppState();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const [alreadyAppliedOpen, setAlreadyAppliedOpen] = useState(
+    searchParams.get("alreadyApplied") === "true"
+  );
 
   const myStartup = user?.startupId ? startups.find((s) => s.id === user.startupId) : null;
   const userProgramId = myStartup?.selectedProgram || user?.selectedProgram;
@@ -25,6 +30,10 @@ export const ProgramInfoPage: React.FC = () => {
     return <Navigate to={`/support/${userProgramId}`} replace />;
   }
 
+  const hasAlreadyApplied = user && applications.some(
+    (app) => app.programId === program.id || app.programName === program.name
+  );
+
   const Icon = program.icon;
   const handleApply = () => {
     if (!user) {
@@ -32,8 +41,21 @@ export const ProgramInfoPage: React.FC = () => {
       requestLogin();
       return;
     }
+    if (hasAlreadyApplied) {
+      setAlreadyAppliedOpen(true);
+      return;
+    }
 
     navigate(`/support/${program.slug}/apply`);
+  };
+
+  const handleCloseModal = () => {
+    setAlreadyAppliedOpen(false);
+    if (searchParams.has("alreadyApplied")) {
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete("alreadyApplied");
+      setSearchParams(newParams, { replace: true });
+    }
   };
 
   return (
@@ -98,6 +120,51 @@ export const ProgramInfoPage: React.FC = () => {
           </aside>
         </div>
       </section>
+
+      <AlreadyAppliedModal open={alreadyAppliedOpen} onClose={handleCloseModal} programName={program.name} />
+    </div>
+  );
+};
+
+type AlreadyAppliedModalProps = {
+  open: boolean;
+  onClose: () => void;
+  programName: string;
+};
+
+const AlreadyAppliedModal: React.FC<AlreadyAppliedModalProps> = ({ open, onClose, programName }) => {
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-[1200] flex items-center justify-center bg-slate-950/60 px-4 py-6 backdrop-blur-sm">
+      <div className="relative w-full max-w-md overflow-hidden rounded-[28px] border border-blue-200 bg-white shadow-[0_30px_120px_rgba(15,23,42,0.35)] animate-in fade-in zoom-in duration-200">
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute right-4 top-4 z-10 rounded-full border border-slate-200 bg-white p-2 text-slate-400 transition hover:text-slate-700"
+          aria-label="Close notice"
+        >
+          <X className="h-4 w-4" />
+        </button>
+
+        <div className="px-6 py-10 text-center">
+          <div className="mx-auto mb-5 flex h-18 w-18 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+            <CheckCircle2 className="h-10 w-10" />
+          </div>
+          <p className="text-[11px] font-black uppercase tracking-[0.28em] text-blue-700">Already Applied</p>
+          <h2 className="mt-3 text-2xl font-black tracking-tight text-[#0B2A5B]">Application Submitted</h2>
+          <p className="mx-auto mt-4 max-w-sm text-sm leading-7 text-slate-600">
+            You have already submitted an application for the <strong>{programName}</strong>. You can monitor the status of your application from your dashboard.
+          </p>
+          <button
+            type="button"
+            onClick={onClose}
+            className="mt-7 rounded-full bg-[#0B2A5B] px-6 py-3 text-xs font-black uppercase tracking-wider text-white transition hover:bg-[#071c3e]"
+          >
+            Okay
+          </button>
+        </div>
+      </div>
     </div>
   );
 };
