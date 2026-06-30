@@ -216,6 +216,114 @@ export const sendOtpEmail = async ({ to, otp, name }) => {
 };
 
 /* ─────────────────────────────────────────────
+   Password Reset OTP Email
+   ───────────────────────────────────────────── */
+export const sendPasswordResetOtpEmail = async ({ to, otp, name }) => {
+  const subject = "Reset your BHASKAR password";
+  const displayName = escapeHtml(name || "there");
+  const otpDigits = String(otp).split("");
+  const otpExpirySeconds = env.otpTtlMinutes * 60;
+
+  const text = [
+    `Hello ${name || "there"},`,
+    "",
+    `Your BHASKAR password reset verification code is ${otp}.`,
+    `It expires in ${otpExpirySeconds} seconds.`,
+    "",
+    "If you did not request this code, you can safely ignore this message.",
+    "",
+    "Contact: nodal-desk.bhaskar@nic.in",
+  ].join("\n");
+
+  const otpDigitsHtml = otpDigits
+    .map(
+      (digit) =>
+        `<td align="center" width="44" style="width:44px;height:52px;font-size:30px;font-weight:800;color:#5B9BFF;letter-spacing:0;font-family:'Courier New',Courier,monospace;">${escapeHtml(digit)}</td>`
+    )
+    .join(`<td width="8" style="width:8px;"></td>`);
+
+  const innerHtml = `
+    <!-- Greeting -->
+    <h1 style="margin:0 0 20px;font-size:22px;line-height:1.35;font-weight:800;color:#ffffff;text-align:center;">
+      Hi ${displayName},
+    </h1>
+
+    <p style="margin:0 0 24px;font-size:15px;line-height:1.65;color:#d1d5db;text-align:center;">
+      Reset your account password using the below OTP
+    </p>
+
+    <!-- OTP Label -->
+    <p style="margin:0 0 16px;font-size:16px;line-height:1.4;font-weight:700;color:#ffffff;text-align:center;">
+      One Time Passcode :
+    </p>
+
+    <!-- OTP Digits -->
+    <table role="presentation" cellspacing="0" cellpadding="0" align="center" style="margin:0 auto 18px;">
+      <tr>
+        ${otpDigitsHtml}
+      </tr>
+    </table>
+
+    <!-- Expiry -->
+    <p style="margin:0 0 32px;font-size:14px;line-height:1.6;color:#9ca3af;text-align:center;">
+      OTP will expire in <strong style="color:#ffffff;">${otpExpirySeconds} seconds</strong>
+    </p>
+
+    <!-- Divider -->
+    <div style="border-top:1px solid #3c3f46;margin:0 auto 28px;max-width:360px;"></div>
+
+    <!-- Contact Note -->
+    <p style="margin:0 auto 20px;max-width:340px;font-family:Georgia,'Times New Roman',serif;font-size:14px;line-height:1.55;color:#e2e8f0;text-align:center;font-style:italic;">
+      Please feel free to contact us in case of any queries
+      or if you didn't request this, you can ignore this or
+      let us know
+    </p>
+
+    <!-- Contact Link -->
+    <p style="text-align:center;margin:0;">
+      <a href="mailto:nodal-desk.bhaskar@nic.in" style="color:#FF6B6B;text-decoration:none;font-size:15px;font-weight:700;">
+        nodal-desk.bhaskar@nic.in
+      </a>
+    </p>
+  `;
+
+  const html = emailWrapper(innerHtml);
+  const transporter = getTransporter();
+
+  if (!transporter) {
+    if (env.nodeEnv === "production") {
+      throw new AppError(
+        "SMTP is not configured. Add SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, and SMTP_FROM before enabling production email delivery.",
+        500
+      );
+    }
+
+    console.warn(`[OTP DEV MODE] Password Reset Code for ${to}: ${otp}`);
+    return { delivered: false, fallback: true };
+  }
+
+  const attachments = [];
+  if (logoExists) {
+    attachments.push({
+      filename: "bhaskar.jpeg",
+      path: bhaskarLogoPath,
+      cid: "bhaskarlogo",
+    });
+  }
+
+  await transporter.sendMail({
+    from: env.smtpFrom,
+    to,
+    subject,
+    text,
+    html,
+    attachments,
+  });
+
+  return { delivered: true };
+};
+
+/* ─────────────────────────────────────────────
    Application Status / Document Request Email
    ───────────────────────────────────────────── */
 const extractDocumentList = (value = "") =>

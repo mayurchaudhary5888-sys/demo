@@ -103,4 +103,16 @@ export const authApi = {
       method: "POST",
       body: JSON.stringify(payload),
     }),
+
+  forgotPassword: (payload: { email: string }) =>
+    request<{ message: string }>("/auth/forgot-password", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+
+  resetPassword: (payload: { email: string; otp: string; password?: string }) =>
+    request<{ message: string }>("/auth/reset-password", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
 };

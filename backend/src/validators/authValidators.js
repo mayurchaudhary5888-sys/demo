@@ -41,6 +41,22 @@ export const resendOtpSchema = z.object({
   email,
 });
 
+export const forgotPasswordSchema = z.object({
+  email,
+});
+
+export const resetPasswordSchema = z.object({
+  email,
+  otp: z.string().trim().regex(/^\d{6}$/, "OTP must be 6 digits."),
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters.")
+    .max(128, "Password is too long.")
+    .regex(/[A-Z]/, "Password must include an uppercase letter.")
+    .regex(/[a-z]/, "Password must include a lowercase letter.")
+    .regex(/\d/, "Password must include a number."),
+});
+
 export const validateBody = (schema) => (req, _res, next) => {
   const parsed = schema.safeParse(req.body);
   if (!parsed.success) {
