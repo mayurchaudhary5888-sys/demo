@@ -14,7 +14,10 @@ type FoundationProgramProps = {
 };
 
 type FoundationFields = {
+  supportType: string;
+  supportTypeOther?: string;
   focusArea: string;
+  focusAreaOther?: string;
   applicantName: string;
   designation: string;
   email: string;
@@ -22,6 +25,7 @@ type FoundationFields = {
   organisationName: string;
   establishmentYear: string;
   innovationArea: string;
+  innovationAreaOther?: string;
   users: string[];
   beneficiaries: string[];
   impactApproach: string;
@@ -34,13 +38,17 @@ type FoundationFields = {
   consentAccepted: boolean;
 };
 
+const supportTypeOptions = ["Foundation Support", "CSR Support"];
 const focusAreaOptions = ["Women-led impact", "Climate and sustainability", "Healthcare access", "Education and skilling", "Livelihoods", "Financial inclusion", "Other"];
 const innovationAreaOptions = ["Technology platform", "Product innovation", "Service model", "Community program", "Research-backed intervention", "Other"];
 const userOptions = ["Working women", "Students", "Entrepreneurs", "Rural users", "Urban users", "Small businesses", "Communities", "Other"];
 const beneficiaryOptions = ["Women", "Youth", "Children", "Farmers", "MSMEs", "Low-income communities", "Persons with disabilities", "Other"];
 
 const initialFields = (user?: { name?: string; email?: string }, startupName = ""): FoundationFields => ({
+  supportType: "",
+  supportTypeOther: "",
   focusArea: "",
+  focusAreaOther: "",
   applicantName: user?.name || "",
   designation: "",
   email: user?.email || "",
@@ -48,6 +56,7 @@ const initialFields = (user?: { name?: string; email?: string }, startupName = "
   organisationName: startupName,
   establishmentYear: "",
   innovationArea: "",
+  innovationAreaOther: "",
   users: [],
   beneficiaries: [],
   impactApproach: "",
@@ -70,11 +79,13 @@ export const FoundationProgram: React.FC<FoundationProgramProps> = ({ program, o
   const [submitting, setSubmitting] = useState(false);
   const [successModalOpen, setSuccessModalOpen] = useState(false);
   const [successApplication, setSuccessApplication] = useState<{ id: string; programName: string } | null>(null);
-
   useEffect(() => {
     if (mode === "view" && application) {
       setFields({
+        supportType: application.supportType || "",
+        supportTypeOther: application.supportTypeOther || "",
         focusArea: application.focusArea || "",
+        focusAreaOther: application.focusAreaOther || "",
         applicantName: application.applicantName || "",
         designation: application.designation || "",
         email: application.email || "",
@@ -82,6 +93,7 @@ export const FoundationProgram: React.FC<FoundationProgramProps> = ({ program, o
         organisationName: application.organisationName || "",
         establishmentYear: application.establishmentYear || "",
         innovationArea: application.innovationArea || "",
+        innovationAreaOther: application.innovationAreaOther || "",
         users: application.users || [],
         beneficiaries: application.beneficiaries || [],
         impactApproach: application.impactApproach || "",
@@ -123,7 +135,17 @@ export const FoundationProgram: React.FC<FoundationProgramProps> = ({ program, o
 
   const validate = () => {
     const nextErrors: Record<string, string> = {};
-    if (!fields.focusArea) nextErrors.focusArea = "Select a program focus area.";
+    
+    if (!fields.supportType) {
+      nextErrors.supportType = "Select the type of support.";
+    }
+
+    if (!fields.focusArea) {
+      nextErrors.focusArea = "Select a program focus area.";
+    } else if (fields.focusArea === "Other" && !fields.focusAreaOther?.trim()) {
+      nextErrors.focusAreaOther = "Please specify the focus area.";
+    }
+
     if (!fields.applicantName.trim()) nextErrors.applicantName = "Your name is required.";
     if (!fields.designation.trim()) nextErrors.designation = "Designation is required.";
     if (!fields.email.trim()) nextErrors.email = "Email is required.";
@@ -132,16 +154,16 @@ export const FoundationProgram: React.FC<FoundationProgramProps> = ({ program, o
     if (!fields.organisationName.trim()) nextErrors.organisationName = "Organisation name is required.";
     if (!fields.establishmentYear.trim()) nextErrors.establishmentYear = "Year of establishment is required.";
     if (!pitchDeck) nextErrors.pitchDeck = "Upload a detailed project pitch deck.";
-    if (!fields.innovationArea) nextErrors.innovationArea = "Select area of innovation.";
+    
+    if (!fields.innovationArea) {
+      nextErrors.innovationArea = "Select area of foundation.";
+    } else if (fields.innovationArea === "Other" && !fields.innovationAreaOther?.trim()) {
+      nextErrors.innovationAreaOther = "Please specify the area of foundation.";
+    }
+
     if (!fields.users.length) nextErrors.users = "Select at least one user group.";
     if (!fields.beneficiaries.length) nextErrors.beneficiaries = "Select at least one beneficiary group.";
     if (!fields.impactApproach.trim()) nextErrors.impactApproach = "Impact approach is required.";
-    if (!fields.totalRegisteredUsers.trim()) nextErrors.totalRegisteredUsers = "Total registered users is required.";
-    if (!fields.currentPricePoint.trim()) nextErrors.currentPricePoint = "Current price point is required.";
-    if (!fields.totalPaidUsers.trim()) nextErrors.totalPaidUsers = "Total paid users is required.";
-    if (!fields.monthlyActiveUsers.trim()) nextErrors.monthlyActiveUsers = "Monthly active users is required.";
-    if (!fields.userRetentionRate.trim()) nextErrors.userRetentionRate = "User retention rate is required.";
-    if (!fields.evidenceOfImpact.trim()) nextErrors.evidenceOfImpact = "Evidence of impact is required.";
     if (!fields.consentAccepted) nextErrors.consentAccepted = "Consent is required.";
 
     setErrors(nextErrors);
@@ -174,6 +196,9 @@ export const FoundationProgram: React.FC<FoundationProgramProps> = ({ program, o
     try {
       const created = await applyToProgram({
         ...fields,
+        supportType: fields.supportType === "Other" ? fields.supportTypeOther : fields.supportType,
+        focusArea: fields.focusArea === "Other" ? fields.focusAreaOther : fields.focusArea,
+        innovationArea: fields.innovationArea === "Other" ? fields.innovationAreaOther : fields.innovationArea,
         programId: program.id,
         programName: program.name,
         startupId: user?.startupId || "",
@@ -199,8 +224,7 @@ export const FoundationProgram: React.FC<FoundationProgramProps> = ({ program, o
     <FormModeContext.Provider value={{ disabled: mode === "view" }}>
       <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm" id="foundation-application-form">
         <div className="border-b border-slate-100 bg-slate-50 px-6 py-8 md:px-8">
-          <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[#FF6B00]">Foundation / CSR Support</p>
-          <h3 className="mt-3 text-2xl font-black tracking-tight text-[#0B2A5B]">Apply for Foundation / CSR Support</h3>
+          <h3 className="text-2xl font-black tracking-tight text-[#0B2A5B]">Apply for Foundation / CSR Support</h3>
           <h4 className="mt-3 text-base font-extrabold text-slate-900">First step to getting started</h4>
           <p className="mt-3 max-w-4xl text-sm leading-7 text-slate-600">
             Share your organisation, solution, users, and impact metrics in one form so the Foundation / CSR Support team can review your readiness and support fit.
@@ -208,11 +232,33 @@ export const FoundationProgram: React.FC<FoundationProgramProps> = ({ program, o
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-8 p-6 text-sm text-slate-800 md:p-8">
-          <SelectField label="Which program focus area does your solution match with? *" value={fields.focusArea} error={errors.focusArea} options={focusAreaOptions} onChange={(value) => updateField("focusArea", value)} />
+          <SelectField
+            label="Which type of support would you like to apply for? *"
+            value={fields.supportType}
+            error={errors.supportType}
+            options={supportTypeOptions}
+            onChange={(value) => updateField("supportType", value)}
+          />
+
+          <SelectField label="Which program focus area does your solution match with? *" value={fields.focusArea} error={errors.focusArea} options={focusAreaOptions} onChange={(value) => {
+            updateField("focusArea", value);
+            if (value !== "Other") {
+              updateField("focusAreaOther", "");
+            }
+          }} />
+          {fields.focusArea === "Other" && (
+            <TextField
+              label="Please specify program focus area *"
+              value={fields.focusAreaOther || ""}
+              error={errors.focusAreaOther}
+              placeholder="Specify focus area"
+              onChange={(value) => updateField("focusAreaOther", value)}
+            />
+          )}
 
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <TextField label="Your name *" value={fields.applicantName} error={errors.applicantName} placeholder="Your Name" onChange={(value) => updateField("applicantName", value)} />
-            <TextField label="Designation *" value={fields.designation} error={errors.designation} placeholder="Designation" onChange={(value) => updateField("focusArea", value)} />
+            <TextField label="Designation *" value={fields.designation} error={errors.designation} placeholder="Designation" onChange={(value) => updateField("designation", value)} />
             <TextField label="Email *" type="email" value={fields.email} error={errors.email} placeholder="Email ID" onChange={(value) => updateField("email", value)} />
             <TextField label="Phone *" type="tel" value={fields.phone} error={errors.phone} placeholder="Phone Number" onChange={(value) => updateField("phone", value)} />
             <TextField label="Organisation's name *" value={fields.organisationName} error={errors.organisationName} placeholder="Organisation's Name" onChange={(value) => updateField("organisationName", value)} />
@@ -220,7 +266,7 @@ export const FoundationProgram: React.FC<FoundationProgramProps> = ({ program, o
           </div>
 
           <div className="space-y-2">
-            <label className="block font-bold text-[#0B2A5B]">Please upload a detailed project pitch deck here *</label>
+            <label className="block font-bold text-[#0B2A5B]">{renderLabel("Please upload a detailed project pitch deck here *")}</label>
             {mode === "view" ? (
               <div 
                 onClick={() => handleDownloadFile("pitchDeck", application?.pitchDeckName || "PitchDeck.pdf")}
@@ -241,7 +287,21 @@ export const FoundationProgram: React.FC<FoundationProgramProps> = ({ program, o
             {errors.pitchDeck && <p className="text-xs font-bold text-red-500">{errors.pitchDeck}</p>}
           </div>
 
-          <SelectField label="Area of innovation *" value={fields.innovationArea} error={errors.innovationArea} options={innovationAreaOptions} onChange={(value) => updateField("innovationArea", value)} />
+          <SelectField label="Area of foundation *" value={fields.innovationArea} error={errors.innovationArea} options={innovationAreaOptions} onChange={(value) => {
+            updateField("innovationArea", value);
+            if (value !== "Other") {
+              updateField("innovationAreaOther", "");
+            }
+          }} />
+          {fields.innovationArea === "Other" && (
+            <TextField
+              label="Please specify area of foundation *"
+              value={fields.innovationAreaOther || ""}
+              error={errors.innovationAreaOther}
+              placeholder="Specify area of foundation"
+              onChange={(value) => updateField("innovationAreaOther", value)}
+            />
+          )}
 
           <CheckboxGroup label="Users (check all that apply) *" values={fields.users} error={errors.users} options={userOptions} onChange={(value) => toggleMultiValue("users", value)} />
           <CheckboxGroup label="End beneficiaries (check all that apply) *" values={fields.beneficiaries} error={errors.beneficiaries} options={beneficiaryOptions} onChange={(value) => toggleMultiValue("beneficiaries", value)} />
@@ -259,12 +319,12 @@ export const FoundationProgram: React.FC<FoundationProgramProps> = ({ program, o
               <p className="mt-1 text-xs font-semibold text-slate-500">Share current traction metrics and evidence for the solution.</p>
             </div>
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              <TextField label="Total registered users *" value={fields.totalRegisteredUsers} error={errors.totalRegisteredUsers} onChange={(value) => updateField("totalRegisteredUsers", value)} />
-              <TextField label="Current price point *" value={fields.currentPricePoint} error={errors.currentPricePoint} onChange={(value) => updateField("currentPricePoint", value)} />
-              <TextField label="Total paid users *" value={fields.totalPaidUsers} error={errors.totalPaidUsers} onChange={(value) => updateField("totalPaidUsers", value)} />
-              <TextField label="Monthly active users *" value={fields.monthlyActiveUsers} error={errors.monthlyActiveUsers} onChange={(value) => updateField("monthlyActiveUsers", value)} />
-              <TextField label="User retention rate *" value={fields.userRetentionRate} error={errors.userRetentionRate} onChange={(value) => updateField("userRetentionRate", value)} />
-              <TextField label="Evidence of impact *" value={fields.evidenceOfImpact} error={errors.evidenceOfImpact} onChange={(value) => updateField("evidenceOfImpact", value)} />
+              <TextField label="Total registered users" value={fields.totalRegisteredUsers} error={errors.totalRegisteredUsers} onChange={(value) => updateField("totalRegisteredUsers", value)} />
+              <TextField label="Current price point" value={fields.currentPricePoint} error={errors.currentPricePoint} onChange={(value) => updateField("currentPricePoint", value)} />
+              <TextField label="Total paid users" value={fields.totalPaidUsers} error={errors.totalPaidUsers} onChange={(value) => updateField("totalPaidUsers", value)} />
+              <TextField label="Monthly active users" value={fields.monthlyActiveUsers} error={errors.monthlyActiveUsers} onChange={(value) => updateField("monthlyActiveUsers", value)} />
+              <TextField label="User retention rate" value={fields.userRetentionRate} error={errors.userRetentionRate} onChange={(value) => updateField("userRetentionRate", value)} />
+              <TextField label="Evidence of impact" value={fields.evidenceOfImpact} error={errors.evidenceOfImpact} onChange={(value) => updateField("evidenceOfImpact", value)} />
             </div>
           </section>
 
@@ -311,6 +371,26 @@ export const FoundationProgram: React.FC<FoundationProgramProps> = ({ program, o
 
 const FormModeContext = React.createContext({ disabled: false });
 
+const renderLabel = (label: string) => {
+  if (label.endsWith(" *")) {
+    return (
+      <>
+        {label.slice(0, -2)}{" "}
+        <span className="text-red-500">*</span>
+      </>
+    );
+  }
+  if (label.endsWith("*")) {
+    return (
+      <>
+        {label.slice(0, -1)}
+        <span className="text-red-500">*</span>
+      </>
+    );
+  }
+  return label;
+};
+
 type BaseFieldProps = {
   label: string;
   value: string;
@@ -322,7 +402,7 @@ const TextField: React.FC<BaseFieldProps & { type?: string; placeholder?: string
   const { disabled: contextDisabled } = React.useContext(FormModeContext);
   return (
     <div className="space-y-1.5">
-      <label className="block font-bold text-[#0B2A5B]">{label}</label>
+      <label className="block font-bold text-[#0B2A5B]">{renderLabel(label)}</label>
       <input
         type={type}
         value={value}
@@ -342,7 +422,7 @@ const TextAreaField: React.FC<BaseFieldProps> = ({ label, value, error, onChange
   const { disabled: contextDisabled } = React.useContext(FormModeContext);
   return (
     <div className="space-y-1.5">
-      <label className="block font-bold text-[#0B2A5B]">{label}</label>
+      <label className="block font-bold text-[#0B2A5B]">{renderLabel(label)}</label>
       <textarea
         rows={5}
         value={value}
@@ -361,7 +441,7 @@ const SelectField: React.FC<BaseFieldProps & { options: string[] }> = ({ label, 
   const { disabled: contextDisabled } = React.useContext(FormModeContext);
   return (
     <div className="space-y-1.5">
-      <label className="block font-bold text-[#0B2A5B]">{label}</label>
+      <label className="block font-bold text-[#0B2A5B]">{renderLabel(label)}</label>
       <select
         value={value}
         disabled={contextDisabled}
@@ -390,7 +470,7 @@ const CheckboxGroup: React.FC<{
   const { disabled: contextDisabled } = React.useContext(FormModeContext);
   return (
     <fieldset className="space-y-3">
-      <legend className="font-bold text-[#0B2A5B]">{label}</legend>
+      <legend className="font-bold text-[#0B2A5B]">{renderLabel(label)}</legend>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {options.map((option) => (
           <label key={option} className={`flex items-center gap-3 rounded-lg border border-slate-200 bg-white p-3 font-semibold ${
