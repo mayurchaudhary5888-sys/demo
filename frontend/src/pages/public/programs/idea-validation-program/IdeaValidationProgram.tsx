@@ -18,10 +18,12 @@ type IdeaValidationFields = {
   email: string;
   mobile: string;
   residenceCity: string;
+  residenceState: string;
   ideaName: string;
   problemStatement: string;
   startupDescription: string;
   sector: string;
+  sectorOther: string;
   entityType: string;
   startupStage: string;
   revenue: string;
@@ -34,10 +36,12 @@ const initialFields = (user?: { name?: string; email?: string }, startupName = "
   email: user?.email || "",
   mobile: "",
   residenceCity: "",
+  residenceState: "",
   ideaName: startupName,
   problemStatement: "",
   startupDescription: "",
   sector: "",
+  sectorOther: "",
   entityType: "",
   startupStage: "",
   revenue: "",
@@ -45,7 +49,44 @@ const initialFields = (user?: { name?: string; email?: string }, startupName = "
   termsAccepted: false,
 });
 
-const cityOptions = ["Ahmedabad", "Surat", "Vadodara", "Rajkot", "Gandhinagar", "Mumbai", "Delhi NCR", "Bengaluru", "Hyderabad", "Other"];
+const stateOptions = [
+  "Andhra Pradesh",
+  "Arunachal Pradesh",
+  "Assam",
+  "Bihar",
+  "Chhattisgarh",
+  "Goa",
+  "Gujarat",
+  "Haryana",
+  "Himachal Pradesh",
+  "Jharkhand",
+  "Karnataka",
+  "Kerala",
+  "Madhya Pradesh",
+  "Maharashtra",
+  "Manipur",
+  "Meghalaya",
+  "Mizoram",
+  "Nagaland",
+  "Odisha",
+  "Punjab",
+  "Rajasthan",
+  "Sikkim",
+  "Tamil Nadu",
+  "Telangana",
+  "Tripura",
+  "Uttar Pradesh",
+  "Uttarakhand",
+  "West Bengal",
+  "Andaman and Nicobar Islands",
+  "Chandigarh",
+  "Dadra and Nagar Haveli and Daman and Diu",
+  "Delhi",
+  "Jammu and Kashmir",
+  "Ladakh",
+  "Lakshadweep",
+  "Puducherry"
+];
 const sectorOptions = ["Agriculture", "Healthcare", "Education", "FinTech", "CleanTech", "DeepTech", "Manufacturing", "Consumer", "SaaS", "Other"];
 const entityOptions = ["Proprietorship", "Partnership", "LLP", "Private Limited", "Non-profit", "Not Registered"];
 const stageOptions = [
@@ -74,10 +115,12 @@ export const IdeaValidationProgram: React.FC<IdeaValidationProgramProps> = ({ pr
         email: application.email || "",
         mobile: application.mobile || "",
         residenceCity: application.residenceCity || "",
+        residenceState: application.residenceState || application.residenceCity || "",
         ideaName: application.ideaName || "",
         problemStatement: application.problemStatement || "",
         startupDescription: application.startupDescription || "",
         sector: application.sector || "",
+        sectorOther: application.sectorOther || "",
         entityType: application.entityType || "",
         startupStage: application.startupStage || "",
         revenue: application.revenue || "",
@@ -111,11 +154,17 @@ export const IdeaValidationProgram: React.FC<IdeaValidationProgramProps> = ({ pr
     if (!fields.email.trim()) nextErrors.email = "Email is required.";
     else if (!/\S+@\S+\.\S+/.test(fields.email)) nextErrors.email = "Enter a valid email.";
     if (!fields.mobile.trim()) nextErrors.mobile = "Mobile number is required.";
-    if (!fields.residenceCity) nextErrors.residenceCity = "Select city of present residence.";
+    if (!fields.residenceState) nextErrors.residenceState = "Select state of present residence.";
     if (!fields.ideaName.trim()) nextErrors.ideaName = "Startup / idea name is required.";
     if (!fields.problemStatement.trim()) nextErrors.problemStatement = "Problem statement is required.";
     if (!fields.startupDescription.trim()) nextErrors.startupDescription = "Brief startup description is required.";
-    if (!fields.sector) nextErrors.sector = "Select startup sector.";
+    
+    if (!fields.sector) {
+      nextErrors.sector = "Select startup sector.";
+    } else if (fields.sector === "Other" && !fields.sectorOther?.trim()) {
+      nextErrors.sectorOther = "Please specify the startup sector.";
+    }
+
     if (!fields.entityType) nextErrors.entityType = "Select registration/entity status.";
     if (!fields.startupStage) nextErrors.startupStage = "Select startup stage.";
     if (!fields.revenue.trim()) nextErrors.revenue = "Revenue details are required.";
@@ -153,6 +202,8 @@ export const IdeaValidationProgram: React.FC<IdeaValidationProgramProps> = ({ pr
     try {
       const created = await applyToProgram({
         ...fields,
+        residenceCity: fields.residenceState,
+        sector: fields.sector === "Other" ? fields.sectorOther : fields.sector,
         programId: program.id,
         programName: program.name,
         startupId: user?.startupId || "",
@@ -191,13 +242,30 @@ export const IdeaValidationProgram: React.FC<IdeaValidationProgramProps> = ({ pr
             <TextField label="Your Name *" value={fields.applicantName} error={errors.applicantName} placeholder="Full Name" onChange={(value) => updateField("applicantName", value)} />
             <TextField label="Email *" type="email" value={fields.email} error={errors.email} placeholder="Email" onChange={(value) => updateField("email", value)} />
             <TextField label="Mobile *" type="tel" value={fields.mobile} error={errors.mobile} placeholder="Mobile" onChange={(value) => updateField("mobile", value)} />
-            <SelectField label="City of Present Residence *" value={fields.residenceCity} error={errors.residenceCity} options={cityOptions} onChange={(value) => updateField("residenceCity", value)} />
+            <SelectField label="State of Present Residence *" value={fields.residenceState} error={errors.residenceState} options={stateOptions} onChange={(value) => {
+              updateField("residenceState", value);
+              updateField("residenceCity", value);
+            }} />
           </div>
 
           <TextField label="Startup Name / Idea Name *" value={fields.ideaName} error={errors.ideaName} onChange={(value) => updateField("ideaName", value)} />
           <TextAreaField label="What problem are you solving? *" value={fields.problemStatement} error={errors.problemStatement} onChange={(value) => updateField("problemStatement", value)} />
           <TextAreaField label="Brief Description of your Startup *" value={fields.startupDescription} error={errors.startupDescription} onChange={(value) => updateField("startupDescription", value)} />
-          <SelectField label="Which sector best suits your startup? *" value={fields.sector} error={errors.sector} options={sectorOptions} onChange={(value) => updateField("sector", value)} />
+          <SelectField label="Which sector best suits your startup? *" value={fields.sector} error={errors.sector} options={sectorOptions} onChange={(value) => {
+            updateField("sector", value);
+            if (value !== "Other") {
+              updateField("sectorOther", "");
+            }
+          }} />
+          {fields.sector === "Other" && (
+            <TextField
+              label="Please specify sector *"
+              value={fields.sectorOther || ""}
+              error={errors.sectorOther}
+              placeholder="Specify sector"
+              onChange={(value) => updateField("sectorOther", value)}
+            />
+          )}
 
           <RadioGroup label="Have you registered a company/entity for your startup? *" name="entityType" value={fields.entityType} error={errors.entityType} options={entityOptions} onChange={(value) => updateField("entityType", value)} columns />
           <RadioGroup label="Stage of the startup? *" name="startupStage" value={fields.startupStage} error={errors.startupStage} options={stageOptions} onChange={(value) => updateField("startupStage", value)} />
@@ -221,7 +289,7 @@ export const IdeaValidationProgram: React.FC<IdeaValidationProgramProps> = ({ pr
 
           <div className="space-y-2">
             <label className="block font-bold text-[#0B2A5B]">
-              Attach a pitch deck or presentation, if you already have one (only pdf / pptx files, please) *
+              {renderLabel("Attach a pitch deck or presentation, if you already have one (only pdf / pptx files, please) *")}
             </label>
             {mode === "view" ? (
               <div 
@@ -286,6 +354,26 @@ export const IdeaValidationProgram: React.FC<IdeaValidationProgramProps> = ({ pr
 
 const FormModeContext = React.createContext({ disabled: false });
 
+const renderLabel = (label: string) => {
+  if (label.endsWith(" *")) {
+    return (
+      <>
+        {label.slice(0, -2)}{" "}
+        <span className="text-red-500">*</span>
+      </>
+    );
+  }
+  if (label.endsWith("*")) {
+    return (
+      <>
+        {label.slice(0, -1)}
+        <span className="text-red-500">*</span>
+      </>
+    );
+  }
+  return label;
+};
+
 type BaseFieldProps = {
   label: string;
   value: string;
@@ -297,7 +385,7 @@ const TextField: React.FC<BaseFieldProps & { type?: string; placeholder?: string
   const { disabled: contextDisabled } = React.useContext(FormModeContext);
   return (
     <div className="space-y-1.5">
-      <label className="block font-bold text-[#0B2A5B]">{label}</label>
+      <label className="block font-bold text-[#0B2A5B]">{renderLabel(label)}</label>
       <input
         type={type}
         value={value}
@@ -317,7 +405,7 @@ const TextAreaField: React.FC<BaseFieldProps> = ({ label, value, error, onChange
   const { disabled: contextDisabled } = React.useContext(FormModeContext);
   return (
     <div className="space-y-1.5">
-      <label className="block font-bold text-[#0B2A5B]">{label}</label>
+      <label className="block font-bold text-[#0B2A5B]">{renderLabel(label)}</label>
       <textarea
         rows={7}
         value={value}
@@ -336,7 +424,7 @@ const SelectField: React.FC<BaseFieldProps & { options: string[] }> = ({ label, 
   const { disabled: contextDisabled } = React.useContext(FormModeContext);
   return (
     <div className="space-y-1.5">
-      <label className="block font-bold text-[#0B2A5B]">{label}</label>
+      <label className="block font-bold text-[#0B2A5B]">{renderLabel(label)}</label>
       <select
         value={value}
         disabled={contextDisabled}
@@ -368,7 +456,7 @@ const RadioGroup: React.FC<BaseFieldProps & { name: string; options: string[]; c
   const { disabled: contextDisabled } = React.useContext(FormModeContext);
   return (
     <fieldset className="space-y-3">
-      <legend className="font-bold text-[#0B2A5B]">{label}</legend>
+      <legend className="font-bold text-[#0B2A5B]">{renderLabel(label)}</legend>
       <div className={inline ? "flex gap-8" : columns ? "grid gap-3 sm:grid-cols-2" : "space-y-3"}>
         {options.map((option) => (
           <label key={option} className={`${inline ? "flex items-center gap-3" : "flex items-start gap-3 rounded-lg border border-slate-200 p-3"} font-semibold ${contextDisabled ? "opacity-75 cursor-not-allowed" : ""}`}>
