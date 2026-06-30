@@ -21,13 +21,13 @@ export const programCatalog: CatalogProgram[] = [
   {
     id: "idea-validation-program",
     slug: "idea-validation-program",
-    name: "Idea Validation Support (Grant up to ₹10 Lakhs)",
+    name: "Idea Validation Support",
     partner: "BHASKAR",
     funding: "Up to ₹10 lakh grant",
     tagline: "Turn an early idea into a tested proof of concept.",
-    shortDescription: "Support is provided to help early-stage startups and student innovators develop Proof of Concept (PoC) and Minimum Viable Product (MVP). Eligible applicants can receive grant support of up to ₹10 lakhs to build prototypes, validate innovative ideas, and transform concepts into market-ready solutions.",
+    shortDescription: "Support is provided to help early-stage startups and student innovators develop Proof of Concept (PoC) and Minimum Viable Product (MVP). Eligible startups may also receive grant support to build prototypes, validate their ideas, and transform innovative concepts into market-ready solutions.",
     longDescription:
-      "Support is provided to help early-stage startups and student innovators develop Proof of Concept (PoC) and Minimum Viable Product (MVP). Eligible applicants can receive grant support of up to ₹10 lakhs to build prototypes, validate innovative ideas, and transform concepts into market-ready solutions.",
+      "Support is provided to help early-stage startups and student innovators develop Proof of Concept (PoC) and Minimum Viable Product (MVP). Eligible startups may also receive grant support to build prototypes, validate their ideas, and transform innovative concepts into market-ready solutions.",
     benefits: [
       "Grant support of up to ₹10 lakhs (subject to scheme guidelines).",
       "Funding for PoC and MVP development.",
@@ -53,13 +53,13 @@ export const programCatalog: CatalogProgram[] = [
   {
     id: "msme-program",
     slug: "msme-program",
-    name: "MSME Support (Grant up to ₹15 Lakhs)",
+    name: "MSME Support",
     partner: "iCreate",
     funding: "Up to ₹15 lakh grant",
     tagline: "Strengthen innovation, commercial readiness, and growth potential.",
-    shortDescription: "The MSME Support helps eligible MSMEs, startups, innovators, students, and entrepreneurs access grant funding of up to ₹15 lakhs for innovative projects with strong commercialization. These non-equity, non-repayable grants support product development, technology innovation, testing, and business growth.",
+    shortDescription: "Eligible innovators, startups, MSMEs, students, and entrepreneurs can access grant support for innovative ideas with strong commercialization potential. These non-equity, non-repayable grants help fund prototype development, product validation, technology development, testing, commercialization, and business incubation.",
     longDescription:
-      "The MSME Support helps eligible MSMEs, startups, innovators, students, and entrepreneurs access grant funding of up to ₹15 lakhs for innovative projects with strong commercialization. These non-equity, non-repayable grants support product development, technology innovation, testing, and business growth.",
+      "Eligible innovators, startups, MSMEs, students, and entrepreneurs can access grant support for innovative ideas with strong commercialization potential. These non-equity, non-repayable grants help fund prototype development, product validation, technology development, testing, commercialization, and business incubation.",
     benefits: [
       "Grant support of up to ₹15 lakhs (subject to scheme guidelines).",
       "Non-equity and non-repayable financial assistance.",
@@ -83,13 +83,13 @@ export const programCatalog: CatalogProgram[] = [
   {
     id: "foundation-program",
     slug: "foundation-program",
-    name: "Foundation / CSR Support (Grant up to ₹40 Lakhs)",
+    name: "Foundation / CSR Support",
     partner: "BHASKAR",
     funding: "Up to ₹40 lakh grant",
     tagline: "Secure grants and CSR backing for purpose-led work.",
-    shortDescription: "The Foundation / CSR Support helps Foundations, Section 8 Companies, NGOs, and Social Enterprises access grant funding of up to ₹40 lakhs and CSR funding from corporate and institutional partners.",
+    shortDescription: "Support is provided to Foundations, Section 8 Companies, NGOs, and Social Enterprises to secure grants and CSR funding from corporate and institutional partners. We help with funding strategy, proposal development.",
     longDescription:
-      "The Foundation / CSR Support helps Foundations, Section 8 Companies, NGOs, and Social Enterprises access grant funding of up to ₹40 lakhs and CSR funding from corporate and institutional partners.",
+      "Support is provided to Foundations, Section 8 Companies, NGOs, and Social Enterprises to secure grants and CSR funding from corporate and institutional partners. We help with funding strategy, proposal development.",
     benefits: [
       "Grant support of up to ₹40 lakhs",
       "Access to Corporate CSR and Institutional Grant opportunities.",
@@ -113,7 +113,7 @@ export const programCatalog: CatalogProgram[] = [
   {
     id: "startup-program",
     slug: "startup-program",
-    name: "Startup Support (Funding up to ₹70 Lakhs)",
+    name: "Startup Support",
     partner: "SISFS",
     funding: "Funding up to ₹70 Lakhs",
     tagline: "Move from proof of concept to market entry with seed support.",
@@ -141,13 +141,13 @@ export const programCatalog: CatalogProgram[] = [
   {
     id: "global-impact-program",
     slug: "global-impact-program",
-    name: "Global Impact Support (Grant up to ₹5 Crores)",
+    name: "Global Impact Support",
     partner: "BHASKAR",
     funding: "Up to ₹5 crore grant",
     tagline: "Back innovative solutions creating social, environmental, and economic change.",
-    shortDescription: "The Global Impact Support Program provides grant funding of up to ₹5 crores to organizations developing innovative solutions that address global social, environmental, economic, and sustainability challenges.",
+    shortDescription: "The Global Impact Grant is an international funding support established to support organizations that are developing innovative solutions to address social, environmental, and economic challenges across the world.",
     longDescription:
-      "The Global Impact Support Program provides grant funding of up to ₹5 crores to organizations developing innovative solutions that address global social, environmental, economic, and sustainability challenges. The program supports high-impact projects with the potential to create measurable and scalable change at national and international levels.",
+      "The Global Impact Grant is an international funding support established to support organizations that are developing innovative solutions to address social, environmental, and economic challenges across the world.",
     benefits: [
       "Grant support of up to ₹5 crores.",
       "Funding for research, innovation, pilot projects, and large-scale implementation.",
