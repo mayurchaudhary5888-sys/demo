@@ -214,14 +214,14 @@ export const Home: React.FC = () => {
     <div className="w-full flex flex-col bg-white" id="homepage-container">
       
       {/* 1. HERO SECTION INSPIRED BY THE BHASKAR OPENING ANIMATION */}
-      <section ref={heroRootRef} className="relative min-h-[calc(100vh-8rem)] overflow-hidden bg-white rounded-br-[120px] lg:rounded-br-[220px] border-b border-slate-100" id="home-animated-hero">
+      <section ref={heroRootRef} className="relative min-h-[500px] md:min-h-[calc(100vh-8rem)] overflow-hidden bg-white rounded-br-[60px] md:rounded-br-[220px] border-b border-slate-100" id="home-animated-hero">
         <div className="absolute bottom-0 right-0 h-[38%] w-[70%] rounded-tl-full bg-slate-50" />
         <div className="absolute inset-0 overflow-hidden">
           <div className="gsap-hero-glow gsap-hero-glow-left absolute -left-24 top-1/2 h-[42rem] w-[42rem] -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(255,107,0,0.24)_0%,rgba(255,107,0,0.08)_24%,rgba(255,255,255,0)_72%)] blur-3xl" />
           <div className="gsap-hero-glow gsap-hero-glow-right absolute right-[-8rem] top-[-7rem] h-[30rem] w-[30rem] rounded-full bg-[radial-gradient(circle,rgba(7,20,74,0.18)_0%,rgba(7,20,74,0.06)_28%,rgba(255,255,255,0)_70%)] blur-3xl" />
           <div className="gsap-hero-sweep absolute left-[-12%] top-[10%] h-[78%] w-[28%] rounded-[999px] bg-[linear-gradient(180deg,rgba(7,20,74,0.07),rgba(255,107,0,0.05),rgba(249,178,51,0.04))] blur-2xl" />
-          <div className="gsap-hero-float gsap-hero-float-1 absolute left-[10%] top-[24%] h-24 w-24 rounded-[28px] border border-[#FF6B00]/20 bg-white/55 shadow-[0_18px_50px_rgba(7,20,74,0.05)] backdrop-blur-sm" />
-          <div className="gsap-hero-float gsap-hero-float-2 absolute right-[14%] bottom-[22%] h-28 w-40 rounded-[32px] border border-[#07144A]/10 bg-[#07144A]/5 shadow-[0_16px_40px_rgba(7,20,74,0.04)] backdrop-blur-sm" />
+          <div className="gsap-hero-float gsap-hero-float-1 absolute left-[10%] top-[24%] h-16 w-16 sm:h-24 sm:w-24 rounded-[20px] sm:rounded-[28px] border border-[#FF6B00]/20 bg-white/55 shadow-[0_18px_50px_rgba(7,20,74,0.05)] backdrop-blur-sm" />
+          <div className="gsap-hero-float gsap-hero-float-2 absolute right-[14%] bottom-[22%] h-20 w-28 sm:h-28 sm:w-40 rounded-[24px] sm:rounded-[32px] border border-[#07144A]/10 bg-[#07144A]/5 shadow-[0_16px_40px_rgba(7,20,74,0.04)] backdrop-blur-sm" />
           <div className="gsap-hero-float absolute left-[42%] top-[18%] h-3 w-3 rounded-full bg-[#FF7A3D] shadow-[0_0_24px_rgba(255,122,61,0.6)]" />
           <div className="gsap-hero-float absolute right-[34%] top-[62%] h-2.5 w-2.5 rounded-full bg-[#F9B233] shadow-[0_0_22px_rgba(249,178,51,0.6)]" />
           <div className="gsap-hero-float gsap-hero-dust absolute left-[22%] bottom-[30%] h-1.5 w-1.5 rounded-full bg-[#07144A]/30" />
@@ -233,11 +233,11 @@ export const Home: React.FC = () => {
 
         {/* Slide 0 (Photo 1) */}
         <div className="gsap-hero-frame gsap-hero-frame-0 absolute inset-0 z-10 flex items-center justify-center px-6">
-          <div className="gsap-frame0-left absolute inset-y-0 left-0 w-[28%] bg-[#07144A]" />
-          <div className="gsap-frame0-right absolute inset-y-0 right-0 w-[45%] bg-[#FF6B00]" style={{ clipPath: "polygon(35% 100%, 100% 20%, 100% 100%)" }} />
+          <div className="gsap-frame0-left absolute inset-y-0 left-0 w-[28%] bg-[#07144A] hidden md:block" />
+          <div className="gsap-frame0-right absolute inset-y-0 right-0 w-[45%] bg-[#FF6B00] hidden md:block" style={{ clipPath: "polygon(35% 100%, 100% 20%, 100% 100%)" }} />
           
           <div className="flex max-w-5xl flex-col items-center gap-5 text-center z-20">
-            <h1 className="gsap-frame0-text max-w-4xl text-center text-4xl sm:text-5xl lg:text-6xl leading-tight font-medium tracking-normal text-[#07144A]">
+            <h1 className="gsap-frame0-text max-w-4xl text-center text-3xl sm:text-5xl lg:text-6xl leading-tight font-medium tracking-normal text-[#07144A]">
               Unveiling <span className="font-black text-[#07144A]">one-stop platform</span>
             </h1>
           </div>
@@ -246,7 +246,7 @@ export const Home: React.FC = () => {
         {/* Slide 1 (Photo 2) */}
         <div className="gsap-hero-frame gsap-hero-frame-1 absolute inset-0 z-10 flex items-center justify-center px-6">
           <div className="flex max-w-5xl flex-col items-center gap-5 text-center">
-            <h1 className="gsap-frame1-text max-w-4xl text-center text-3xl sm:text-5xl lg:text-6xl leading-tight font-medium tracking-normal text-[#07144A]">
+            <h1 className="gsap-frame1-text max-w-4xl text-center text-2xl sm:text-4xl md:text-5xl lg:text-6xl leading-tight font-medium tracking-normal text-[#07144A]">
               community for <span className="font-black text-[#07144A]">every stakeholder</span> of the
               <br className="hidden sm:inline" />
               <span className="font-black text-[#07144A] mt-2 sm:mt-0"> Indian startup ecosystem</span>
@@ -257,7 +257,7 @@ export const Home: React.FC = () => {
         {/* Slide 2 (Photo 3) */}
         <div className="gsap-hero-frame gsap-hero-frame-2 absolute inset-0 z-10 flex items-center justify-center px-6 bg-[#FF6B00]">
           <div className="flex max-w-5xl flex-col items-center gap-5 text-center">
-            <h1 className="gsap-frame2-text max-w-4xl text-center text-4xl sm:text-5xl lg:text-7xl font-bold tracking-tight text-white">
+            <h1 className="gsap-frame2-text max-w-4xl text-center text-2xl sm:text-4xl md:text-5xl lg:text-7xl font-bold tracking-tight text-white">
               inclusive and collaborative
             </h1>
           </div>
@@ -266,7 +266,7 @@ export const Home: React.FC = () => {
         {/* Slide 3 (Photo 4) */}
         <div className="gsap-hero-frame gsap-hero-frame-3 absolute inset-0 z-10 flex items-center justify-center px-6 bg-[#D93F3F]">
           <div className="flex max-w-5xl flex-col items-center gap-5 text-center">
-            <h1 className="gsap-frame3-text max-w-4xl text-center text-4xl sm:text-5xl lg:text-7xl font-medium tracking-tight text-white">
+            <h1 className="gsap-frame3-text max-w-4xl text-center text-2xl sm:text-4xl md:text-5xl lg:text-7xl font-medium tracking-tight text-white">
               With the aim to <span className="font-black">build</span> an
             </h1>
           </div>
@@ -277,7 +277,7 @@ export const Home: React.FC = () => {
           <div className="flex flex-col items-center justify-center gap-6">
             <Link
               to="/register"
-              className="gsap-frame4-btn px-10 py-5 text-xl sm:text-2xl font-black uppercase tracking-wider text-white bg-[#FF6B00] rounded-xl shadow-[0_12px_30px_rgba(255,107,0,0.3)] transition-all hover:bg-[#e65f00] hover:scale-105"
+              className="gsap-frame4-btn px-6 py-4 sm:px-10 sm:py-5 text-base sm:text-2xl font-black uppercase tracking-wider text-white bg-[#FF6B00] rounded-xl shadow-[0_12px_30px_rgba(255,107,0,0.3)] transition-all hover:bg-[#e65f00] hover:scale-105"
             >
               Register Now
             </Link>
@@ -287,7 +287,7 @@ export const Home: React.FC = () => {
         {/* Slide 5 (Photo 6) */}
         <div className="gsap-hero-frame gsap-hero-frame-5 absolute inset-0 z-10 flex items-center justify-center px-6 bg-white">
           <div className="flex max-w-5xl flex-col items-center gap-5 text-center">
-            <h1 className="gsap-frame5-text max-w-4xl text-center text-3xl sm:text-5xl lg:text-6xl leading-tight font-medium tracking-normal text-[#07144A]">
+            <h1 className="gsap-frame5-text max-w-4xl text-center text-2xl sm:text-4xl md:text-5xl lg:text-6xl leading-tight font-medium tracking-normal text-[#07144A]">
               Take a step towards <span className="font-black text-[#07144A]">the future of entrepreneurship!</span>
             </h1>
           </div>
@@ -296,7 +296,7 @@ export const Home: React.FC = () => {
         {/* Slide 6 (Photo 7) */}
         <div className="gsap-hero-frame gsap-hero-frame-6 absolute inset-0 z-10 flex items-center justify-center px-6 bg-white">
           <div className="flex max-w-5xl flex-col items-center gap-5 text-center">
-            <h1 className="gsap-frame6-text max-w-4xl text-center text-3xl sm:text-5xl lg:text-6xl leading-tight font-medium tracking-normal text-[#07144A]">
+            <h1 className="gsap-frame6-text max-w-4xl text-center text-2xl sm:text-4xl md:text-5xl lg:text-6xl leading-tight font-medium tracking-normal text-[#07144A]">
               A <span className="font-black text-[#07144A]">world of new opportunities</span> awaits you!
             </h1>
           </div>
@@ -304,21 +304,21 @@ export const Home: React.FC = () => {
 
         {/* Slide 7 (Orange Panel Effect 1) */}
         <div className="gsap-hero-frame gsap-hero-frame-7 absolute inset-0 z-10">
-          <div className="gsap-orange-panel absolute inset-x-0 top-[14%] h-[56%] overflow-hidden rounded-br-[64px] bg-[#FF6B00]">
-            <h2 className="gsap-orange-text absolute inset-0 flex items-center justify-center px-8 text-center text-2xl sm:text-4xl lg:text-5xl font-medium tracking-normal text-white">
-              community for <span className="mx-2 font-black">every stakeholder</span> of the ecosystem
+          <div className="gsap-orange-panel absolute inset-x-0 top-[20%] h-[60%] sm:top-[14%] sm:h-[56%] overflow-hidden rounded-br-[32px] sm:rounded-br-[64px] bg-[#FF6B00]">
+            <h2 className="gsap-orange-text absolute inset-0 flex items-center justify-center px-6 sm:px-8 text-center text-lg sm:text-3xl md:text-4xl lg:text-5xl font-medium tracking-normal text-white">
+              community for <span className="mx-1.5 sm:mx-2 font-black">every stakeholder</span> of the ecosystem
             </h2>
           </div>
         </div>
 
         {/* Slide 8 (Spoke Wheel Effect 2) */}
         <div className="gsap-hero-frame gsap-hero-frame-8 absolute inset-0 z-10 flex items-center justify-center">
-          <div className="gsap-spoke-scene relative h-[520px] w-[520px] max-h-[72vw] max-w-[72vw]">
+          <div className="gsap-spoke-scene relative h-[280px] w-[280px] sm:h-[480px] sm:w-[480px] md:h-[520px] md:w-[520px] max-h-[72vw] max-w-[72vw]">
             <div className="gsap-spoke-core absolute inset-0">
               {spokePalette.map((color, index) => (
                 <span
                   key={`${color}-${index}`}
-                  className="absolute left-1/2 top-1/2 h-[42%] w-9 sm:w-12 origin-bottom"
+                  className="absolute left-1/2 top-1/2 h-[42%] w-5 sm:w-9 md:w-12 origin-bottom"
                   style={{ transform: `translate(-50%, -100%) rotate(${index * 36}deg)` }}
                 >
                   <span className="gsap-spoke-bar block h-full w-full rounded-full shadow-lg" style={{ background: color }} />
@@ -330,25 +330,25 @@ export const Home: React.FC = () => {
 
         {/* Slide 9 (Final Panel Effect 3) */}
         <div className="gsap-hero-frame gsap-hero-frame-9 absolute inset-0 z-10 flex flex-col items-center justify-center bg-white px-6">
-          <div className="gsap-final-left absolute left-0 top-0 bottom-0 w-[30%] bg-[#FCD34D]" style={{ clipPath: "polygon(0 0, 100% 0, 40% 100%, 0 100%)" }} />
-          <div className="gsap-final-right absolute right-0 top-0 bottom-0 w-[30%] bg-[#FCD34D]" style={{ clipPath: "polygon(60% 0, 100% 0, 100% 100%, 0 100%)" }} />
+          <div className="gsap-final-left absolute left-0 top-0 bottom-0 w-[30%] bg-[#FCD34D] hidden md:block" style={{ clipPath: "polygon(0 0, 100% 0, 40% 100%, 0 100%)" }} />
+          <div className="gsap-final-right absolute right-0 top-0 bottom-0 w-[30%] bg-[#FCD34D] hidden md:block" style={{ clipPath: "polygon(60% 0, 100% 0, 100% 100%, 0 100%)" }} />
           
-          <div className="gsap-final-content flex flex-col items-center gap-6 z-20">
+          <div className="gsap-final-content flex flex-col items-center gap-4 sm:gap-6 z-20">
             <img
               src="/logos/bhaskar.jpeg"
               alt="BHASKAR"
-              className="h-44 sm:h-56 w-auto object-contain"
+              className="h-32 sm:h-56 w-auto object-contain"
             />
-            <div className="flex flex-wrap items-center justify-center gap-4 mt-4">
+            <div className="flex flex-wrap items-center justify-center gap-3 mt-2 sm:mt-4">
               <Link
                 to="/register"
-                className="rounded-md bg-[#FF6B00] px-7 py-3 text-xs font-black uppercase tracking-widest text-white shadow-lg transition hover:bg-[#e65f00]"
+                className="rounded-md bg-[#FF6B00] px-5 py-2.5 sm:px-7 sm:py-3 text-[11px] sm:text-xs font-black uppercase tracking-widest text-white shadow-lg transition hover:bg-[#e65f00]"
               >
                 Register
               </Link>
               <Link
                 to="/about-us"
-                className="rounded-md border border-[#07144A]/40 px-7 py-3 text-xs font-black uppercase tracking-widest text-[#07144A] transition hover:bg-[#07144A]/10"
+                className="rounded-md border border-[#07144A]/40 px-5 py-2.5 sm:px-7 sm:py-3 text-[11px] sm:text-xs font-black uppercase tracking-widest text-[#07144A] transition hover:bg-[#07144A]/10"
               >
                 About Us
               </Link>

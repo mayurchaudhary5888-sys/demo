@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { FundingType, StartupProfile, StartupStage } from "../../types";
 import { useAppState } from "../../context/AppContext";
+import { industrySectors } from "../../data/industrySectors";
 
 type ProfileFormState = {
   logoPreview: string;
@@ -55,10 +56,46 @@ const stageOptions: StartupStage[] = [
 ];
 
 const fundingOptions: FundingType[] = [FundingType.BOOTSTRAPPED, FundingType.FUNDED];
-const industryOptions = ["AI", "Fintech", "Healthtech", "Edtech", "Manufacturing", "Agri", "Climate", "Other"];
-const sectorOptions = ["SaaS", "D2C", "B2B", "B2C", "Marketplace", "Hardware", "Services", "Other"];
+const industryOptions = Object.keys(industrySectors);
 const natureOptions = ["Private Limited Company", "LLP", "Partnership", "Section 8", "Sole Proprietorship", "Other"];
-const stateOptions = ["Punjab", "Delhi", "Haryana", "Maharashtra", "Karnataka", "Gujarat", "Tamil Nadu", "Other"];
+const stateOptions = [
+  "Andhra Pradesh",
+  "Arunachal Pradesh",
+  "Assam",
+  "Bihar",
+  "Chhattisgarh",
+  "Goa",
+  "Gujarat",
+  "Haryana",
+  "Himachal Pradesh",
+  "Jharkhand",
+  "Karnataka",
+  "Kerala",
+  "Madhya Pradesh",
+  "Maharashtra",
+  "Manipur",
+  "Meghalaya",
+  "Mizoram",
+  "Nagaland",
+  "Odisha",
+  "Punjab",
+  "Rajasthan",
+  "Sikkim",
+  "Tamil Nadu",
+  "Telangana",
+  "Tripura",
+  "Uttar Pradesh",
+  "Uttarakhand",
+  "West Bengal",
+  "Andaman and Nicobar Islands",
+  "Chandigarh",
+  "Dadra and Nagar Haveli and Daman and Diu",
+  "Delhi",
+  "Jammu and Kashmir",
+  "Ladakh",
+  "Lakshadweep",
+  "Puducherry"
+];
 
 const toCsv = (items?: string[]) => (items?.length ? items.join(", ") : "");
 
@@ -106,6 +143,7 @@ export const Settings: React.FC = () => {
   const myStartup = startups.find((s) => s.id === user?.startupId);
 
   const [profileForm, setProfileForm] = useState<ProfileFormState>(() => buildFormState(myStartup, user?.email));
+  const sectorOptions = profileForm.industry ? (industrySectors[profileForm.industry] || []) : [];
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -329,7 +367,14 @@ export const Settings: React.FC = () => {
               </div>
               <div>
                 <label className={labelClassName}>Industry</label>
-                <select value={profileForm.industry} onChange={(e) => updateProfileField("industry", e.target.value)} className={inputClassName}>
+                <select
+                  value={profileForm.industry}
+                  onChange={(e) => {
+                    updateProfileField("industry", e.target.value);
+                    updateProfileField("sector", "");
+                  }}
+                  className={inputClassName}
+                >
                   <option value="">Select industry</option>
                   {industryOptions.map((option) => (
                     <option key={option} value={option}>{option}</option>
