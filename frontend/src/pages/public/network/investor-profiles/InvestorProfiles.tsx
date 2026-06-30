@@ -76,6 +76,47 @@ export const InvestorProfiles: React.FC = () => {
   const [submitted, setSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState("");
 
+  const [pitchDeckName, setPitchDeckName] = useState(() => {
+    return localStorage.getItem("investor_pitch_deck_name") || "";
+  });
+
+  const handlePitchDeckUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    if (!file) return;
+
+    if (file.size > 4 * 1024 * 1024) {
+      alert("Pitch deck file must be smaller than 4MB.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64Data = reader.result as string;
+      try {
+        localStorage.setItem("investor_pitch_deck_name", file.name);
+        localStorage.setItem("investor_pitch_deck_data", base64Data);
+        setPitchDeckName(file.name);
+      } catch (err) {
+        console.warn("LocalStorage full, storing only file metadata.", err);
+        localStorage.setItem("investor_pitch_deck_name", file.name);
+        localStorage.removeItem("investor_pitch_deck_data");
+        setPitchDeckName(file.name + " (Metadata saved, content exceeded quota)");
+      }
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next.pitchDeck;
+        return next;
+      });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const clearPitchDeck = () => {
+    localStorage.removeItem("investor_pitch_deck_name");
+    localStorage.removeItem("investor_pitch_deck_data");
+    setPitchDeckName("");
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -133,6 +174,9 @@ export const InvestorProfiles: React.FC = () => {
       newErrors.investmentThesis = "Investment thesis is required.";
     } else if (formData.investmentThesis.trim().length < 20) {
       newErrors.investmentThesis = "Investment thesis should be at least 20 characters.";
+    }
+    if (!pitchDeckName.trim()) {
+      newErrors.pitchDeck = "Pitch deck file is required.";
     }
 
     setErrors(newErrors);
@@ -540,7 +584,7 @@ export const InvestorProfiles: React.FC = () => {
             </div>
 
             {/* Key Portfolio Companies */}
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start py-4 border-b border-slate-100 last:border-b-0">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start py-4 border-b border-slate-100">
               <div className="md:col-span-4 pt-2">
                 <label className="text-sm font-extrabold text-[#0B2A5B]">
                   Key Portfolio Companies <span className="text-slate-400 font-medium">(Optional)</span>
@@ -556,6 +600,55 @@ export const InvestorProfiles: React.FC = () => {
                   rows={3}
                   className="w-full rounded-lg border border-slate-200 bg-[#EDF0F5] px-4 py-2.5 text-sm text-slate-800 outline-none transition-all font-semibold focus:border-[#FF6B00] focus:bg-white"
                 />
+              </div>
+            </div>
+
+            {/* Pitch Deck Upload */}
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start py-4 border-b border-slate-100 last:border-b-0">
+              <div className="md:col-span-4 pt-2">
+                <label className="text-sm font-extrabold text-[#0B2A5B]">
+                  Upload Pitch Deck<span className="text-red-500">*</span>
+                </label>
+                <p className="text-xs text-slate-400 font-bold mt-1">Upload your investment strategy or pitch deck (PDF, PPT, or PPTX)</p>
+              </div>
+              <div className="md:col-span-8">
+                <div className="space-y-3">
+                  <label className={`flex min-h-32 cursor-pointer items-center justify-center rounded-xl border-2 border-dashed p-4 text-center transition-all duration-200 hover:border-[#FF6B00] hover:bg-slate-50 ${
+                    errors.pitchDeck ? "border-red-500 bg-red-50/30" : (pitchDeckName ? "border-[#FF6B00] bg-[#FF6B00]/5" : "border-slate-200 bg-[#EDF0F5]")
+                  }`}>
+                    <div className="space-y-2">
+                      <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-white text-[#0B2A5B] ring-1 ring-slate-200">
+                        <FileText className="h-5 w-5 text-[#FF6B00]" />
+                      </div>
+                      <div>
+                        <div className="text-xs font-bold text-slate-700">
+                          {pitchDeckName || "Click to upload your Pitch Deck"}
+                        </div>
+                        <div className="text-[10px] text-slate-550">PDF, PPT, or PPTX (Max 4MB)</div>
+                      </div>
+                    </div>
+                    <input
+                      type="file"
+                      accept=".pdf,.ppt,.pptx"
+                      name="pitchDeck"
+                      className="hidden"
+                      onChange={handlePitchDeckUpload}
+                    />
+                  </label>
+                  {errors.pitchDeck && <p className="text-red-550 font-bold text-xs mt-1">{errors.pitchDeck}</p>}
+                  {pitchDeckName && (
+                    <div className="flex items-center justify-between bg-emerald-50 border border-emerald-100 rounded-lg p-2.5 text-xs text-emerald-800 font-semibold">
+                      <span>✓ Loaded: {pitchDeckName}</span>
+                      <button
+                        type="button"
+                        onClick={clearPitchDeck}
+                        className="text-red-500 hover:underline font-bold"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
