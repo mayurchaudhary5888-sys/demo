@@ -46,6 +46,7 @@ const msmeApplicationSchema = new mongoose.Schema(
     employmentStatus: String,
     currentCompany: String,
     highestEducation: String,
+    highestEducationOther: String,
     heardFrom: String,
     familyIncome: String,
     linkedInUrl: String,
@@ -62,7 +63,9 @@ const msmeApplicationSchema = new mongoose.Schema(
     // Specific Step 3 (Project / Product Details)
     projectName: String,
     applicationVertical: String,
+    applicationVerticalOther: String,
     technologyUsed: String,
+    technologyUsedOther: String,
     productLevel: String,
     painPoint: String,
     productDescription: String,

@@ -27,6 +27,7 @@ type MsmeFormFields = {
   employmentStatus: string;
   currentCompany: string;
   highestEducation: string;
+  highestEducationOther: string;
   heardFrom: string;
   familyIncome: string;
   linkedInUrl: string;
@@ -41,7 +42,9 @@ type MsmeFormFields = {
 
   projectName: string;
   applicationVertical: string;
+  applicationVerticalOther: string;
   technologyUsed: string;
+  technologyUsedOther: string;
   productLevel: string;
   painPoint: string;
   productDescription: string;
@@ -67,6 +70,7 @@ const initialFields = (user?: { name?: string; email?: string }): MsmeFormFields
   employmentStatus: "",
   currentCompany: "",
   highestEducation: "",
+  highestEducationOther: "",
   heardFrom: "",
   familyIncome: "",
   linkedInUrl: "",
@@ -81,7 +85,9 @@ const initialFields = (user?: { name?: string; email?: string }): MsmeFormFields
 
   projectName: "",
   applicationVertical: "",
+  applicationVerticalOther: "",
   technologyUsed: "",
+  technologyUsedOther: "",
   productLevel: "",
   painPoint: "",
   productDescription: "",
@@ -103,7 +109,7 @@ const stateOptions = [
 const genderOptions = ["Male", "Female", "Other"];
 const employmentOptions = ["Self Employed", "Employed", "Student", "Out of work", "Other"];
 const educationOptions = ["High School/Graduate", "Post Graduate", "Bachelor’s Degree", "Master’s Degree", "Doctorate Degree", "Other"];
-const heardFromOptions = ["iCreate Website", "LinkedIn", "Instagram", "Facebook", "Twitter", "Word of mouth", "College or Institution", "Open Pitch", "Email", "Other"];
+const heardFromOptions = ["Website", "LinkedIn", "Instagram", "Facebook", "Twitter", "Word of mouth", "College or Institution", "Open Pitch", "Email", "Other"];
 const incomeOptions = ["Less than 5 lakhs", "More than 5 lakhs", "More than 10 lakhs", "More than 1cr", "Other"];
 
 const verticalOptions = [
@@ -158,6 +164,7 @@ export const MsmeProgramApplication: React.FC<MsmeProgramApplicationProps> = ({ 
         employmentStatus: application.employmentStatus || "",
         currentCompany: application.currentCompany || "",
         highestEducation: application.highestEducation || "",
+        highestEducationOther: application.highestEducationOther || "",
         heardFrom: application.heardFrom || "",
         familyIncome: application.familyIncome || "",
         linkedInUrl: application.linkedInUrl || "",
@@ -170,7 +177,9 @@ export const MsmeProgramApplication: React.FC<MsmeProgramApplicationProps> = ({ 
         website: application.website || "",
         projectName: application.projectName || "",
         applicationVertical: application.applicationVertical || "",
+        applicationVerticalOther: application.applicationVerticalOther || "",
         technologyUsed: application.technologyUsed || "",
+        technologyUsedOther: application.technologyUsedOther || "",
         productLevel: application.productLevel || "",
         painPoint: application.painPoint || "",
         productDescription: application.productDescription || "",
@@ -256,11 +265,16 @@ export const MsmeProgramApplication: React.FC<MsmeProgramApplicationProps> = ({ 
 
     if (!fields.employmentStatus) nextErrors.employmentStatus = "Employment Status is required.";
     if ((fields.employmentStatus === "Employed" || fields.employmentStatus === "Self Employed") && !fields.currentCompany.trim()) {
-      nextErrors.currentCompany = "Company name is required for employed status.";
+      nextErrors.currentCompany = "Firm name is required for employed status.";
     }
 
-    if (!fields.highestEducation) nextErrors.highestEducation = "Highest education is required.";
-    if (!fields.heardFrom) nextErrors.heardFrom = "Please select where you heard about iCreate.";
+    if (!fields.highestEducation) {
+      nextErrors.highestEducation = "Highest education is required.";
+    } else if (fields.highestEducation === "Other" && !fields.highestEducationOther?.trim()) {
+      nextErrors.highestEducationOther = "Please specify highest education.";
+    }
+
+    if (!fields.heardFrom) nextErrors.heardFrom = "Please select where you heard about us.";
     if (!fields.familyIncome) nextErrors.familyIncome = "Annual family income is required.";
 
     if (fields.linkedInUrl && !validateUrl(fields.linkedInUrl)) {
@@ -268,12 +282,12 @@ export const MsmeProgramApplication: React.FC<MsmeProgramApplicationProps> = ({ 
     }
 
     // Step 2: Company Details validations
-    if (!fields.registeredCompany) nextErrors.registeredCompany = "Select whether company is registered.";
+    if (!fields.registeredCompany) nextErrors.registeredCompany = "Select whether firm is registered.";
     if (fields.registeredCompany === "Yes") {
-      if (!fields.companyName.trim()) nextErrors.companyName = "Company name is required.";
+      if (!fields.companyName.trim()) nextErrors.companyName = "Firm name is required.";
       if (!fields.incorporationDate) nextErrors.incorporationDate = "Date of incorporation is required.";
-      if (!fields.companyState) nextErrors.companyState = "Company registration state is required.";
-      if (!fields.companyCity.trim()) nextErrors.companyCity = "Company registration city is required.";
+      if (!fields.companyState) nextErrors.companyState = "Firm registration state is required.";
+      if (!fields.companyCity.trim()) nextErrors.companyCity = "Firm registration city is required.";
       if (!fields.dpiitAvailable) nextErrors.dpiitAvailable = "Select DPIIT registration status.";
     }
     if (fields.website && !validateUrl(fields.website)) {
@@ -282,8 +296,19 @@ export const MsmeProgramApplication: React.FC<MsmeProgramApplicationProps> = ({ 
 
     // Step 3: Project Info validations
     if (!fields.projectName.trim()) nextErrors.projectName = "Name of project is required.";
-    if (!fields.applicationVertical) nextErrors.applicationVertical = "Select application vertical.";
-    if (!fields.technologyUsed) nextErrors.technologyUsed = "Select technology being used.";
+
+    if (!fields.applicationVertical) {
+      nextErrors.applicationVertical = "Select application vertical.";
+    } else if (fields.applicationVertical === "Other" && !fields.applicationVerticalOther?.trim()) {
+      nextErrors.applicationVerticalOther = "Please specify application vertical.";
+    }
+
+    if (!fields.technologyUsed) {
+      nextErrors.technologyUsed = "Select technology being used.";
+    } else if (fields.technologyUsed === "Other" && !fields.technologyUsedOther?.trim()) {
+      nextErrors.technologyUsedOther = "Please specify technology used.";
+    }
+
     if (!fields.productLevel) nextErrors.productLevel = "Select product level.";
 
     if (!fields.painPoint.trim()) nextErrors.painPoint = "Pain point explanation is required.";
@@ -297,18 +322,15 @@ export const MsmeProgramApplication: React.FC<MsmeProgramApplicationProps> = ({ 
 
     if (!fields.ipFiled) nextErrors.ipFiled = "Select IP filing status.";
     
-    if (!prototypePhotos) nextErrors.prototypePhotos = "Prototype or POC photo is required.";
-    if (!blockDiagram) nextErrors.blockDiagram = "Block diagram is required.";
     if (!pitchDeck) nextErrors.pitchDeck = "Presentation / Pitch Deck is required.";
 
     if (fields.videoLink && !validateUrl(fields.videoLink)) {
       nextErrors.videoLink = "Please enter a valid URL (including https://).";
     }
 
-    if (!fields.supportRequired.trim()) nextErrors.supportRequired = "Describe the support needed from iCreate.";
+    if (!fields.supportRequired.trim()) nextErrors.supportRequired = "Describe the support needed from MSME Support.";
     else if (fields.supportRequired.length > 250) nextErrors.supportRequired = "Must be under 250 characters.";
 
-    if (!fields.programsApplied.length) nextErrors.programsApplied = "Select at least one program you are applying for.";
     if (!fields.requestedFunding.trim()) nextErrors.requestedFunding = "Requested funding amount is required.";
 
     setErrors(nextErrors);
@@ -359,12 +381,15 @@ export const MsmeProgramApplication: React.FC<MsmeProgramApplicationProps> = ({ 
     try {
       const created = await applyToProgram({
         ...fields,
+        highestEducation: fields.highestEducation === "Other" ? fields.highestEducationOther : fields.highestEducation,
+        technologyUsed: fields.technologyUsed === "Other" ? fields.technologyUsedOther : fields.technologyUsed,
+        applicationVertical: fields.applicationVertical === "Other" ? fields.applicationVerticalOther : fields.applicationVertical,
         programId: program.id,
         programName: program.name,
         startupName: fields.projectName,
         pitchDeckName: pitchDeck?.name || "PitchDeck.pdf",
-        prototypePhotosName: prototypePhotos?.name || "Prototype.png",
-        blockDiagramName: blockDiagram?.name || "BlockDiagram.pdf",
+        prototypePhotosName: prototypePhotos?.name || "",
+        blockDiagramName: blockDiagram?.name || "",
         _pitchDeckFile: pitchDeck,
         _prototypePhotosFile: prototypePhotos,
         _blockDiagramFile: blockDiagram,
@@ -391,10 +416,6 @@ export const MsmeProgramApplication: React.FC<MsmeProgramApplicationProps> = ({ 
         <div className="border-b border-slate-100 bg-slate-50 px-6 py-8 md:px-8">
           <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[#FF6B00]">MSME Support Program</p>
           <h3 className="mt-3 text-2xl font-black tracking-tight text-[#0B2A5B]">Apply for MSME Support</h3>
-          <h4 className="mt-3 text-base font-extrabold text-slate-900">Unified Filing Page (Personal, Entity, & Project details)</h4>
-          <p className="mt-3 max-w-4xl text-sm leading-7 text-slate-600">
-            Please fill the operational details with absolute precision. Complete the 35 fields below to submit your business proposal directly to our screening committee.
-          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-10 p-6 md:p-8">
@@ -452,8 +473,22 @@ export const MsmeProgramApplication: React.FC<MsmeProgramApplicationProps> = ({ 
                 <TextField label="Company name you are working in *" value={fields.currentCompany} error={errors.currentCompany} maxLength={50} onChange={(val) => updateField("currentCompany", val)} />
               )}
 
-              <SelectField label="Highest educational qualification *" value={fields.highestEducation} error={errors.highestEducation} options={educationOptions} onChange={(val) => updateField("highestEducation", val)} />
-              <SelectField label="Where did you hear about iCreate? *" value={fields.heardFrom} error={errors.heardFrom} options={heardFromOptions} onChange={(val) => updateField("heardFrom", val)} />
+              <SelectField label="Highest educational qualification *" value={fields.highestEducation} error={errors.highestEducation} options={educationOptions} onChange={(val) => {
+                updateField("highestEducation", val);
+                if (val !== "Other") {
+                  updateField("highestEducationOther", "");
+                }
+              }} />
+              {fields.highestEducation === "Other" && (
+                <TextField
+                  label="Please specify highest education *"
+                  value={fields.highestEducationOther || ""}
+                  error={errors.highestEducationOther}
+                  placeholder="Specify highest education"
+                  onChange={(val) => updateField("highestEducationOther", val)}
+                />
+              )}
+              <SelectField label="Where did you hear about us? *" value={fields.heardFrom} error={errors.heardFrom} options={heardFromOptions} onChange={(val) => updateField("heardFrom", val)} />
               <SelectField label="Total family income (annual in INR) *" value={fields.familyIncome} error={errors.familyIncome} options={incomeOptions} onChange={(val) => updateField("familyIncome", val)} />
               <TextField label="LinkedIn Profile URL" value={fields.linkedInUrl} error={errors.linkedInUrl} placeholder="https://linkedin.com/in/username" onChange={(val) => updateField("linkedInUrl", val)} />
             </div>
@@ -463,11 +498,11 @@ export const MsmeProgramApplication: React.FC<MsmeProgramApplicationProps> = ({ 
           <section className="space-y-6 border-t border-slate-100 pt-8">
             <div className="border-b border-slate-100 pb-3">
               <span className="text-[11px] font-black text-[#FF6B00] tracking-widest uppercase">Step 02</span>
-              <h4 className="text-lg font-black text-[#0B2A5B] mt-1">Company Details</h4>
+              <h4 className="text-lg font-black text-[#0B2A5B] mt-1">Firm Details</h4>
             </div>
 
             <div className="space-y-2">
-              <label className="block font-bold text-[#0B2A5B]">Do you have a registered company? *</label>
+              <label className="block font-bold text-[#0B2A5B]">Do you have a registered firm? *</label>
               <div className="flex gap-4 pt-1">
                 {["Yes", "No"].map((opt) => (
                   <label key={opt} className="flex items-center gap-2 text-sm font-semibold cursor-pointer">
@@ -491,11 +526,11 @@ export const MsmeProgramApplication: React.FC<MsmeProgramApplicationProps> = ({ 
 
             {fields.registeredCompany === "Yes" && (
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2 bg-slate-50/50 p-5 rounded-2xl border border-slate-200">
-                <TextField label="Company Name *" value={fields.companyName} error={errors.companyName} maxLength={250} onChange={(val) => updateField("companyName", val)} />
-                <TextField label="Date of incorporation of your company *" type="date" value={fields.incorporationDate} error={errors.incorporationDate} onChange={(val) => updateField("incorporationDate", val)} />
+                <TextField label="Firm Name *" value={fields.companyName} error={errors.companyName} maxLength={250} onChange={(val) => updateField("companyName", val)} />
+                <TextField label="Date of incorporation of your firm *" type="date" value={fields.incorporationDate} error={errors.incorporationDate} onChange={(val) => updateField("incorporationDate", val)} />
                 
-                <SelectField label="Company registration State *" value={fields.companyState} error={errors.companyState} options={stateOptions} onChange={(val) => updateField("companyState", val)} />
-                <TextField label="Company registration City *" value={fields.companyCity} error={errors.companyCity} maxLength={250} onChange={(val) => updateField("companyCity", val)} />
+                <SelectField label="Firm registration State *" value={fields.companyState} error={errors.companyState} options={stateOptions} onChange={(val) => updateField("companyState", val)} />
+                <TextField label="Firm registration City *" value={fields.companyCity} error={errors.companyCity} maxLength={250} onChange={(val) => updateField("companyCity", val)} />
 
                 <div className="space-y-2 col-span-full">
                   <label className="block font-bold text-[#0B2A5B]">DPIIT Registration available? *</label>
@@ -526,7 +561,21 @@ export const MsmeProgramApplication: React.FC<MsmeProgramApplicationProps> = ({ 
 
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <TextField label="Name of your project or product *" value={fields.projectName} error={errors.projectName} maxLength={250} onChange={(val) => updateField("projectName", val)} />
-              <SelectField label="Which technology is being used in the product? *" value={fields.technologyUsed} error={errors.technologyUsed} options={technologyOptions} onChange={(val) => updateField("technologyUsed", val)} />
+              <SelectField label="Which technology is being used in the product? *" value={fields.technologyUsed} error={errors.technologyUsed} options={technologyOptions} onChange={(val) => {
+                updateField("technologyUsed", val);
+                if (val !== "Other") {
+                  updateField("technologyUsedOther", "");
+                }
+              }} />
+              {fields.technologyUsed === "Other" && (
+                <TextField
+                  label="Please specify technology *"
+                  value={fields.technologyUsedOther || ""}
+                  error={errors.technologyUsedOther}
+                  placeholder="Specify technology"
+                  onChange={(val) => updateField("technologyUsedOther", val)}
+                />
+              )}
               <SelectField label="At what level is your product? *" value={fields.productLevel} error={errors.productLevel} options={levelOptions} onChange={(val) => updateField("productLevel", val)} />
               <TextField label="How much funding support are you looking for? (in INR) *" type="number" value={fields.requestedFunding} error={errors.requestedFunding} placeholder="e.g. 1000000" onChange={(val) => updateField("requestedFunding", val)} />
             </div>
@@ -536,12 +585,28 @@ export const MsmeProgramApplication: React.FC<MsmeProgramApplicationProps> = ({ 
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 pt-1">
                 {verticalOptions.map((opt) => (
                   <label key={opt} className="flex items-center gap-2.5 rounded-lg border border-slate-200 bg-white p-3 font-semibold text-xs cursor-pointer hover:bg-slate-50">
-                    <input type="radio" disabled={mode === "view"} checked={fields.applicationVertical === opt} onChange={() => updateField("applicationVertical", opt)} className="h-4 w-4 accent-[#FF6B00]" />
+                    <input type="radio" disabled={mode === "view"} checked={fields.applicationVertical === opt} onChange={() => {
+                      updateField("applicationVertical", opt);
+                      if (opt !== "Other") {
+                        updateField("applicationVerticalOther", "");
+                      }
+                    }} className="h-4 w-4 accent-[#FF6B00]" />
                     {opt}
                   </label>
                 ))}
               </div>
               {errors.applicationVertical && <p className="text-xs font-bold text-red-500">{errors.applicationVertical}</p>}
+              {fields.applicationVertical === "Other" && (
+                <div className="mt-3 max-w-md">
+                  <TextField
+                    label="Please specify application vertical *"
+                    value={fields.applicationVerticalOther || ""}
+                    error={errors.applicationVerticalOther}
+                    placeholder="Specify application vertical"
+                    onChange={(val) => updateField("applicationVerticalOther", val)}
+                  />
+                </div>
+              )}
             </div>
 
             <TextAreaField label="What is the pain point that you are addressing? *" value={fields.painPoint} error={errors.painPoint} maxLength={250} helper="Maximum 250 characters." onChange={(val) => updateField("painPoint", val)} />
@@ -566,18 +631,22 @@ export const MsmeProgramApplication: React.FC<MsmeProgramApplicationProps> = ({ 
               
               {/* prototypePhotos */}
               <div className="space-y-2">
-                <label className="block font-bold text-[#0B2A5B]">Prototype Photos / PoC *</label>
+                <label className="block font-bold text-[#0B2A5B]">Prototype Photos / PoC</label>
                 {mode === "view" ? (
-                  <div 
-                    onClick={() => handleDownloadFile("prototypePhotos", application?.prototypePhotosName || "prototypePhotos.png")}
-                    className="flex flex-col items-center justify-center border-2 border-slate-200 rounded-xl bg-slate-50 p-4 transition-colors hover:bg-slate-100 cursor-pointer shadow-xs"
-                  >
-                    <FileText className="h-8 w-8 text-[#FF6B00]" />
-                    <span className="mt-2 text-xs font-bold text-slate-600 text-center truncate w-full">
-                      {application?.prototypePhotosName || "PrototypePhotos.png"}
-                    </span>
-                    <span className="text-[10px] text-slate-400 font-bold mt-1 uppercase tracking-wider">Click to Download</span>
-                  </div>
+                  application?.prototypePhotosName ? (
+                    <div 
+                      onClick={() => handleDownloadFile("prototypePhotos", application.prototypePhotosName)}
+                      className="flex flex-col items-center justify-center border-2 border-slate-200 rounded-xl bg-slate-50 p-4 transition-colors hover:bg-slate-100 cursor-pointer shadow-xs"
+                    >
+                      <FileText className="h-8 w-8 text-[#FF6B00]" />
+                      <span className="mt-2 text-xs font-bold text-slate-600 text-center truncate w-full">
+                        {application.prototypePhotosName}
+                      </span>
+                      <span className="text-[10px] text-slate-400 font-bold mt-1 uppercase tracking-wider">Click to Download</span>
+                    </div>
+                  ) : (
+                    <p className="text-xs font-bold text-slate-500">Not Provided</p>
+                  )
                 ) : (
                   <div className="relative flex flex-col items-center justify-center border-2 border-dashed border-slate-300 rounded-xl bg-slate-50/50 p-4 transition-colors hover:bg-slate-100">
                     <UploadCloud className="h-8 w-8 text-slate-400" />
@@ -591,18 +660,22 @@ export const MsmeProgramApplication: React.FC<MsmeProgramApplicationProps> = ({ 
 
               {/* blockDiagram */}
               <div className="space-y-2">
-                <label className="block font-bold text-[#0B2A5B]">Block Diagram *</label>
+                <label className="block font-bold text-[#0B2A5B]">Block Diagram</label>
                 {mode === "view" ? (
-                  <div 
-                    onClick={() => handleDownloadFile("blockDiagram", application?.blockDiagramName || "blockDiagram.png")}
-                    className="flex flex-col items-center justify-center border-2 border-slate-200 rounded-xl bg-slate-50 p-4 transition-colors hover:bg-slate-100 cursor-pointer shadow-xs"
-                  >
-                    <FileText className="h-8 w-8 text-[#FF6B00]" />
-                    <span className="mt-2 text-xs font-bold text-slate-600 text-center truncate w-full">
-                      {application?.blockDiagramName || "BlockDiagram.png"}
-                    </span>
-                    <span className="text-[10px] text-slate-400 font-bold mt-1 uppercase tracking-wider">Click to Download</span>
-                  </div>
+                  application?.blockDiagramName ? (
+                    <div 
+                      onClick={() => handleDownloadFile("blockDiagram", application.blockDiagramName)}
+                      className="flex flex-col items-center justify-center border-2 border-slate-200 rounded-xl bg-slate-50 p-4 transition-colors hover:bg-slate-100 cursor-pointer shadow-xs"
+                    >
+                      <FileText className="h-8 w-8 text-[#FF6B00]" />
+                      <span className="mt-2 text-xs font-bold text-slate-600 text-center truncate w-full">
+                        {application.blockDiagramName}
+                      </span>
+                      <span className="text-[10px] text-slate-400 font-bold mt-1 uppercase tracking-wider">Click to Download</span>
+                    </div>
+                  ) : (
+                    <p className="text-xs font-bold text-slate-500">Not Provided</p>
+                  )
                 ) : (
                   <div className="relative flex flex-col items-center justify-center border-2 border-dashed border-slate-300 rounded-xl bg-slate-50/50 p-4 transition-colors hover:bg-slate-100">
                     <UploadCloud className="h-8 w-8 text-slate-400" />
@@ -645,22 +718,7 @@ export const MsmeProgramApplication: React.FC<MsmeProgramApplicationProps> = ({ 
               <TextField label="Video link of working prototype" value={fields.videoLink} error={errors.videoLink} placeholder="https://youtube.com/..." onChange={(val) => updateField("videoLink", val)} />
             </div>
 
-            <TextAreaField label="What kind of support you are looking from iCreate? *" value={fields.supportRequired} error={errors.supportRequired} maxLength={250} helper="Maximum 250 characters." onChange={(val) => updateField("supportRequired", val)} />
-
-            {/* Program checkbox selection */}
-            <div className="space-y-2 pt-4">
-              <label className="block font-bold text-[#0B2A5B]">Choose the program you are applying for *</label>
-              <p className="text-xs text-slate-500">You may select multiple options.</p>
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 pt-2">
-                {programOptions.map((opt) => (
-                  <label key={opt} className="flex items-center gap-3 rounded-lg border border-slate-200 bg-white p-3 font-semibold text-xs cursor-pointer hover:bg-slate-50">
-                    <input type="checkbox" disabled={mode === "view"} checked={fields.programsApplied.includes(opt)} onChange={() => handleCheckboxChange(opt)} className="h-4 w-4 accent-[#FF6B00]" />
-                    {opt}
-                  </label>
-                ))}
-              </div>
-              {errors.programsApplied && <p className="text-xs font-bold text-red-500">{errors.programsApplied}</p>}
-            </div>
+            <TextAreaField label="What kind of support you are looking from MSME Support? *" value={fields.supportRequired} error={errors.supportRequired} maxLength={250} helper="Maximum 250 characters." onChange={(val) => updateField("supportRequired", val)} />
           </section>
 
           {/* Buttons / Actions */}
@@ -701,6 +759,26 @@ export const MsmeProgramApplication: React.FC<MsmeProgramApplicationProps> = ({ 
 
 const FormModeContext = React.createContext({ disabled: false });
 
+const renderLabel = (label: string) => {
+  if (label.endsWith(" *")) {
+    return (
+      <>
+        {label.slice(0, -2)}{" "}
+        <span className="text-red-500">*</span>
+      </>
+    );
+  }
+  if (label.endsWith("*")) {
+    return (
+      <>
+        {label.slice(0, -1)}
+        <span className="text-red-500">*</span>
+      </>
+    );
+  }
+  return label;
+};
+
 /* ── Inline Helper components to keep design perfect ── */
 type TextFieldProps = {
   label: string;
@@ -727,7 +805,7 @@ const TextField: React.FC<TextFieldProps> = ({
   const isFieldDisabled = disabled || contextDisabled;
   return (
     <div className="space-y-1.5">
-      <label className="block font-bold text-[#0B2A5B] text-xs uppercase tracking-wide">{label}</label>
+      <label className="block font-bold text-[#0B2A5B] text-xs uppercase tracking-wide">{renderLabel(label)}</label>
       <input
         type={type}
         value={value}
@@ -770,7 +848,7 @@ const TextAreaField: React.FC<TextAreaProps> = ({
   return (
     <div className="space-y-1.5">
       <div className="flex justify-between items-center">
-        <label className="block font-bold text-[#0B2A5B] text-xs uppercase tracking-wide">{label}</label>
+        <label className="block font-bold text-[#0B2A5B] text-xs uppercase tracking-wide">{renderLabel(label)}</label>
         {maxLength && (
           <span className="text-[10px] text-slate-400 font-bold">
             {value.length}/{maxLength} characters
@@ -816,7 +894,7 @@ const SelectField: React.FC<SelectFieldProps> = ({
   const isFieldDisabled = disabled || contextDisabled;
   return (
     <div className="space-y-1.5">
-      <label className="block font-bold text-[#0B2A5B] text-xs uppercase tracking-wide">{label}</label>
+      <label className="block font-bold text-[#0B2A5B] text-xs uppercase tracking-wide">{renderLabel(label)}</label>
       <select
         value={value}
         disabled={isFieldDisabled}
