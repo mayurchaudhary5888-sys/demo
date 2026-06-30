@@ -18,6 +18,7 @@ import { FoundationApplication } from "../models/FoundationApplication.js";
 import { StartupApplication } from "../models/StartupApplication.js";
 import { GlobalImpactApplication } from "../models/GlobalImpactApplication.js";
 import { sendContactQueryEmail, sendInvestorProfileEmail } from "../services/emailService.js";
+import { ensureNoBase64Logos } from "../services/startupProfileService.js";
 
 const sortNewestFirst = { createdAt: -1, updatedAt: -1 };
 const isPlaceholderStartupId = (value) => !value || value === "temp-id" || String(value).startsWith("temp-");
@@ -178,7 +179,7 @@ export const listStartups = async (req, res, next) => {
         ].filter((condition) => Object.values(condition)[0]),
       };
     }
-    const data = await StartupProfile.find(query).sort(sortNewestFirst).lean();
+    const data = await StartupProfile.find(query).select("-logoPreview").sort(sortNewestFirst).lean();
     res.json({ success: true, data });
   } catch (err) {
     next(err);
@@ -187,7 +188,7 @@ export const listStartups = async (req, res, next) => {
 
 export const listUsers = async (_req, res, next) => {
   try {
-    const data = await User.find().select("-passwordHash").sort(sortNewestFirst).lean();
+    const data = await User.find().select("-passwordHash -startupProfile.logoPreview").sort(sortNewestFirst).lean();
     res.json({
       success: true,
       data: data.map((user) => ({
@@ -248,7 +249,15 @@ export const createOrUpdateStartup = async (req, res, next) => {
       email: req.user?.role === "admin" ? req.body.email : account.email,
       founderName: req.user?.role === "admin" ? req.body.founderName : account.name,
     };
+    await ensureNoBase64Logos(payload);
     const updated = await StartupProfile.findOneAndUpdate({ id }, payload, { upsert: true, new: true, setDefaultsOnInsert: true });
+    
+    // Sync to User collection
+    await User.findOneAndUpdate(
+      { startupId: id },
+      { $set: { startupProfile: updated.toObject() } }
+    );
+
     res.status(201).json({ success: true, data: updated.toObject() });
   } catch (err) {
     next(err);
@@ -263,7 +272,15 @@ export const updateStartup = async (req, res, next) => {
 
     const safeBody = req.user?.role === "admin" ? req.body : stripFounderControlledFields(req.body);
     Object.assign(startup, safeBody, { id: startup.id });
+    await ensureNoBase64Logos(startup);
     await startup.save();
+
+    // Sync to User collection
+    await User.findOneAndUpdate(
+      { startupId: startup.id },
+      { $set: { startupProfile: startup.toObject() } }
+    );
+
     res.json({ success: true, data: startup.toObject() });
   } catch (err) {
     next(err);
@@ -276,6 +293,13 @@ export const toggleStartupApproval = async (req, res, next) => {
     if (!startup) throw new AppError("Startup not found.", 404);
     startup.isApproved = !startup.isApproved;
     await startup.save();
+
+    // Sync to User collection
+    await User.findOneAndUpdate(
+      { startupId: startup.id },
+      { $set: { "startupProfile.isApproved": startup.isApproved } }
+    );
+
     res.json({ success: true, data: startup.toObject() });
   } catch (err) {
     next(err);
