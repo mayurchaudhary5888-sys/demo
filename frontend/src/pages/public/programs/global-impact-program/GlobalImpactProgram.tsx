@@ -21,16 +21,30 @@ type FinancialStatement = {
   netProfit: string;
 };
 
+const renderLabel = (text: string) => {
+  if (text.endsWith("*")) {
+    const base = text.slice(0, -1).trim();
+    return (
+      <span>
+        {base} <span className="text-red-500 font-bold">*</span>
+      </span>
+    );
+  }
+  return text;
+};
+
 type GlobalImpactFields = {
   registeredBusinessName: string;
   localBusinessName: string;
   incorporationDate: string;
   legalEntity: string;
+  legalEntityOther: string;
   placeOfOperations: string;
   industry: string;
   website: string;
   email: string;
   awardsRecognition: string;
+  productServices: string;
   businessPitch: string;
   businessStage: string;
   financialOne: FinancialStatement;
@@ -40,7 +54,9 @@ type GlobalImpactFields = {
   coreTeam: string;
   theoryOfChange: string;
   impactAreas: string[];
+  impactAreasOther: string;
   impactSegments: string[];
+  impactSegmentsOther: string;
   individualsImpacted: string;
   businessPlans: string;
   grantUsage: string;
@@ -83,11 +99,13 @@ const initialFields = (user?: { email?: string }, startupName = ""): GlobalImpac
   localBusinessName: "",
   incorporationDate: "",
   legalEntity: "",
+  legalEntityOther: "",
   placeOfOperations: "",
   industry: "",
   website: "",
   email: user?.email || "",
   awardsRecognition: "",
+  productServices: "",
   businessPitch: "",
   businessStage: "",
   financialOne: emptyFinancial(),
@@ -97,7 +115,9 @@ const initialFields = (user?: { email?: string }, startupName = ""): GlobalImpac
   coreTeam: "",
   theoryOfChange: "",
   impactAreas: [],
+  impactAreasOther: "",
   impactSegments: [],
+  impactSegmentsOther: "",
   individualsImpacted: "",
   businessPlans: "",
   grantUsage: "",
@@ -123,11 +143,13 @@ export const GlobalImpactProgram: React.FC<GlobalImpactProgramProps> = ({ progra
         localBusinessName: application.localBusinessName || "",
         incorporationDate: application.incorporationDate || "",
         legalEntity: application.legalEntity || "",
+        legalEntityOther: application.legalEntityOther || "",
         placeOfOperations: application.placeOfOperations || "",
         industry: application.industry || "",
         website: application.website || "",
         email: application.email || "",
         awardsRecognition: application.awardsRecognition || "",
+        productServices: application.productServices || "",
         businessPitch: application.businessPitch || "",
         businessStage: application.businessStage || "",
         financialOne: application.financialOne || emptyFinancial(),
@@ -137,7 +159,9 @@ export const GlobalImpactProgram: React.FC<GlobalImpactProgramProps> = ({ progra
         coreTeam: application.coreTeam || "",
         theoryOfChange: application.theoryOfChange || "",
         impactAreas: application.impactAreas || [],
+        impactAreasOther: application.impactAreasOther || "",
         impactSegments: application.impactSegments || [],
+        impactSegmentsOther: application.impactSegmentsOther || "",
         individualsImpacted: application.individualsImpacted || "",
         businessPlans: application.businessPlans || "",
         grantUsage: application.grantUsage || "",
@@ -200,11 +224,17 @@ export const GlobalImpactProgram: React.FC<GlobalImpactProgramProps> = ({ progra
     const nextErrors: Record<string, string> = {};
     if (!fields.registeredBusinessName.trim()) nextErrors.registeredBusinessName = "Registered business name is required.";
     if (!fields.incorporationDate) nextErrors.incorporationDate = "Date of incorporation is required.";
-    if (!fields.legalEntity) nextErrors.legalEntity = "Type of legal entity is required.";
+    if (!fields.legalEntity) {
+      nextErrors.legalEntity = "Type of legal entity is required.";
+    } else if (fields.legalEntity === "Other" && (!fields.legalEntityOther || !fields.legalEntityOther.trim())) {
+      nextErrors.legalEntityOther = "Legal entity details are required.";
+    }
     if (!fields.placeOfOperations.trim()) nextErrors.placeOfOperations = "Place of operations is required.";
-    if (!fields.industry) nextErrors.industry = "Industry is required.";
+    if (!fields.industry.trim()) nextErrors.industry = "Industry is required.";
     if (!fields.email.trim()) nextErrors.email = "Email address is required.";
     else if (!/\S+@\S+\.\S+/.test(fields.email)) nextErrors.email = "Enter a valid email.";
+    if (!fields.awardsRecognition.trim()) nextErrors.awardsRecognition = "Business description is required.";
+    if (!fields.productServices.trim()) nextErrors.productServices = "Product and services details are required.";
     if (!fields.businessPitch.trim()) nextErrors.businessPitch = "Business pitch is required.";
     if (!fields.businessStage) nextErrors.businessStage = "Current stage of business is required.";
     validateFinancial("financialOne", "First financial statement", nextErrors);
@@ -215,12 +245,21 @@ export const GlobalImpactProgram: React.FC<GlobalImpactProgramProps> = ({ progra
     }
     if (!fields.coreTeam.trim()) nextErrors.coreTeam = "Core team details are required.";
     if (!fields.theoryOfChange.trim()) nextErrors.theoryOfChange = "Theory of change is required.";
-    if (!fields.impactAreas.length) nextErrors.impactAreas = "Select at least one impact area.";
-    if (!fields.impactSegments.length) nextErrors.impactSegments = "Select at least one impacted segment.";
-    if (!fields.individualsImpacted.trim()) nextErrors.individualsImpacted = "Individuals impacted to date is required.";
+    if (!fields.impactAreas.length) {
+      nextErrors.impactAreas = "Select at least one impact area.";
+    } else if (fields.impactAreas.includes("Other") && (!fields.impactAreasOther || !fields.impactAreasOther.trim())) {
+      nextErrors.impactAreasOther = "Please specify other impact area.";
+    }
+    if (!fields.impactSegments.length) {
+      nextErrors.impactSegments = "Select at least one impacted segment.";
+    } else if (fields.impactSegments.includes("Other") && (!fields.impactSegmentsOther || !fields.impactSegmentsOther.trim())) {
+      nextErrors.impactSegmentsOther = "Please specify other impacted segment.";
+    }
     if (!fields.businessPlans.trim()) nextErrors.businessPlans = "Business plans are required.";
     if (!fields.grantUsage.trim()) nextErrors.grantUsage = "Grant usage details are required.";
-    if (!fields.estimatedReach.trim()) nextErrors.estimatedReach = "Estimated reach is required.";
+    if (mode !== "view" && !supportingDocument) {
+      nextErrors.supportingDocument = "Supporting document or proposal file / pitch deck is required.";
+    }
     if (!fields.declarationAccepted) nextErrors.declarationAccepted = "Declaration is required.";
 
     setErrors(nextErrors);
@@ -275,10 +314,6 @@ export const GlobalImpactProgram: React.FC<GlobalImpactProgramProps> = ({ progra
         <div className="border-b border-slate-100 bg-slate-50 px-6 py-8 md:px-8">
           <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[#FF6B00]">Global Impact Support</p>
           <h3 className="mt-3 text-2xl font-black tracking-tight text-[#0B2A5B]">Apply for Global Impact Support</h3>
-          <h4 className="mt-3 text-base font-extrabold text-slate-900">Single form for company, impact, and scale readiness</h4>
-          <p className="mt-3 max-w-4xl text-sm leading-7 text-slate-600">
-            Share your enterprise profile, financial data, impact model, and scale proposal so the program team can review fit and readiness.
-          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-8 p-6 text-sm text-slate-800 md:p-8">
@@ -287,18 +322,30 @@ export const GlobalImpactProgram: React.FC<GlobalImpactProgramProps> = ({ progra
             <TextField label="Registered business name *" value={fields.registeredBusinessName} error={errors.registeredBusinessName} onChange={(value) => updateField("registeredBusinessName", value)} />
             <TextField label="Local business name (if different)" value={fields.localBusinessName} error={errors.localBusinessName} onChange={(value) => updateField("localBusinessName", value)} />
             <TextField label="Date of incorporation/registration *" type="date" value={fields.incorporationDate} error={errors.incorporationDate} onChange={(value) => updateField("incorporationDate", value)} />
-            <SelectField label="Type of legal entity *" value={fields.legalEntity} error={errors.legalEntity} options={legalEntityOptions} onChange={(value) => updateField("legalEntity", value)} />
+            <div className="space-y-4">
+              <SelectField label="Type of legal entity *" value={fields.legalEntity} error={errors.legalEntity} options={legalEntityOptions} onChange={(value) => updateField("legalEntity", value)} />
+              {fields.legalEntity === "Other" && (
+                <TextField label="Please specify legal entity *" value={fields.legalEntityOther} error={errors.legalEntityOther} onChange={(value) => updateField("legalEntityOther", value)} />
+              )}
+            </div>
             <TextField label="Primary place of operations (country, city) *" value={fields.placeOfOperations} error={errors.placeOfOperations} placeholder="e.g. India, Mumbai" onChange={(value) => updateField("placeOfOperations", value)} />
-            <SelectField label="Industry / Sector *" value={fields.industry} error={errors.industry} options={industryOptions} onChange={(value) => updateField("industry", value)} />
+            <TextField label="Industry / Sector *" value={fields.industry} error={errors.industry} placeholder="e.g. Technology, Agriculture, etc." onChange={(value) => updateField("industry", value)} />
             <TextField label="Website / Social media profile URL" value={fields.website} error={errors.website} placeholder="https://example.com" onChange={(value) => updateField("website", value)} />
             <TextField label="Email address *" type="email" value={fields.email} error={errors.email} placeholder="contact@company.com" onChange={(value) => updateField("email", value)} />
           </div>
 
           <TextAreaField
-            label="Provide brief details of awards or recognition received by your business, if any"
+            label="Tell me about your business *"
             value={fields.awardsRecognition}
             error={errors.awardsRecognition}
             onChange={(value) => updateField("awardsRecognition", value)}
+          />
+
+          <TextAreaField
+            label="Write about your product and services in brief *"
+            value={fields.productServices}
+            error={errors.productServices}
+            onChange={(value) => updateField("productServices", value)}
           />
 
           <SectionTitle title="Business profile and pitch" />
@@ -342,9 +389,18 @@ export const GlobalImpactProgram: React.FC<GlobalImpactProgramProps> = ({ progra
             helper="Explain how your business model and operations create positive social or environmental impact."
             onChange={(value) => updateField("theoryOfChange", value)}
           />
-          <CheckboxGroup label="Select the areas that your business impacts *" values={fields.impactAreas} error={errors.impactAreas} options={impactAreaOptions} onChange={(value) => toggleMultiValue("impactAreas", value)} />
-          <CheckboxGroup label="Select the segments that your business impacts *" values={fields.impactSegments} error={errors.impactSegments} options={impactSegmentOptions} onChange={(value) => toggleMultiValue("impactSegments", value)} />
-          <TextField label="Number of individuals impacted to date *" value={fields.individualsImpacted} error={errors.individualsImpacted} onChange={(value) => updateField("individualsImpacted", value)} />
+          <div className="space-y-4">
+            <CheckboxGroup label="Select the areas that your business impacts *" values={fields.impactAreas} error={errors.impactAreas} options={impactAreaOptions} onChange={(value) => toggleMultiValue("impactAreas", value)} />
+            {fields.impactAreas.includes("Other") && (
+              <TextField label="Please specify other impact area *" value={fields.impactAreasOther} error={errors.impactAreasOther} onChange={(value) => updateField("impactAreasOther", value)} />
+            )}
+          </div>
+          <div className="space-y-4">
+            <CheckboxGroup label="Select the segments that your business impacts *" values={fields.impactSegments} error={errors.impactSegments} options={impactSegmentOptions} onChange={(value) => toggleMultiValue("impactSegments", value)} />
+            {fields.impactSegments.includes("Other") && (
+              <TextField label="Please specify other impacted segment *" value={fields.impactSegmentsOther} error={errors.impactSegmentsOther} onChange={(value) => updateField("impactSegmentsOther", value)} />
+            )}
+          </div>
 
           <SectionTitle title="Business plans and proposal" />
           <TextAreaField label="Describe your business plans for the coming two years *" value={fields.businessPlans} error={errors.businessPlans} onChange={(value) => updateField("businessPlans", value)} />
@@ -355,10 +411,11 @@ export const GlobalImpactProgram: React.FC<GlobalImpactProgramProps> = ({ progra
             helper="Include usage breakdown, beneficiary gains, and how the business and social impact will scale."
             onChange={(value) => updateField("grantUsage", value)}
           />
-          <TextField label="Estimated number of individuals you plan to directly reach *" value={fields.estimatedReach} error={errors.estimatedReach} onChange={(value) => updateField("estimatedReach", value)} />
 
           <div className="space-y-2">
-            <label className="block font-bold text-[#0B2A5B]">Supporting document or proposal file</label>
+            <label className="block font-bold text-[#0B2A5B]">
+              {renderLabel("Supporting document or proposal file / pitch deck *")}
+            </label>
             {mode === "view" ? (
               <div 
                 onClick={() => handleDownloadFile("pitchDeck", application?.pitchDeckName || "GlobalImpactProposal.pdf")}
@@ -376,6 +433,7 @@ export const GlobalImpactProgram: React.FC<GlobalImpactProgramProps> = ({ progra
                 {supportingDocument && <p className="text-xs font-bold text-[#FF6B00]">Selected: {supportingDocument.name}</p>}
               </>
             )}
+            {errors.supportingDocument && <p className="text-xs font-bold text-red-500">{errors.supportingDocument}</p>}
           </div>
 
           <div className="space-y-2 border-t border-slate-200 pt-6">
@@ -439,7 +497,7 @@ const TextField: React.FC<BaseFieldProps & { type?: string; placeholder?: string
   const { disabled: contextDisabled } = React.useContext(FormModeContext);
   return (
     <div className="space-y-1.5">
-      <label className="block font-bold text-[#0B2A5B]">{label}</label>
+      <label className="block font-bold text-[#0B2A5B]">{renderLabel(label)}</label>
       <input
         type={type}
         value={value}
@@ -460,7 +518,7 @@ const TextAreaField: React.FC<BaseFieldProps> = ({ label, value, error, helper, 
   const { disabled: contextDisabled } = React.useContext(FormModeContext);
   return (
     <div className="space-y-1.5">
-      <label className="block font-bold text-[#0B2A5B]">{label}</label>
+      <label className="block font-bold text-[#0B2A5B]">{renderLabel(label)}</label>
       {helper && <p className="text-xs font-semibold text-slate-500">{helper}</p>}
       <textarea
         rows={5}
@@ -480,7 +538,7 @@ const SelectField: React.FC<BaseFieldProps & { options: string[] }> = ({ label, 
   const { disabled: contextDisabled } = React.useContext(FormModeContext);
   return (
     <div className="space-y-1.5">
-      <label className="block font-bold text-[#0B2A5B]">{label}</label>
+      <label className="block font-bold text-[#0B2A5B]">{renderLabel(label)}</label>
       <select
         value={value}
         disabled={contextDisabled}
@@ -510,7 +568,7 @@ const CheckboxGroup: React.FC<{
   const { disabled: contextDisabled } = React.useContext(FormModeContext);
   return (
     <fieldset className="space-y-3">
-      <legend className="font-bold text-[#0B2A5B]">{label}</legend>
+      <legend className="font-bold text-[#0B2A5B]">{renderLabel(label)}</legend>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {options.map((option) => (
           <label key={option} className={`flex items-center gap-3 rounded-lg border border-slate-200 bg-white p-3 font-semibold ${
@@ -534,7 +592,7 @@ const FinancialFields: React.FC<{
   onChange: (statement: "financialOne" | "financialTwo", field: keyof FinancialStatement, value: string) => void;
 }> = ({ title, statement, values, errors, onChange }) => (
   <div className="space-y-4 rounded-xl border border-slate-200 bg-white p-4">
-    <h5 className="font-black text-slate-900">{title}</h5>
+    <h5 className="font-black text-slate-900">{renderLabel(title)}</h5>
     <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
       <SelectField label="Financial year ending *" value={values.yearEnding} error={errors[`${statement}.yearEnding`]} options={yearOptions} onChange={(value) => onChange(statement, "yearEnding", value)} />
       <SelectField label="Currency *" value={values.currency} error={errors[`${statement}.currency`]} options={currencyOptions} onChange={(value) => onChange(statement, "currency", value)} />
