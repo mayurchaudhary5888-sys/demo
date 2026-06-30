@@ -90,8 +90,8 @@ export interface Program {
   longDescription: string;
   benefits: string[];
   eligibility: string[];
-  requiredDocuments: string[];
-  processSteps: string[];
+  requiredDocuments?: string[];
+  processSteps?: string[];
   isOpen: boolean;
   startDate: string;
   endDate: string;
