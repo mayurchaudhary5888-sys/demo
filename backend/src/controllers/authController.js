@@ -2,7 +2,7 @@ import bcrypt from "bcryptjs";
 import { env } from "../config/env.js";
 import { User } from "../models/User.js";
 import { OtpToken } from "../models/OtpToken.js";
-import { normalizeStartupProfile, syncStartupProfileRecord } from "../services/startupProfileService.js";
+import { normalizeStartupProfile, syncStartupProfileRecord, ensureNoBase64Logos } from "../services/startupProfileService.js";
 import { AppError } from "../utils/errors.js";
 import { buildSession, generateOtp, hashOtp, normalizeEmail, signToken } from "../utils/auth.js";
 import { sendOtpEmail, sendPasswordResetOtpEmail } from "../utils/otpEmail.js";
@@ -50,6 +50,10 @@ export const register = async (req, res, next) => {
           founderName: req.body.name,
         })
       : undefined;
+
+    if (startupProfile) {
+      await ensureNoBase64Logos(startupProfile);
+    }
     const selectedProgram = req.body.selectedProgram;
 
     const update = {
@@ -74,7 +78,9 @@ export const register = async (req, res, next) => {
     );
 
     const otp = await issueRegistrationOtp(email);
-    await sendOtpEmail({ to: email, otp, name: user.name });
+    sendOtpEmail({ to: email, otp, name: user.name }).catch((err) => {
+      console.error("Failed to send verification OTP email to:", email, err);
+    });
 
     res.status(201).json({
       success: true,
@@ -193,7 +199,9 @@ export const resendOtp = async (req, res, next) => {
     }
 
     const otp = await issueRegistrationOtp(email);
-    await sendOtpEmail({ to: email, otp, name: user.name });
+    sendOtpEmail({ to: email, otp, name: user.name }).catch((err) => {
+      console.error("Failed to send verification OTP email to:", email, err);
+    });
 
     res.json({
       success: true,
@@ -223,7 +231,9 @@ export const forgotPassword = async (req, res, next) => {
       expiresAt: new Date(Date.now() + env.otpTtlMinutes * 60 * 1000),
     });
 
-    await sendPasswordResetOtpEmail({ to: email, otp, name: user.name });
+    sendPasswordResetOtpEmail({ to: email, otp, name: user.name }).catch((err) => {
+      console.error("Failed to send password reset OTP email to:", email, err);
+    });
 
     res.json({
       success: true,

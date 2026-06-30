@@ -1,4 +1,5 @@
 import { StartupProfile } from "../models/StartupProfile.js";
+import { uploadLogoToCloudinary } from "../utils/cloudinary.js";
 
 const cleanString = (value, fallback = "") => {
   if (typeof value !== "string") return fallback;
@@ -17,6 +18,48 @@ const resolveRegisteredAt = (value) => {
   if (typeof value === "number" && Number.isFinite(value)) return value;
   const parsed = Date.parse(String(value || ""));
   return Number.isNaN(parsed) ? Date.now() : parsed;
+};
+
+export const ensureNoBase64Logos = async (profile) => {
+  if (!profile) return profile;
+
+  // check logoUrl
+  if (profile.logoUrl && profile.logoUrl.startsWith("data:image/")) {
+    try {
+      const res = await uploadLogoToCloudinary({
+        dataUri: profile.logoUrl,
+        filename: profile.logoName || "logo.png",
+      });
+      profile.logoUrl = res.secureUrl;
+      profile.logoPreview = res.secureUrl;
+    } catch (err) {
+      console.error("Failed to auto-upload base64 logoUrl:", err);
+      profile.logoUrl = "";
+      profile.logoPreview = "";
+    }
+  }
+
+  // check logoPreview
+  if (profile.logoPreview && profile.logoPreview.startsWith("data:image/")) {
+    if (profile.logoUrl && !profile.logoUrl.startsWith("data:image/")) {
+      profile.logoPreview = profile.logoUrl;
+    } else {
+      try {
+        const res = await uploadLogoToCloudinary({
+          dataUri: profile.logoPreview,
+          filename: profile.logoName || "logo.png",
+        });
+        profile.logoUrl = res.secureUrl;
+        profile.logoPreview = res.secureUrl;
+      } catch (err) {
+        console.error("Failed to auto-upload base64 logoPreview:", err);
+        profile.logoUrl = "";
+        profile.logoPreview = "";
+      }
+    }
+  }
+
+  return profile;
 };
 
 export const normalizeStartupProfile = ({
@@ -98,6 +141,8 @@ export const syncStartupProfileRecord = async (user) => {
     founderName: user.name,
     isApproved: Boolean(existingRecord?.isApproved),
   });
+
+  await ensureNoBase64Logos(normalized);
 
   const record = await StartupProfile.findOneAndUpdate(
     { id: normalized.id },
