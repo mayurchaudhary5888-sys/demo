@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate, useLocation, Navigate, useSearchParams } from "react-router-dom";
 import { 
   ArrowLeft, FileText, UploadCloud, CheckCircle2, ShieldAlert, 
-  HelpCircle
+  HelpCircle, X
 } from "lucide-react";
 import { useAppState } from "../../context/AppContext";
 import { getCatalogProgram } from "../../data/programCatalog";
@@ -21,7 +21,7 @@ const requestLogin = () => {
 
 export const ProgramDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const { programs, user, applyToProgram, showToast, startups } = useAppState();
+  const { programs, user, applyToProgram, showToast, startups, applications } = useAppState();
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
@@ -39,6 +39,7 @@ export const ProgramDetail: React.FC = () => {
   const [successModalOpen, setSuccessModalOpen] = useState(false);
   const [successApplication, setSuccessApplication] = useState<{ id: string; programName: string } | null>(null);
   const [profileReviewOpen, setProfileReviewOpen] = useState(false);
+  const [alreadyAppliedOpen, setAlreadyAppliedOpen] = useState(false);
 
   // Form states
   const [fields, setFields] = useState({
@@ -70,6 +71,10 @@ export const ProgramDetail: React.FC = () => {
       setViewApplication(null);
     }
   }, [isViewMode, appId]);
+
+  const hasAlreadyApplied = !isViewMode && user && applications.some(
+    (app) => app.programId === prog?.id || app.programName === prog?.name
+  );
 
   if (user && user.role === "founder" && userProgramId && prog && prog.id !== userProgramId && (prog as any).slug !== userProgramId && !isViewMode) {
     const targetPath = location.pathname.endsWith("/apply") 
@@ -111,6 +116,18 @@ export const ProgramDetail: React.FC = () => {
       navigate(`/support/${prog.id}`, { replace: true });
     }
   }, [location.pathname, navigate, prog, user?.isActive, isViewMode]);
+
+  useEffect(() => {
+    if (location.pathname.endsWith("/apply") && user && prog && !isViewMode) {
+      const hasApplied = applications.some(
+        (app) => app.programId === prog.id || app.programName === prog.name
+      );
+      if (hasApplied) {
+        setAlreadyAppliedOpen(true);
+        navigate(`/support/${prog.id}?alreadyApplied=true`, { replace: true });
+      }
+    }
+  }, [location.pathname, navigate, prog, user, applications, isViewMode]);
 
   if (!prog) {
     return (
@@ -281,6 +298,8 @@ export const ProgramDetail: React.FC = () => {
                       requestLogin();
                     } else if (user.isActive === false) {
                       setProfileReviewOpen(true);
+                    } else if (hasAlreadyApplied) {
+                      setAlreadyAppliedOpen(true);
                     } else {
                       setActiveTab("apply");
                     }
@@ -352,6 +371,8 @@ export const ProgramDetail: React.FC = () => {
                       requestLogin();
                     } else if (user.isActive === false) {
                       setProfileReviewOpen(true);
+                    } else if (hasAlreadyApplied) {
+                      setAlreadyAppliedOpen(true);
                     } else {
                       setActiveTab("apply");
                     }
@@ -653,12 +674,14 @@ export const ProgramDetail: React.FC = () => {
             <p className="text-xs font-black truncate max-w-[200px]">{prog.name}</p>
           </div>
           <button
-                onClick={() => {
-                  if (!user) {
-                    showToast("Filing restricted. Sign in first.", "info");
-                    requestLogin();
-                  } else if (user.isActive === false) {
-                    setProfileReviewOpen(true);
+            onClick={() => {
+              if (!user) {
+                showToast("Filing restricted. Sign in first.", "info");
+                requestLogin();
+              } else if (user.isActive === false) {
+                setProfileReviewOpen(true);
+              } else if (hasAlreadyApplied) {
+                setAlreadyAppliedOpen(true);
               } else {
                 setActiveTab("apply");
                 showToast("Opening filing form", "info");
@@ -680,7 +703,51 @@ export const ProgramDetail: React.FC = () => {
         onContinue={handleSuccessContinue}
       />
       <ProfileUnderReviewModal open={profileReviewOpen} onClose={() => setProfileReviewOpen(false)} />
+      <AlreadyAppliedModal open={alreadyAppliedOpen} onClose={() => setAlreadyAppliedOpen(false)} programName={prog.name} />
 
+    </div>
+  );
+};
+
+type AlreadyAppliedModalProps = {
+  open: boolean;
+  onClose: () => void;
+  programName: string;
+};
+
+const AlreadyAppliedModal: React.FC<AlreadyAppliedModalProps> = ({ open, onClose, programName }) => {
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-[1200] flex items-center justify-center bg-slate-950/60 px-4 py-6 backdrop-blur-sm">
+      <div className="relative w-full max-w-md overflow-hidden rounded-[28px] border border-blue-200 bg-white shadow-[0_30px_120px_rgba(15,23,42,0.35)] animate-in fade-in zoom-in duration-200">
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute right-4 top-4 z-10 rounded-full border border-slate-200 bg-white p-2 text-slate-400 transition hover:text-slate-700"
+          aria-label="Close notice"
+        >
+          <X className="h-4 w-4" />
+        </button>
+
+        <div className="px-6 py-10 text-center">
+          <div className="mx-auto mb-5 flex h-18 w-18 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+            <CheckCircle2 className="h-10 w-10" />
+          </div>
+          <p className="text-[11px] font-black uppercase tracking-[0.28em] text-blue-700">Already Applied</p>
+          <h2 className="mt-3 text-2xl font-black tracking-tight text-[#0B2A5B]">Application Submitted</h2>
+          <p className="mx-auto mt-4 max-w-sm text-sm leading-7 text-slate-600">
+            You have already submitted an application for the <strong>{programName}</strong>. You can monitor the status of your application from your dashboard.
+          </p>
+          <button
+            type="button"
+            onClick={onClose}
+            className="mt-7 rounded-full bg-[#0B2A5B] px-6 py-3 text-xs font-black uppercase tracking-wider text-white transition hover:bg-[#071c3e]"
+          >
+            Okay
+          </button>
+        </div>
+      </div>
     </div>
   );
 };

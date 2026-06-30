@@ -54,7 +54,7 @@ export const programCatalog: CatalogProgram[] = [
     id: "msme-program",
     slug: "msme-program",
     name: "MSME Support",
-    partner: "iCreate",
+    partner: "BHASKAR",
     funding: "Up to ₹15 lakh grant",
     tagline: "Strengthen innovation, commercial readiness, and growth potential.",
     shortDescription: "Eligible innovators, startups, MSMEs, students, and entrepreneurs can access grant support for innovative ideas with strong commercialization potential. These non-equity, non-repayable grants help fund prototype development, product validation, technology development, testing, commercialization, and business incubation.",
