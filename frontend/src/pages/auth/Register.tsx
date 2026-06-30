@@ -29,6 +29,7 @@ import { useAppState } from "../../context/AppContext";
 import { programCatalog } from "../../data/programCatalog";
 import { authApi } from "../../services/authApi";
 import { contentApi } from "../../services/contentApi";
+import { industrySectors } from "../../data/industrySectors";
 
 type RegistrationForm = {
   logoName: string;
@@ -66,12 +67,48 @@ const steps = [
 
 const stageOptions = ["Ideation", "Validation", "Early Traction", "Scaling"];
 const fundingOptions = ["Funded", "Bootstrapped"];
-const industryOptions = ["AI", "Fintech", "Healthtech", "Edtech", "Manufacturing", "Agri", "Climate", "Other"];
-const sectorOptions = ["SaaS", "D2C", "B2B", "B2C", "Marketplace", "Hardware", "Services", "Other"];
+const industryOptions = Object.keys(industrySectors);
 const serviceOptions = ["Mobile", "Online Aggregator", "Platform", "Others", "SaaS"];
 const interestOptions = ["All", "Investors", "Incubators", "Other Startups", "Mentors", "Accelerators"];
 const natureOptions = ["Private Limited Company", "LLP", "Partnership", "Section 8", "Sole Proprietorship", "Other"];
-const stateOptions = ["Punjab", "Delhi", "Haryana", "Maharashtra", "Karnataka", "Gujarat", "Tamil Nadu", "Other"];
+const stateOptions = [
+  "Andhra Pradesh",
+  "Arunachal Pradesh",
+  "Assam",
+  "Bihar",
+  "Chhattisgarh",
+  "Goa",
+  "Gujarat",
+  "Haryana",
+  "Himachal Pradesh",
+  "Jharkhand",
+  "Karnataka",
+  "Kerala",
+  "Madhya Pradesh",
+  "Maharashtra",
+  "Manipur",
+  "Meghalaya",
+  "Mizoram",
+  "Nagaland",
+  "Odisha",
+  "Punjab",
+  "Rajasthan",
+  "Sikkim",
+  "Tamil Nadu",
+  "Telangana",
+  "Tripura",
+  "Uttar Pradesh",
+  "Uttarakhand",
+  "West Bengal",
+  "Andaman and Nicobar Islands",
+  "Chandigarh",
+  "Dadra and Nagar Haveli and Daman and Diu",
+  "Delhi",
+  "Jammu and Kashmir",
+  "Ladakh",
+  "Lakshadweep",
+  "Puducherry"
+];
 
 export const Register: React.FC = () => {
   const { showToast } = useAppState();
@@ -109,6 +146,8 @@ export const Register: React.FC = () => {
     agreeTerms: false,
   });
 
+  const sectorOptions = form.industry ? (industrySectors[form.industry] || []) : [];
+
   const updateField = <K extends keyof RegistrationForm>(key: K, value: RegistrationForm[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
@@ -127,7 +166,11 @@ export const Register: React.FC = () => {
     const nextErrors: Record<string, string> = {};
 
     if (targetStep === 1) {
+      if (!form.logoName && !logoPreview) nextErrors.logoName = "Company logo is required.";
+      if (form.hasCompanyLogo === null) nextErrors.hasCompanyLogo = "Please confirm if this is your logo.";
+      if (!form.fundingStatus) nextErrors.fundingStatus = "Funding status is required.";
       if (!form.startupName.trim()) nextErrors.startupName = "Startup name is required.";
+      if (!form.stage) nextErrors.stage = "Stage is required.";
       if (!form.startupBrief.trim()) nextErrors.startupBrief = "A short startup brief helps complete registration.";
     }
 
@@ -181,7 +224,7 @@ export const Register: React.FC = () => {
     };
     setErrors(mergedErrors);
 
-    if (mergedErrors.startupName || mergedErrors.startupBrief) {
+    if (mergedErrors.startupName || mergedErrors.startupBrief || mergedErrors.logoName || mergedErrors.hasCompanyLogo || mergedErrors.fundingStatus || mergedErrors.stage) {
       setStep(1);
     } else if (mergedErrors.email || mergedErrors.mobile || mergedErrors.city) {
       setStep(2);
@@ -364,10 +407,12 @@ export const Register: React.FC = () => {
                   <div>
                     <div className="mb-2 flex items-center gap-2 text-[13px] font-black uppercase tracking-wider text-slate-500">
                       <Upload className="h-4 w-4 text-[#FF6B00]" />
-                      Entity/company logo
+                      Entity/company logo <span className="text-red-500">*</span>
                       <Info className="h-4 w-4 text-slate-300" />
                     </div>
-                    <label className="flex min-h-48 cursor-pointer items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-6 text-center transition-all duration-200 hover:border-[#FF6B00] hover:bg-white hover:shadow-xs">
+                    <label className={`flex min-h-48 cursor-pointer items-center justify-center rounded-2xl border-2 border-dashed p-6 text-center transition-all duration-200 hover:border-[#FF6B00] hover:bg-white hover:shadow-xs ${
+                      errors.logoName ? "border-red-400 bg-red-50/10" : "border-slate-200 bg-slate-50"
+                    }`}>
                       <div className="space-y-3">
                         {logoPreview ? (
                           <img
@@ -394,11 +439,12 @@ export const Register: React.FC = () => {
                         onChange={(e) => handleLogoUpload(e.target.files?.[0] || null)}
                       />
                     </label>
+                    {errors.logoName && <p className="mt-1 text-xs font-bold text-red-500">{errors.logoName}</p>}
                   </div>
 
                   <div>
                     <div className="mb-2 text-[13px] font-black uppercase tracking-wider text-slate-500">
-                      Is this your company/institution logo
+                      Is this your company/institution logo <span className="text-red-500">*</span>
                     </div>
                     <div className="flex flex-wrap gap-3">
                       {[
@@ -419,11 +465,12 @@ export const Register: React.FC = () => {
                         </button>
                       ))}
                     </div>
+                    {errors.hasCompanyLogo && <p className="mt-1 text-xs font-bold text-red-500">{errors.hasCompanyLogo}</p>}
                   </div>
 
                   <div>
                     <label className="mb-2 block text-[13px] font-black uppercase tracking-wider text-slate-500">
-                      Funded/bootstrapped?
+                      Funded/bootstrapped? <span className="text-red-500">*</span>
                     </label>
                     <div className="flex flex-wrap gap-3">
                       {fundingOptions.map((option) => (
@@ -441,6 +488,7 @@ export const Register: React.FC = () => {
                         </button>
                       ))}
                     </div>
+                    {errors.fundingStatus && <p className="mt-1 text-xs font-bold text-red-500">{errors.fundingStatus}</p>}
                   </div>
                 </div>
 
@@ -463,7 +511,7 @@ export const Register: React.FC = () => {
 
                   <div>
                     <label className="mb-2 block text-[13px] font-black uppercase tracking-wider text-slate-500">
-                      Stage
+                      Stage <span className="text-red-500">*</span>
                     </label>
                     <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                       {stageOptions.map((option) => (
@@ -481,6 +529,7 @@ export const Register: React.FC = () => {
                         </button>
                       ))}
                     </div>
+                    {errors.stage && <p className="mt-1 text-xs font-bold text-red-500">{errors.stage}</p>}
                   </div>
 
                   <div>
@@ -622,7 +671,10 @@ export const Register: React.FC = () => {
                   <div className="relative">
                     <select
                       value={form.industry}
-                      onChange={(e) => updateField("industry", e.target.value)}
+                      onChange={(e) => {
+                        updateField("industry", e.target.value);
+                        updateField("sector", "");
+                      }}
                       className={`w-full appearance-none rounded-xl border-2 bg-white py-3 pl-4 pr-10 text-sm font-semibold text-slate-800 outline-none transition duration-200 hover:border-slate-300 focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/8 ${
                         errors.industry ? "border-red-400 bg-red-50/10" : "border-slate-200"
                       }`}
