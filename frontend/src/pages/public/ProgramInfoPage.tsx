@@ -73,19 +73,6 @@ export const ProgramInfoPage: React.FC = () => {
               </DetailPanel>
             </div>
 
-            <div className="bg-white border border-slate-200 rounded-lg p-5 space-y-4">
-              <h2 className="text-base font-black text-[#0B2A5B]">Application Process</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {program.processSteps.map((step, index) => (
-                  <div key={step} className="flex gap-3 rounded-lg bg-slate-50 border border-slate-100 p-4">
-                    <span className="h-7 w-7 rounded-full bg-[#0B2A5B] text-white flex items-center justify-center text-xs font-black shrink-0">
-                      {index + 1}
-                    </span>
-                    <p className="text-sm leading-relaxed text-slate-700">{step}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
           </div>
 
           <aside className="lg:col-span-4 space-y-5 lg:sticky lg:top-28">
@@ -108,17 +95,6 @@ export const ProgramInfoPage: React.FC = () => {
               </button>
             </div>
 
-            <div className="bg-white border border-slate-200 rounded-lg p-5 space-y-3">
-              <h2 className="text-base font-black text-[#0B2A5B]">Required Documents</h2>
-              <div className="space-y-2">
-                {program.requiredDocuments.map((item) => (
-                  <div key={item} className="flex items-center gap-3 rounded-lg bg-slate-50 border border-slate-100 p-3">
-                    <FileText className="h-4.5 w-4.5 text-slate-500 shrink-0" />
-                    <span className="text-xs font-semibold text-slate-700">{item}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
           </aside>
         </div>
       </section>

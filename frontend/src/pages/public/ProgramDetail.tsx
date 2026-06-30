@@ -335,20 +335,6 @@ export const ProgramDetail: React.FC = () => {
                 ))}
               </SimplePanel>
             </div>
-
-            <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-              <h3 className="text-base font-black text-[#0B2A5B]">Application Process</h3>
-              <div className="mt-4 grid gap-3 md:grid-cols-2">
-                {prog.processSteps.map((step, index) => (
-                  <div key={step} className="flex gap-3 rounded-md border border-slate-200 bg-slate-50 p-4">
-                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#0B2A5B] text-xs font-black text-white">
-                      {index + 1}
-                    </span>
-                    <p className="text-sm leading-6 text-slate-700">{step}</p>
-                  </div>
-                ))}
-              </div>
-            </section>
           </div>
 
           <aside className="space-y-5 lg:col-span-4 lg:sticky lg:top-28">
@@ -380,18 +366,6 @@ export const ProgramDetail: React.FC = () => {
                   Applications Closed
                 </span>
               )}
-            </section>
-
-            <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-              <h3 className="text-base font-black text-[#0B2A5B]">Required Documents</h3>
-              <div className="mt-4 space-y-2">
-                {prog.requiredDocuments.map((doc) => (
-                  <div key={doc} className="flex items-center gap-3 rounded-md border border-slate-200 bg-slate-50 p-3">
-                    <FileText className="h-4 w-4 shrink-0 text-slate-500" />
-                    <span className="text-xs font-semibold leading-5 text-slate-700">{doc}</span>
-                  </div>
-                ))}
-              </div>
             </section>
 
             {prog.disclaimer && (

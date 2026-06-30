@@ -15,7 +15,7 @@ const otpTokenSchema = new mongoose.Schema(
     },
     purpose: {
       type: String,
-      enum: ["registration"],
+      enum: ["registration", "forgot_password"],
       default: "registration",
     },
     expiresAt: {

@@ -5,7 +5,7 @@ import { OtpToken } from "../models/OtpToken.js";
 import { normalizeStartupProfile, syncStartupProfileRecord } from "../services/startupProfileService.js";
 import { AppError } from "../utils/errors.js";
 import { buildSession, generateOtp, hashOtp, normalizeEmail, signToken } from "../utils/auth.js";
-import { sendOtpEmail } from "../utils/otpEmail.js";
+import { sendOtpEmail, sendPasswordResetOtpEmail } from "../utils/otpEmail.js";
 
 const ensureAdminUser = async () => {
   const email = normalizeEmail(env.adminEmail);
@@ -199,6 +199,79 @@ export const resendOtp = async (req, res, next) => {
       success: true,
       message: "A new verification code has been sent to your email address.",
       email: user.email,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const forgotPassword = async (req, res, next) => {
+  try {
+    const email = normalizeEmail(req.body.email);
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      throw new AppError("Account with this email does not exist.", 404);
+    }
+
+    const otp = generateOtp();
+    await OtpToken.deleteMany({ email, purpose: "forgot_password" });
+    await OtpToken.create({
+      email,
+      otpHash: hashOtp(otp),
+      purpose: "forgot_password",
+      expiresAt: new Date(Date.now() + env.otpTtlMinutes * 60 * 1000),
+    });
+
+    await sendPasswordResetOtpEmail({ to: email, otp, name: user.name });
+
+    res.json({
+      success: true,
+      message: "Verification code sent to your email address.",
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const resetPassword = async (req, res, next) => {
+  try {
+    const email = normalizeEmail(req.body.email);
+    const record = await OtpToken.findOne({ email, purpose: "forgot_password" }).sort({ createdAt: -1 });
+
+    if (!record) {
+      throw new AppError("Verification OTP expired or not found.", 400);
+    }
+
+    if (record.attempts >= 5) {
+      await OtpToken.deleteMany({ email, purpose: "forgot_password" });
+      throw new AppError("Too many invalid OTP attempts. Please try again.", 429);
+    }
+
+    if (record.expiresAt.getTime() < Date.now()) {
+      await OtpToken.deleteMany({ email, purpose: "forgot_password" });
+      throw new AppError("Verification OTP expired. Please try again.", 400);
+    }
+
+    if (record.otpHash !== hashOtp(req.body.otp)) {
+      record.attempts += 1;
+      await record.save();
+      throw new AppError("Incorrect 6-digit verification code.", 400);
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      throw new AppError("Account not found.", 444);
+    }
+
+    user.passwordHash = await bcrypt.hash(req.body.password, 12);
+    await user.save();
+
+    await OtpToken.deleteMany({ email, purpose: "forgot_password" });
+
+    res.json({
+      success: true,
+      message: "Your password has been reset successfully. You can now login.",
     });
   } catch (err) {
     next(err);
