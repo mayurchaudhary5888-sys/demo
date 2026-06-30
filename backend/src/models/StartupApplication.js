@@ -2,9 +2,14 @@ import mongoose from "mongoose";
 
 const teamMemberSchema = new mongoose.Schema({
   name: String,
-  role: String,
-  email: String,
-  mobile: String,
+  aadhaarNumber: String,
+});
+
+const fundsDeploymentPlanSchema = new mongoose.Schema({
+  expenseBucket: String,
+  amount: String,
+  startDate: String,
+  endDate: String,
 });
 
 const startupApplicationSchema = new mongoose.Schema(
@@ -66,6 +71,7 @@ const startupApplicationSchema = new mongoose.Schema(
     linkedInUrl: String,
     teamMembers: [teamMemberSchema],
     fullTimeEmployees: Number,
+    teams: [{ teamName: String, employeeCount: Number }],
     raisedFunding: String,
     fundingAmount: String,
     fundingInstrument: String,
@@ -73,9 +79,11 @@ const startupApplicationSchema = new mongoose.Schema(
     incubator2: String,
     incubator3: String,
     videoUrl: String,
+    fundsDeploymentPlan: [fundsDeploymentPlanSchema],
 
     // Documents
     pitchDeckName: String,
+    marketReportName: String,
     otherDocumentName: String,
 
     // Incubator Preferences
