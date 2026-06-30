@@ -52,8 +52,8 @@ export const Navbar: React.FC = () => {
       label: "NETWORK",
       path: "/network",
       dropdownItems: [
-        { label: "Startup Profiles", path: "/network/startup-profiles" },
-        { label: "Angel / VC / Investor Profiles", path: "/network/investor-profiles" },
+        { label: "Startup Connect", path: "/network/startup-profiles" },
+        { label: "Angel / VC / Investor ", path: "/network/investor-profiles" },
       ],
     },
     {
@@ -145,7 +145,7 @@ export const Navbar: React.FC = () => {
       setShowLoginModal(false);
       setLoginEmail("");
       setLoginPassword("");
-      
+
       if (u.role === "admin") {
         navigate("/admin/dashboard");
       } else {
@@ -229,7 +229,7 @@ export const Navbar: React.FC = () => {
       }));
       showToast("Registration initiated! Please verify your email.", "success");
       setShowLoginModal(false);
-      
+
       setRegName("");
       setRegEmail("");
       setRegMobile("");
@@ -271,7 +271,7 @@ export const Navbar: React.FC = () => {
       {/* Primary White Navbar */}
       <header className="bg-white border-b border-slate-200 shadow-sm relative min-h-[5.75rem] sm:min-h-[6.25rem] flex items-center">
         <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-3 sm:py-4 flex items-center justify-between">
-          
+
           <div className="flex items-center gap-3 sm:gap-4 shrink-0">
             <div className="flex items-center gap-2.5 sm:gap-3" id="navbar-logo">
               <Link to="/" aria-label="Go to home" className="flex items-center">
@@ -299,9 +299,8 @@ export const Navbar: React.FC = () => {
                 return (
                   <div key={item.label} className="relative group h-full flex items-center">
                     <button
-                      className={`text-[12px] font-extrabold uppercase tracking-wider flex items-center gap-1 cursor-pointer transition-colors relative py-2 ${
-                        active ? "text-[#FF6B00]" : "text-[#0B2A5B] hover:text-[#FF6B00]"
-                      }`}
+                      className={`text-[12px] font-extrabold uppercase tracking-wider flex items-center gap-1 cursor-pointer transition-colors relative py-2 ${active ? "text-[#FF6B00]" : "text-[#0B2A5B] hover:text-[#FF6B00]"
+                        }`}
                     >
                       <span>{item.label}</span>
                       <ChevronDown className="w-3 h-3" />
@@ -316,11 +315,10 @@ export const Navbar: React.FC = () => {
                         <Link
                           key={sub.label}
                           to={sub.path}
-                          className={`block px-3 py-2 text-[11px] font-bold rounded transition-colors ${
-                            location.pathname === sub.path.split("?")[0]
+                          className={`block px-3 py-2 text-[11px] font-bold rounded transition-colors ${location.pathname === sub.path.split("?")[0]
                               ? "bg-slate-50 text-[#FF6B00]"
                               : "text-slate-700 hover:bg-slate-50 hover:text-[#FF6B00]"
-                          }`}
+                            }`}
                         >
                           {sub.label}
                         </Link>
@@ -334,9 +332,8 @@ export const Navbar: React.FC = () => {
                 <Link
                   key={item.label}
                   to={item.path}
-                  className={`text-[12px] font-extrabold uppercase tracking-wider relative py-2 transition-colors ${
-                    active ? "text-[#FF6B00]" : "text-[#0B2A5B] hover:text-[#FF6B00]"
-                  }`}
+                  className={`text-[12px] font-extrabold uppercase tracking-wider relative py-2 transition-colors ${active ? "text-[#FF6B00]" : "text-[#0B2A5B] hover:text-[#FF6B00]"
+                    }`}
                 >
                   <span>{item.label}</span>
                   {active && (
@@ -396,11 +393,10 @@ export const Navbar: React.FC = () => {
                               key={item.path}
                               to={item.path}
                               onClick={() => setProfileMenuOpen(false)}
-                              className={`flex items-center gap-3 px-4 py-2.5 text-sm font-semibold transition-colors ${
-                                location.pathname === item.path
+                              className={`flex items-center gap-3 px-4 py-2.5 text-sm font-semibold transition-colors ${location.pathname === item.path
                                   ? "bg-slate-50 text-[#0B2A5B]"
                                   : "text-slate-700 hover:bg-slate-50 hover:text-[#0B2A5B]"
-                              }`}
+                                }`}
                             >
                               <span className="text-slate-400">{item.icon}</span>
                               <span>{item.label}</span>
@@ -409,11 +405,10 @@ export const Navbar: React.FC = () => {
                           <Link
                             to="/startup/settings"
                             onClick={() => setProfileMenuOpen(false)}
-                            className={`flex w-full items-center gap-3 px-4 py-2.5 text-sm font-semibold transition-colors ${
-                              location.pathname.startsWith("/startup/settings")
+                            className={`flex w-full items-center gap-3 px-4 py-2.5 text-sm font-semibold transition-colors ${location.pathname.startsWith("/startup/settings")
                                 ? "bg-slate-50 text-[#0B2A5B]"
                                 : "text-slate-700 hover:bg-slate-50 hover:text-[#0B2A5B]"
-                            }`}
+                              }`}
                           >
                             <Settings className="w-4 h-4 text-slate-400" />
                             <span>Settings</span>
@@ -484,11 +479,10 @@ export const Navbar: React.FC = () => {
                   <div key={item.label} className="space-y-1">
                     <button
                       onClick={() => toggleMobileDropdown(item.label)}
-                      className={`w-full flex items-center justify-between px-3 py-3 text-xs font-bold uppercase tracking-wider rounded-lg transition-all ${
-                        active
+                      className={`w-full flex items-center justify-between px-3 py-3 text-xs font-bold uppercase tracking-wider rounded-lg transition-all ${active
                           ? "bg-slate-50 text-[#FF6B00]"
                           : "text-slate-750 hover:bg-slate-50"
-                      }`}
+                        }`}
                     >
                       <span>{item.label}</span>
                       <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isMobileOpen ? "rotate-180" : ""}`} />
@@ -516,11 +510,10 @@ export const Navbar: React.FC = () => {
                   key={item.label}
                   to={item.path}
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`block px-3 py-3 text-xs font-bold uppercase tracking-wider rounded-lg transition-all ${
-                    active
+                  className={`block px-3 py-3 text-xs font-bold uppercase tracking-wider rounded-lg transition-all ${active
                       ? "bg-[#0B2A5B]/5 text-[#FF6B00]"
                       : "text-slate-750 hover:bg-slate-50"
-                  }`}
+                    }`}
                 >
                   {item.label}
                 </Link>
@@ -579,7 +572,7 @@ export const Navbar: React.FC = () => {
       {showLoginModal && (
         <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-slate-900/65 backdrop-blur-xs animate-in fade-in duration-200">
           <div className="bg-white rounded-2xl border border-slate-100 shadow-2xl max-w-3xl w-full flex flex-col md:flex-row overflow-hidden relative min-h-[460px] animate-in zoom-in-95 duration-200">
-            
+
             {/* Orange circular close button with white 'x' */}
             <button
               onClick={() => setShowLoginModal(false)}
@@ -614,9 +607,8 @@ export const Navbar: React.FC = () => {
                         value={loginEmail}
                         onChange={(e) => setLoginEmail(e.target.value)}
                         placeholder="Please enter your email address"
-                        className={`w-full px-3 py-2.5 border-2 rounded-lg text-xs font-semibold text-slate-700 outline-none border-[#F05A28] ${
-                          loginErrors.email ? "bg-red-50/10 border-red-500" : ""
-                        }`}
+                        className={`w-full px-3 py-2.5 border-2 rounded-lg text-xs font-semibold text-slate-700 outline-none border-[#F05A28] ${loginErrors.email ? "bg-red-50/10 border-red-500" : ""
+                          }`}
                       />
                       {loginErrors.email && (
                         <p className="text-red-500 text-[9.5px] font-bold">⚠ {loginErrors.email}</p>
@@ -630,9 +622,8 @@ export const Navbar: React.FC = () => {
                           value={loginPassword}
                           onChange={(e) => setLoginPassword(e.target.value)}
                           placeholder="Please enter your password"
-                          className={`w-full px-3 py-2.5 border-2 rounded-lg text-xs font-semibold text-slate-700 outline-none border-[#F05A28] pr-10 ${
-                            loginErrors.password ? "bg-red-50/10 border-red-500" : ""
-                          }`}
+                          className={`w-full px-3 py-2.5 border-2 rounded-lg text-xs font-semibold text-slate-700 outline-none border-[#F05A28] pr-10 ${loginErrors.password ? "bg-red-50/10 border-red-500" : ""
+                            }`}
                         />
                         <button
                           type="button"
@@ -729,9 +720,8 @@ export const Navbar: React.FC = () => {
                         value={regName}
                         onChange={(e) => setRegName(e.target.value)}
                         placeholder="Full Name"
-                        className={`w-full px-3 py-2 border rounded-lg text-xs font-semibold text-slate-700 outline-none focus:border-[#F05A28] ${
-                          regErrors.name ? "border-red-500 bg-red-50/10" : "border-slate-300"
-                        }`}
+                        className={`w-full px-3 py-2 border rounded-lg text-xs font-semibold text-slate-700 outline-none focus:border-[#F05A28] ${regErrors.name ? "border-red-500 bg-red-50/10" : "border-slate-300"
+                          }`}
                       />
                       {regErrors.name && (
                         <p className="text-red-500 text-[9px] font-bold">⚠ {regErrors.name}</p>
@@ -744,9 +734,8 @@ export const Navbar: React.FC = () => {
                         value={regEmail}
                         onChange={(e) => setRegEmail(e.target.value)}
                         placeholder="Email Address"
-                        className={`w-full px-3 py-2 border rounded-lg text-xs font-semibold text-slate-700 outline-none focus:border-[#F05A28] ${
-                          regErrors.email ? "border-red-500 bg-red-50/10" : "border-slate-300"
-                        }`}
+                        className={`w-full px-3 py-2 border rounded-lg text-xs font-semibold text-slate-700 outline-none focus:border-[#F05A28] ${regErrors.email ? "border-red-500 bg-red-50/10" : "border-slate-300"
+                          }`}
                       />
                       {regErrors.email && (
                         <p className="text-red-500 text-[9px] font-bold">⚠ {regErrors.email}</p>
@@ -759,9 +748,8 @@ export const Navbar: React.FC = () => {
                         value={regMobile}
                         onChange={(e) => setRegMobile(e.target.value)}
                         placeholder="10-digit Mobile Number"
-                        className={`w-full px-3 py-2 border rounded-lg text-xs font-semibold text-slate-700 outline-none focus:border-[#F05A28] ${
-                          regErrors.mobile ? "border-red-500 bg-red-50/10" : "border-slate-300"
-                        }`}
+                        className={`w-full px-3 py-2 border rounded-lg text-xs font-semibold text-slate-700 outline-none focus:border-[#F05A28] ${regErrors.mobile ? "border-red-500 bg-red-50/10" : "border-slate-300"
+                          }`}
                       />
                       {regErrors.mobile && (
                         <p className="text-red-500 text-[9px] font-bold">⚠ {regErrors.mobile}</p>
@@ -773,9 +761,8 @@ export const Navbar: React.FC = () => {
                         <select
                           value={regProgram}
                           onChange={(e) => setRegProgram(e.target.value)}
-                          className={`w-full appearance-none px-3 py-2.5 border rounded-lg text-xs font-semibold text-slate-700 outline-none focus:border-[#F05A28] ${
-                            regErrors.selectedProgram ? "border-red-500 bg-red-50/10" : "border-slate-300"
-                          }`}
+                          className={`w-full appearance-none px-3 py-2.5 border rounded-lg text-xs font-semibold text-slate-700 outline-none focus:border-[#F05A28] ${regErrors.selectedProgram ? "border-red-500 bg-red-50/10" : "border-slate-300"
+                            }`}
                         >
                           <option value="">Select support</option>
                           {programCatalog.map((program) => (
@@ -797,9 +784,8 @@ export const Navbar: React.FC = () => {
                         value={regPassword}
                         onChange={(e) => setRegPassword(e.target.value)}
                         placeholder="Password: 8+ chars, upper, lower, number"
-                        className={`w-full px-3 py-2 border rounded-lg text-xs font-semibold text-slate-700 outline-none focus:border-[#F05A28] ${
-                          regErrors.password ? "border-red-500 bg-red-50/10" : "border-slate-300"
-                        }`}
+                        className={`w-full px-3 py-2 border rounded-lg text-xs font-semibold text-slate-700 outline-none focus:border-[#F05A28] ${regErrors.password ? "border-red-500 bg-red-50/10" : "border-slate-300"
+                          }`}
                       />
                       {regErrors.password && (
                         <p className="text-red-500 text-[9px] font-bold">⚠ {regErrors.password}</p>
@@ -825,7 +811,7 @@ export const Navbar: React.FC = () => {
 
             {/* RIGHT COLUMN: Soft yellow brand info box with gold borders wrapper matching screenshot */}
             <div className="w-full md:w-2/5 p-4 sm:p-5 bg-[#FFFDF4] border-t md:border-t-0 md:border-l border-[#FCD34D]/40">
-              
+
               <div className="border-2 border-[#FCD34D] rounded-3xl p-6 bg-white w-full h-full flex flex-col justify-between items-center text-center gap-6 min-h-[380px]">
                 {/* BHASKAR brand stack */}
                 <div className="space-y-3 w-full">
