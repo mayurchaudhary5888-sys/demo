@@ -34,10 +34,20 @@ const getTransporter = () => {
         user: env.smtpUser,
         pass: env.smtpPass,
       },
+      tls: {
+        rejectUnauthorized: false
+      }
     });
   }
 
   return cachedTransporter;
+};
+
+const getFromAddress = () => {
+  if (env.smtpFrom && !env.smtpFrom.includes("no-reply@startupindia.gov.in") && !env.smtpFrom.includes("coderparth2@gmail.com")) {
+    return env.smtpFrom;
+  }
+  return `BHASKAR Startup India <${env.smtpUser}>`;
 };
 
 const escapeHtml = (value = "") =>
@@ -204,7 +214,7 @@ export const sendOtpEmail = async ({ to, otp, name }) => {
   }
 
   await transporter.sendMail({
-    from: env.smtpFrom,
+    from: getFromAddress(),
     to,
     subject,
     text,
@@ -312,7 +322,7 @@ export const sendPasswordResetOtpEmail = async ({ to, otp, name }) => {
   }
 
   await transporter.sendMail({
-    from: env.smtpFrom,
+    from: getFromAddress(),
     to,
     subject,
     text,
@@ -472,12 +482,12 @@ export const sendApplicationStatusEmail = async ({
   }
 
   await transporter.sendMail({
-    from: env.smtpFrom,
+    from: getFromAddress(),
     to,
     subject,
     text,
     html,
-    replyTo: env.smtpFrom,
+    replyTo: getFromAddress(),
     attachments,
   });
 
