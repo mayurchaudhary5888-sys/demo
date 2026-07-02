@@ -19,10 +19,20 @@ const getTransporter = () => {
         user: env.smtpUser,
         pass: env.smtpPass,
       },
+      tls: {
+        rejectUnauthorized: false
+      }
     });
   }
 
   return cachedTransporter;
+};
+
+const getFromAddress = () => {
+  if (env.smtpFrom && !env.smtpFrom.includes("no-reply@startupindia.gov.in") && !env.smtpFrom.includes("coderparth2@gmail.com")) {
+    return env.smtpFrom;
+  }
+  return `BHASKAR Startup India <${env.smtpUser}>`;
 };
 
 /**
@@ -38,8 +48,8 @@ export const sendContactQueryEmail = async (queryData) => {
   }
 
   const mailOptions = {
-    from: env.smtpFrom,
-    to: "helloitsmeparth@gmail.com",
+    from: getFromAddress(),
+    to: "support@startupbharat.info",
     subject: `New Contact Query Received - ${queryData.id} [${queryData.subject || "General"}]`,
     html: `
       <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #e4eaf7; padding: 20px; border-radius: 10px;">
@@ -126,8 +136,8 @@ export const sendInvestorProfileEmail = async (investorData) => {
     : investorData.sectors || "N/A";
 
   const mailOptions = {
-    from: env.smtpFrom,
-    to: "helloitsmeparth@gmail.com",
+    from: getFromAddress(),
+    to: "support@startupbharat.info",
     subject: `New Investor Profile Registered - ${investorData.firmName} (${investorData.name})`,
     html: `
       <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #e4eaf7; padding: 20px; border-radius: 10px;">
