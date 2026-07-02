@@ -49,7 +49,7 @@ export const Footer: React.FC = () => {
       </div>
 
       <div className="border-t border-white/10 bg-[#151515] px-4 py-6 text-center text-sm">
-        <p>© {new Date().getFullYear()} Startup India. All Rights Reserved.</p>
+        <p>© {new Date().getFullYear()} Startup Bharat. All Rights Reserved.</p>
       </div>
     </footer>
   );
