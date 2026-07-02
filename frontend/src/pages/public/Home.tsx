@@ -75,14 +75,18 @@ export const Home: React.FC = () => {
         },
       });
 
-      // Frame 0: Unveiling one-stop platform
+      // Frame 0: Unveiling one-stop platform (Transition sweep)
       tl.set(".gsap-hero-frame-0", { autoAlpha: 1, pointerEvents: "auto" })
-        .to(".gsap-frame0-left", { xPercent: 0, duration: 0.4 }, 0)
-        .to(".gsap-frame0-right", { xPercent: 0, duration: 0.4 }, 0)
-        .to(".gsap-frame0-text", { autoAlpha: 1, y: 0, filter: "blur(0px)", duration: 0.4 }, 0.1)
-        .to(".gsap-frame0-text", { autoAlpha: 0, y: -20, filter: "blur(5px)", duration: 0.3 }, 1.2)
-        .to(".gsap-frame0-left", { xPercent: -100, duration: 0.35 }, 1.3)
-        .to(".gsap-frame0-right", { xPercent: 100, duration: 0.35 }, 1.3)
+        .to(".gsap-frame0-left", { xPercent: 0, duration: 0.45 }, 0)
+        .to(".gsap-frame0-right", { xPercent: 0, duration: 0.45 }, 0)
+        .to(".gsap-frame0-left", { xPercent: -100, duration: 0.45 }, 0.45)
+        .to(".gsap-frame0-right", { xPercent: 100, duration: 0.45 }, 0.45)
+        .fromTo(".gsap-frame0-text", 
+          { autoAlpha: 0, y: 30, filter: "blur(5px)" },
+          { autoAlpha: 1, y: 0, filter: "blur(0px)", duration: 0.45 }, 
+          0.6
+        )
+        .to(".gsap-frame0-text", { autoAlpha: 0, y: -20, filter: "blur(5px)", duration: 0.35 }, 1.4)
         .set(".gsap-hero-frame-0", { autoAlpha: 0, pointerEvents: "none" })
 
       // Frame 1: community for every stakeholder of the Indian startup ecosystem
@@ -212,7 +216,7 @@ export const Home: React.FC = () => {
 
   return (
     <div className="w-full flex flex-col bg-white" id="homepage-container">
-      
+
       {/* 1. HERO SECTION INSPIRED BY THE BHASKAR OPENING ANIMATION */}
       <section ref={heroRootRef} className="relative min-h-[500px] md:min-h-[calc(100vh-8rem)] overflow-hidden bg-white rounded-br-[60px] md:rounded-br-[220px] border-b border-slate-100" id="home-animated-hero">
         <div className="absolute bottom-0 right-0 h-[38%] w-[70%] rounded-tl-full bg-slate-50" />
@@ -233,11 +237,11 @@ export const Home: React.FC = () => {
 
         {/* Slide 0 (Photo 1) */}
         <div className="gsap-hero-frame gsap-hero-frame-0 absolute inset-0 z-10 flex items-center justify-center px-6">
-          <div className="gsap-frame0-left absolute inset-y-0 left-0 w-[28%] bg-[#07144A] hidden md:block" />
-          <div className="gsap-frame0-right absolute inset-y-0 right-0 w-[45%] bg-[#FF6B00] hidden md:block" style={{ clipPath: "polygon(35% 100%, 100% 20%, 100% 100%)" }} />
-          
-          <div className="flex max-w-5xl flex-col items-center gap-5 text-center z-20">
-            <h1 className="gsap-frame0-text max-w-4xl text-center text-3xl sm:text-5xl lg:text-6xl leading-tight font-medium tracking-normal text-[#07144A]">
+          <div className="gsap-frame0-left absolute inset-y-0 left-0 w-[20%] lg:w-[25%] xl:w-[28%] bg-[#07144A] hidden md:block" />
+          <div className="gsap-frame0-right absolute inset-y-0 right-0 w-[30%] lg:w-[38%] xl:w-[45%] bg-[#FF6B00] hidden md:block" style={{ clipPath: "polygon(35% 100%, 100% 20%, 100% 100%)" }} />
+
+          <div className="relative z-20 flex max-w-xs sm:max-w-md md:max-w-lg lg:max-w-2xl xl:max-w-4xl flex-col items-center gap-5 text-center">
+            <h1 className="gsap-frame0-text max-w-4xl text-center text-2xl sm:text-4xl md:text-4xl lg:text-5xl xl:text-6xl leading-tight font-medium tracking-normal text-[#07144A]">
               Unveiling <span className="font-black text-[#07144A]">one-stop platform</span>
             </h1>
           </div>
@@ -332,7 +336,7 @@ export const Home: React.FC = () => {
         <div className="gsap-hero-frame gsap-hero-frame-9 absolute inset-0 z-10 flex flex-col items-center justify-center bg-white px-6">
           <div className="gsap-final-left absolute left-0 top-0 bottom-0 w-[30%] bg-[#FCD34D] hidden md:block" style={{ clipPath: "polygon(0 0, 100% 0, 40% 100%, 0 100%)" }} />
           <div className="gsap-final-right absolute right-0 top-0 bottom-0 w-[30%] bg-[#FCD34D] hidden md:block" style={{ clipPath: "polygon(60% 0, 100% 0, 100% 100%, 0 100%)" }} />
-          
+
           <div className="gsap-final-content flex flex-col items-center gap-4 sm:gap-6 z-20">
             <img
               src="/logos/bhaskar.jpeg"
