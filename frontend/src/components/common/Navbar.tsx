@@ -653,7 +653,7 @@ export const Navbar: React.FC = () => {
                       disabled={loginLoading}
                       className="w-full bg-[#F05A28] hover:bg-[#D9481B] text-white font-extrabold py-2.5 rounded-lg text-xs uppercase tracking-wider transition-all cursor-pointer shadow-sm disabled:opacity-50 mt-1"
                     >
-                      {loginLoading ? "Authenticating..." : "Login"}
+                      Login
                     </button>
                   </form>
 
