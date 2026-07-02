@@ -69,7 +69,7 @@ export const env = {
   smtpPort: Number(process.env.SMTP_PORT || 587),
   smtpUser: process.env.SMTP_USER || "",
   smtpPass: process.env.SMTP_PASS || "",
-  smtpFrom: process.env.SMTP_FROM || "BHASKAR Startup India <no-reply@startupindia.gov.in>",
+  smtpFrom: process.env.SMTP_FROM || "",
   smtpSecure: process.env.SMTP_SECURE === "true",
   cloudinaryCloudName: process.env.CLOUDINARY_CLOUD_NAME || "",
   cloudinaryApiKey: process.env.CLOUDINARY_API_KEY || "",

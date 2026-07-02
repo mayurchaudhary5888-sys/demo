@@ -44,10 +44,7 @@ const getTransporter = () => {
 };
 
 const getFromAddress = () => {
-  if (env.smtpFrom && !env.smtpFrom.includes("no-reply@startupindia.gov.in") && !env.smtpFrom.includes("coderparth2@gmail.com")) {
-    return env.smtpFrom;
-  }
-  return `BHASKAR Startup India <${env.smtpUser}>`;
+  return env.smtpFrom || env.smtpUser || "";
 };
 
 const escapeHtml = (value = "") =>
@@ -76,17 +73,16 @@ const emailWrapper = (innerContent) => `
           <!-- Logo Section -->
           <tr>
             <td align="center" style="padding-bottom:28px;">
-              ${
-                logoExists
-                  ? `
+              ${logoExists
+    ? `
                     <div style="display:inline-block;background:#ffffff;border-radius:12px;padding:10px 16px;">
                       <img src="cid:bhaskarlogo" alt="BHASKAR - Bharat Startup Knowledge Access Registry" width="220" style="display:block;width:220px;max-width:100%;height:auto;" />
                     </div>`
-                  : `
+    : `
                   <div style="display:inline-block;background:#ffffff;border-radius:12px;padding:14px 24px;">
                     <span style="font-size:26px;font-weight:900;color:#0B2A5B;letter-spacing:0.06em;">BHASKAR</span>
                   </div>`
-              }
+  }
             </td>
           </tr>
 
@@ -133,7 +129,7 @@ export const sendOtpEmail = async ({ to, otp, name }) => {
     "",
     "If you did not request this code, you can safely ignore this message.",
     "",
-    "Contact: nodal-desk.bhaskar@nic.in",
+    "Contact: support@startupbharat.info",
   ].join("\n");
 
   const otpDigitsHtml = otpDigits
@@ -385,8 +381,8 @@ export const sendApplicationStatusEmail = async ({
         </p>
         <table role="presentation" cellspacing="0" cellpadding="0" width="100%">
           ${requestedDocs
-            .map(
-              (item, index) => `
+      .map(
+        (item, index) => `
             <tr>
               <td width="28" valign="top" style="padding:5px 0;">
                 <div style="width:22px;height:22px;border-radius:50%;background:#FF8A4C;color:#1a1a1d;font-size:11px;font-weight:800;text-align:center;line-height:22px;">
@@ -397,8 +393,8 @@ export const sendApplicationStatusEmail = async ({
                 ${escapeHtml(item)}
               </td>
             </tr>`
-            )
-            .join("")}
+      )
+      .join("")}
         </table>
       </div>
     `
@@ -447,11 +443,10 @@ export const sendApplicationStatusEmail = async ({
 
     <!-- Contact Note -->
     <p style="margin:0 auto 20px;max-width:360px;font-family:Georgia,'Times New Roman',serif;font-size:14px;line-height:1.55;color:#e2e8f0;text-align:center;font-style:italic;">
-      ${
-        requestedDocs.length
-          ? "Reply to this email with the above documents attached. Our review team will continue processing after we receive them."
-          : "Please feel free to contact us in case of any queries or if you need further assistance."
-      }
+      ${requestedDocs.length
+      ? "Reply to this email with the above documents attached. Our review team will continue processing after we receive them."
+      : "Please feel free to contact us in case of any queries or if you need further assistance."
+    }
     </p>
 
     <!-- Contact Link -->
