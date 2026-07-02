@@ -29,10 +29,7 @@ const getTransporter = () => {
 };
 
 const getFromAddress = () => {
-  if (env.smtpFrom && !env.smtpFrom.includes("no-reply@startupindia.gov.in") && !env.smtpFrom.includes("coderparth2@gmail.com")) {
-    return env.smtpFrom;
-  }
-  return `BHASKAR Startup India <${env.smtpUser}>`;
+  return env.smtpFrom || env.smtpUser || "";
 };
 
 /**
