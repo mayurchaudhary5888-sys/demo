@@ -596,7 +596,7 @@ export const Navbar: React.FC = () => {
                   <div className="space-y-1 text-center md:text-left">
                     <h2 className="text-2xl font-black text-[#1E293B] tracking-tight text-center">LOGIN</h2>
                     <p className="text-[10px] text-slate-500 font-bold leading-normal text-center">
-                      You can also access your account using your Startup India credentials.
+                      You can also access your account using your Startup Bharat credentials.
                     </p>
                   </div>
 

@@ -99,7 +99,7 @@ const emailWrapper = (innerContent) => `
           <tr>
             <td align="center" style="padding-top:24px;">
               <p style="margin:0;font-size:12px;color:#6b7280;line-height:1.6;">
-                © ${new Date().getFullYear()} BHASKAR — Bharat Startup Knowledge Access Registry
+                © 2025 BHASKAR — Bharat Startup Knowledge Access Registry
               </p>
             </td>
           </tr>
@@ -178,8 +178,8 @@ export const sendOtpEmail = async ({ to, otp, name }) => {
 
     <!-- Contact Link -->
     <p style="text-align:center;margin:0;">
-      <a href="mailto:nodal-desk.bhaskar@nic.in" style="color:#FF6B6B;text-decoration:none;font-size:15px;font-weight:700;">
-        nodal-desk.bhaskar@nic.in
+      <a href="mailto:support@startupbharat.info" style="color:#FF6B6B;text-decoration:none;font-size:15px;font-weight:700;">
+        support@startupbharat.info
       </a>
     </p>
   `;
