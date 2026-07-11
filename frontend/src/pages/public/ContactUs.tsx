@@ -10,14 +10,7 @@ import { useAppState } from "../../context/AppContext";
 import { INDIAN_STATES } from "../../constants/options";
 import { contentApi } from "../../services/contentApi";
 
-const CITIES_BY_STATE: Record<string, string[]> = {
-  Delhi: ["New Delhi", "Connaught Place", "Dwarka"],
-  Maharashtra: ["Mumbai", "Pune", "Nagpur", "Thane"],
-  Karnataka: ["Bengaluru", "Mysuru", "Hubli-Dharwad"],
-  "Tamil Nadu": ["Chennai", "Coimbatore", "Madurai"],
-  Telangana: ["Hyderabad", "Warangal", "Nizamabad"],
-  Gujarat: ["Ahmedabad", "Surat", "Vadodara"],
-};
+
 
 export const ContactUs: React.FC = () => {
   const { showToast } = useAppState();
@@ -37,19 +30,12 @@ export const ContactUs: React.FC = () => {
     message: "",
   });
 
-  const [cities, setCities] = useState<string[]>([]);
+
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [ticketDetails, setTicketDetails] = useState<{ id: string; date: string } | null>(null);
 
   useEffect(() => {
-    if (formFields.state && formFields.state !== "Other (Type manually)") {
-      const list = CITIES_BY_STATE[formFields.state] || ["Regional Block", "Capital City"];
-      setCities(list);
-      setFormFields((f) => ({ ...f, city: "" }));
-    } else {
-      setCities([]);
-      setFormFields((f) => ({ ...f, city: "" }));
-    }
+    setFormFields((f) => ({ ...f, city: "" }));
   }, [formFields.state]);
 
   const updateField = (key: keyof typeof formFields, value: string) => {
@@ -81,11 +67,8 @@ export const ContactUs: React.FC = () => {
       errs.state = "Please select State";
     }
 
-    const actualCity = (formFields.state === "Other (Type manually)" || formFields.city === "Other (Type manually)") 
-      ? formFields.customCity 
-      : formFields.city;
-    if (!actualCity || !actualCity.trim()) {
-      errs.city = "Please select city";
+    if (!formFields.city || !formFields.city.trim()) {
+      errs.city = "Please enter City";
     }
 
     if (!formFields.queryType) {
@@ -115,7 +98,7 @@ export const ContactUs: React.FC = () => {
       name: formFields.name,
       email: formFields.email,
       state: formFields.state === "Other (Type manually)" ? formFields.customState : formFields.state,
-      city: formFields.state === "Other (Type manually)" || formFields.city === "Other (Type manually)" ? formFields.customCity : formFields.city,
+      city: formFields.city,
       queryType: formFields.queryType === "Other (Type manually)" ? formFields.customQueryType : formFields.queryType,
       message: formFields.message,
     };
@@ -306,48 +289,16 @@ export const ContactUs: React.FC = () => {
 
                       {/* City field */}
                       <div className="space-y-1.5">
-                        {formFields.state === "Other (Type manually)" || formFields.city === "Other (Type manually)" ? (
-                          <div className="relative">
-                            <input
-                              type="text"
-                              value={formFields.customCity}
-                              onChange={(e) => updateField("customCity", e.target.value)}
-                              placeholder="Type City"
-                              className={`w-full rounded-xl border bg-white px-4 py-3 pr-16 text-sm font-semibold text-slate-850 outline-none transition focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/10 ${
-                                formErrors.city ? "border-red-400" : "border-slate-200"
-                              }`}
-                            />
-                            {formFields.state !== "Other (Type manually)" && (
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  updateField("city", "");
-                                  updateField("customCity", "");
-                                }}
-                                className="absolute right-3.5 top-3 text-[10px] font-black uppercase tracking-wider text-[#FF6B00] hover:underline"
-                              >
-                                Reset
-                              </button>
-                            )}
-                          </div>
-                        ) : (
-                          <select
-                            value={formFields.city}
-                            onChange={(e) => updateField("city", e.target.value)}
-                            disabled={!formFields.state}
-                            className={`w-full rounded-xl border bg-white px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition disabled:bg-slate-100 disabled:cursor-not-allowed focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/10 ${
-                              formErrors.city ? "border-red-400" : "border-slate-200"
-                            }`}
-                          >
-                            <option value="">Select City</option>
-                            {cities.map((ct) => (
-                              <option key={ct} value={ct}>
-                                {ct}
-                              </option>
-                            ))}
-                            <option value="Other (Type manually)">Other (Type manually)</option>
-                          </select>
-                        )}
+                        <input
+                          type="text"
+                          value={formFields.city}
+                          onChange={(e) => updateField("city", e.target.value)}
+                          placeholder="Type City"
+                          disabled={!formFields.state}
+                          className={`w-full rounded-xl border bg-white px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition disabled:bg-slate-100 disabled:cursor-not-allowed focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/10 ${
+                            formErrors.city ? "border-red-400" : "border-slate-200"
+                          }`}
+                        />
                         {formErrors.city && (
                           <p className="text-xs text-red-500 font-semibold">{formErrors.city}</p>
                         )}
