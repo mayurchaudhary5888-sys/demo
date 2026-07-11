@@ -238,7 +238,7 @@ export const sendPasswordResetOtpEmail = async ({ to, otp, name }) => {
     "",
     "If you did not request this code, you can safely ignore this message.",
     "",
-    "Contact: nodal-desk.bhaskar@nic.in",
+    "Contact: support@startupbharat.info",
   ].join("\n");
 
   const otpDigitsHtml = otpDigits
@@ -287,8 +287,8 @@ export const sendPasswordResetOtpEmail = async ({ to, otp, name }) => {
 
     <!-- Contact Link -->
     <p style="text-align:center;margin:0;">
-      <a href="mailto:nodal-desk.bhaskar@nic.in" style="color:#FF6B6B;text-decoration:none;font-size:15px;font-weight:700;">
-        nodal-desk.bhaskar@nic.in
+      <a href="mailto:support@startupbharat.info" style="color:#FF6B6B;text-decoration:none;font-size:15px;font-weight:700;">
+        support@startupbharat.info
       </a>
     </p>
   `;
@@ -367,7 +367,7 @@ export const sendApplicationStatusEmail = async ({
     "",
     "Please reply to this email with the listed documents attached.",
     "",
-    "Contact: nodal-desk.bhaskar@nic.in",
+    "Contact: support@startupbharat.info",
   ]
     .filter(Boolean)
     .join("\n");
@@ -451,8 +451,8 @@ export const sendApplicationStatusEmail = async ({
 
     <!-- Contact Link -->
     <p style="text-align:center;margin:0;">
-      <a href="mailto:nodal-desk.bhaskar@nic.in" style="color:#FF6B6B;text-decoration:none;font-size:15px;font-weight:700;">
-        nodal-desk.bhaskar@nic.in
+      <a href="mailto:support@startupbharat.info" style="color:#FF6B6B;text-decoration:none;font-size:15px;font-weight:700;">
+        support@startupbharat.info
       </a>
     </p>
   `;
