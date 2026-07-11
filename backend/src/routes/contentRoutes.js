@@ -8,7 +8,6 @@ import {
   listAnnouncements,
   listConnections,
   listFaqs,
-  deleteNotification,
   getDashboardStats,
   getProgram,
   getStartup,
@@ -16,11 +15,9 @@ import {
   listInvestors,
   createInvestor,
   listUsers,
-  listNotifications,
   listPrograms,
   listQueries,
   listStartups,
-  markAllNotificationsRead,
   replyQuery,
   toggleProgram,
   toggleStartupApproval,
@@ -28,7 +25,6 @@ import {
   updateApplicationStatus,
   updateApplicationIncubatorStatus,
   updateStartup,
-  upsertNotification,
 } from "../controllers/contentController.js";
 import { optionalAuth, requireAdmin, requireAuth } from "../middleware/auth.js";
 import { publicSubmissionRateLimiter, writeRateLimiter } from "../middleware/security.js";
@@ -36,7 +32,6 @@ import {
   applicationSchema,
   applicationStatusSchema,
   contactQuerySchema,
-  notificationPatchSchema,
   programSchema,
   queryReplySchema,
   startupProfileSchema,
@@ -71,11 +66,6 @@ contentRoutes.patch("/admin/applications/:id/status", requireAuth, requireAdmin,
 contentRoutes.patch("/admin/applications/:id/incubator-status", requireAuth, requireAdmin, writeRateLimiter, updateApplicationIncubatorStatus);
 contentRoutes.get("/admin/users", requireAuth, requireAdmin, listUsers);
 contentRoutes.patch("/admin/users/:id/status", requireAuth, requireAdmin, writeRateLimiter, validateBody(userStatusSchema), updateUserStatus);
-
-contentRoutes.get("/notifications", requireAuth, listNotifications);
-contentRoutes.patch("/notifications/mark-all-read", requireAuth, writeRateLimiter, markAllNotificationsRead);
-contentRoutes.patch("/notifications/:id", requireAuth, writeRateLimiter, validateBody(notificationPatchSchema), upsertNotification);
-contentRoutes.delete("/notifications/:id", requireAuth, writeRateLimiter, deleteNotification);
 
 contentRoutes.get("/queries", requireAuth, requireAdmin, listQueries);
 contentRoutes.post("/queries", publicSubmissionRateLimiter, validateBody(contactQuerySchema), createQuery);
