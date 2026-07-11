@@ -131,32 +131,7 @@ export const seedQueries = [
   }
 ];
 
-export const seedNotifications = [
-  {
-    id: "not-01",
-    title: "Application Track Update",
-    message: "Your application has changed status to Under Review.",
-    type: "warning",
-    timestamp: "2026-06-15 02:40 PM",
-    isRead: false
-  },
-  {
-    id: "not-02",
-    title: "New Connection Request",
-    message: "BheedPay Technologies wants to connect with your startup.",
-    type: "info",
-    timestamp: "2026-06-17 11:15 AM",
-    isRead: false
-  },
-  {
-    id: "not-03",
-    title: "Profile Status Approved",
-    message: "Your founder profile is approved by the admin.",
-    type: "success",
-    timestamp: "2026-06-12 10:00 AM",
-    isRead: true
-  }
-];
+
 
 export const seedConnections = [
   { id: "conn-1", fromId: "startup-heallink", fromName: "HealLink Diagnostics", fromSector: "HealthTech", fromStage: "Validation", toId: "startup-kisan-bot", toName: "KisanBot Agrotech", status: "accepted", timestamp: "2026-06-10" },

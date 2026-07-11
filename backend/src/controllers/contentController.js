@@ -4,7 +4,6 @@ import { Program } from "../models/Program.js";
 import { StartupProfile } from "../models/StartupProfile.js";
 import { InvestorProfile } from "../models/InvestorProfile.js";
 import { ContactQuery } from "../models/ContactQuery.js";
-import { Notification } from "../models/Notification.js";
 import { Connection } from "../models/Connection.js";
 import { Faq } from "../models/Faq.js";
 import { Announcement } from "../models/Announcement.js";
@@ -83,16 +82,6 @@ const assertApplicationOwnerOrAdmin = async (req, app) => {
   }
 };
 
-const notificationScopeQuery = (req) => {
-  if (req.user?.role === "admin") return {};
-  return {
-    $or: [
-      { recipientEmail: req.user?.email },
-      { email: req.user?.email },
-      { startupId: req.user?.startupId },
-    ].filter((condition) => Object.values(condition)[0]),
-  };
-};
 
 const upsertById = async (Model, req, res, next, transform = (item) => item) => {
   try {
@@ -614,48 +603,6 @@ export const updateApplicationIncubatorStatus = async (req, res, next) => {
 
     await app.save();
     res.json({ success: true, data: app.toObject() });
-  } catch (err) {
-    next(err);
-  }
-};
-
-export const listNotifications = async (_req, res, next) => {
-  try {
-    const data = await Notification.find(notificationScopeQuery(_req)).sort(sortNewestFirst).lean();
-    res.json({ success: true, data });
-  } catch (err) {
-    next(err);
-  }
-};
-
-export const upsertNotification = async (req, res, next) => {
-  try {
-    const notification = await Notification.findOne({ id: req.params.id, ...notificationScopeQuery(req) });
-    if (!notification) throw new AppError("Notification not found.", 404);
-    notification.isRead = req.body.isRead;
-    await notification.save();
-    res.json({ success: true, data: notification.toObject() });
-  } catch (err) {
-    next(err);
-  }
-};
-
-export const deleteNotification = async (req, res, next) => {
-  try {
-    const result = await Notification.deleteOne({ id: req.params.id, ...notificationScopeQuery(req) });
-    if (!result.deletedCount) throw new AppError("Notification not found.", 404);
-    res.json({ success: true });
-  } catch (err) {
-    next(err);
-  }
-};
-
-export const markAllNotificationsRead = async (req, res, next) => {
-  try {
-    const scope = notificationScopeQuery(req);
-    await Notification.updateMany(scope, { $set: { isRead: true } });
-    const data = await Notification.find(scope).sort(sortNewestFirst).lean();
-    res.json({ success: true, data });
   } catch (err) {
     next(err);
   }

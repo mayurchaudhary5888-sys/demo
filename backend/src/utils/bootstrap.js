@@ -5,7 +5,7 @@ import { Program } from "../models/Program.js";
 import { StartupProfile } from "../models/StartupProfile.js";
 import { InvestorProfile } from "../models/InvestorProfile.js";
 import { ContactQuery } from "../models/ContactQuery.js";
-import { Notification } from "../models/Notification.js";
+
 import { Connection } from "../models/Connection.js";
 import { Faq } from "../models/Faq.js";
 import { Announcement } from "../models/Announcement.js";
@@ -15,7 +15,6 @@ import {
   seedConnections,
   seedFaqs,
   seedInvestors,
-  seedNotifications,
   seedPrograms,
   seedQueries,
 } from "../data/seedData.js";
@@ -44,7 +43,7 @@ export const bootstrapContent = async () => {
   await seedCollection(Program, seedPrograms);
   await seedCollection(InvestorProfile, seedInvestors);
   await seedCollection(ContactQuery, seedQueries);
-  await seedCollection(Notification, seedNotifications);
+
   await seedCollection(Connection, seedConnections);
   await seedCollection(Faq, seedFaqs);
   await seedCollection(Announcement, seedAnnouncements);

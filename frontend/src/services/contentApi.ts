@@ -81,12 +81,11 @@ export const contentApi = {
     unwrap(request<any[]>(`/applications${startupId ? `?startupId=${encodeURIComponent(startupId)}` : ""}`)),
   getApplicationById: (id: string) => unwrap(request<any>(`/applications/${id}`)),
   getQueries: () => unwrap(request<any[]>("/queries")),
-  getNotifications: () => unwrap(request<any[]>("/notifications")),
+
   getAdminStats: () => unwrap(request<any>("/admin/stats")),
   getFaqs: () => unwrap(request<any[]>("/faqs")),
   getAnnouncements: () => unwrap(request<any[]>("/announcements")),
-  markAllNotificationsRead: () =>
-    unwrap(request<any[]>("/notifications/mark-all-read", { method: "PATCH" })),
+
   submitStartup: (payload: Record<string, unknown>) =>
     unwrap(request<any>("/startups", { method: "POST", body: JSON.stringify(payload) })),
   updateStartup: (id: string, payload: Record<string, unknown>) =>
@@ -109,10 +108,7 @@ export const contentApi = {
     unwrap(request<any>("/queries", { method: "POST", body: JSON.stringify(payload) })),
   replyQuery: (id: string, reply: string) =>
     unwrap(request<any>(`/admin/queries/${id}/reply`, { method: "PATCH", body: JSON.stringify({ reply }) })),
-  updateNotification: (id: string, payload: Record<string, unknown>) =>
-    unwrap(request<any>(`/notifications/${id}`, { method: "PATCH", body: JSON.stringify(payload) })),
-  deleteNotification: (id: string) =>
-    unwrap(request<any>(`/notifications/${id}`, { method: "DELETE" })),
+
   uploadLogo: (payload: { imageData: string; filename?: string }) =>
     unwrap(request<{ secureUrl: string; publicId: string; width?: number; height?: number; format?: string }>("/uploads/logo", {
       method: "POST",

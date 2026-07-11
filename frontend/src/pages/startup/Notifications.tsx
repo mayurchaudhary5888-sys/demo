@@ -6,63 +6,26 @@
 import React, { useState } from "react";
 import { useAppState } from "../../context/AppContext";
 import { Bell, Check, Trash2, ShieldAlert } from "lucide-react";
-import { contentApi } from "../../services/contentApi";
 
 export const Notifications: React.FC = () => {
   const { showToast } = useAppState();
-  const [notifs, setNotifs] = useState(() => {
-    return [
-      {
-        id: "not-1",
-        title: "Welcome to BHASKAR",
-        message: "Your registration is completed. Please set up your startup profile for DPIIT verification.",
-        type: "success",
-        timestamp: new Date().toLocaleString(),
-        isRead: false
-      },
-      {
-        id: "not-2",
-        title: "DPIIT Verification Requirements",
-        message: "Ensure you upload a clear MoA (Memorandum of Association) during program application filing.",
-        type: "info",
-        timestamp: new Date().toLocaleString(),
-        isRead: false
-      }
-    ];
-  });
-
-  React.useEffect(() => {
-    contentApi
-      .getNotifications()
-      .then((items) => {
-        if (items.length) {
-          setNotifs(items);
-        }
-      })
-      .catch(() => {});
-  }, []);
+  const [notifs, setNotifs] = useState<any[]>([]);
 
   const markAllAsRead = async () => {
     const updated = notifs.map((n: any) => ({ ...n, isRead: true }));
     setNotifs(updated);
-    contentApi.markAllNotificationsRead().catch(() => {});
     showToast("All notifications marked as read.", "success");
   };
 
   const deleteNotification = async (id: string) => {
     const updated = notifs.filter((n: any) => n.id !== id);
     setNotifs(updated);
-    contentApi.deleteNotification(id).catch(() => {});
     showToast("Notification removed.", "info");
   };
 
   const toggleReadStatus = async (id: string) => {
     const updated = notifs.map((n: any) => (n.id === id ? { ...n, isRead: !n.isRead } : n));
-    const target = updated.find((n: any) => n.id === id);
     setNotifs(updated);
-    if (target) {
-      contentApi.updateNotification(id, { isRead: target.isRead }).catch(() => {});
-    }
   };
 
   return (

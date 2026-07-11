@@ -136,9 +136,7 @@ export const queryReplySchema = z.object({
   reply: cleanString.min(2).max(5000),
 });
 
-export const notificationPatchSchema = z.object({
-  isRead: z.boolean(),
-});
+
 
 export const userStatusSchema = z.object({
   isActive: z.boolean(),
