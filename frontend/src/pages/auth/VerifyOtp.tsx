@@ -196,7 +196,7 @@ export const VerifyOtp: React.FC = () => {
                 className="w-full rounded-md bg-[#FF6B00] py-3 text-xs font-black uppercase tracking-widest text-white transition hover:bg-[#e65f00] disabled:cursor-not-allowed disabled:opacity-50"
                 id="btn-otp-authorize"
               >
-                {loading ? "Validating security codes..." : "Authenticate Registration Token"}
+                {loading ? "Validating security codes..." : "Continue"}
               </button>
             </div>
 
