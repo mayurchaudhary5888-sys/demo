@@ -70,7 +70,7 @@ const fundingOptions = ["Funded", "Bootstrapped"];
 const industryOptions = Object.keys(industrySectors);
 const serviceOptions = ["Mobile", "Online Aggregator", "Platform", "Others", "SaaS"];
 const interestOptions = ["All", "Investors", "Incubators", "Other Startups", "Mentors", "Accelerators"];
-const natureOptions = ["Private Limited Company", "LLP", "Partnership", "Section 8", "Sole Proprietorship", "Other"];
+const natureOptions = ["Private Limited Company", "LLP", "Partnership", "Section 8/NGO/Foundation", "Sole Proprietorship", "Other"];
 const stateOptions = [
   "Andhra Pradesh",
   "Arunachal Pradesh",
@@ -339,24 +339,24 @@ export const Register: React.FC = () => {
   return (
     <>
       <AuthShell
-      badge="startup registration"
-      title="Register your startup in four steps"
-      description="Share your startup profile, contact details, category information, and participation interests to move into verification."
-      maxWidthClassName="max-w-[86rem]"
-      showFooterNote={false}
-      aside={
-        <div className="flex items-center gap-3 rounded-2xl border-2 border-slate-200 bg-slate-50 px-4 py-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#07184A] text-white">
-            <Building2 className="h-5 w-5" />
+        badge="startup registration"
+        title="Register your startup in four steps"
+        description="Share your startup profile, contact details, category information, and participation interests to move into verification."
+        maxWidthClassName="max-w-[86rem]"
+        showFooterNote={false}
+        aside={
+          <div className="flex items-center gap-3 rounded-2xl border-2 border-slate-200 bg-slate-50 px-4 py-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#07184A] text-white">
+              <Building2 className="h-5 w-5" />
+            </div>
+            <div>
+              <div className="text-[11px] font-black uppercase tracking-[0.2em] text-[#FF6B00]">Step</div>
+              <div className="text-sm font-black text-[#07184A]">{steps[step - 1].title}</div>
+            </div>
           </div>
-          <div>
-            <div className="text-[11px] font-black uppercase tracking-[0.2em] text-[#FF6B00]">Step</div>
-            <div className="text-sm font-black text-[#07184A]">{steps[step - 1].title}</div>
-          </div>
-        </div>
-      }
-    >
-      <div className="space-y-8">
+        }
+      >
+        <div className="space-y-8">
 
           {/* Stepper Progress Bar */}
           <div className="mb-8 rounded-[24px] border-2 border-slate-100 bg-gradient-to-r from-slate-50/50 via-white to-slate-50/50 p-6 shadow-xs">
@@ -381,13 +381,12 @@ export const Register: React.FC = () => {
                       className="flex flex-col items-center text-center focus:outline-none"
                     >
                       <div
-                        className={`z-10 flex h-10 w-10 items-center justify-center rounded-full border-4 bg-white text-sm font-black transition-all duration-300 shadow-md ${
-                          complete
+                        className={`z-10 flex h-10 w-10 items-center justify-center rounded-full border-4 bg-white text-sm font-black transition-all duration-300 shadow-md ${complete
                             ? "border-[#07184A] bg-[#07184A] text-white"
                             : active
                               ? "border-[#FF6B00] text-[#FF6B00] ring-4 ring-[#FF6B00]/10"
                               : "border-slate-200 text-slate-400 hover:border-slate-350"
-                        }`}
+                          }`}
                       >
                         {complete ? <Check className="h-4.5 w-4.5" /> : item.number}
                       </div>
@@ -410,9 +409,8 @@ export const Register: React.FC = () => {
                       Entity/company logo <span className="text-red-500">*</span>
                       <Info className="h-4 w-4 text-slate-300" />
                     </div>
-                    <label className={`flex min-h-48 cursor-pointer items-center justify-center rounded-2xl border-2 border-dashed p-6 text-center transition-all duration-200 hover:border-[#FF6B00] hover:bg-white hover:shadow-xs ${
-                      errors.logoName ? "border-red-400 bg-red-50/10" : "border-slate-200 bg-slate-50"
-                    }`}>
+                    <label className={`flex min-h-48 cursor-pointer items-center justify-center rounded-2xl border-2 border-dashed p-6 text-center transition-all duration-200 hover:border-[#FF6B00] hover:bg-white hover:shadow-xs ${errors.logoName ? "border-red-400 bg-red-50/10" : "border-slate-200 bg-slate-50"
+                      }`}>
                       <div className="space-y-3">
                         {logoPreview ? (
                           <img
@@ -455,11 +453,10 @@ export const Register: React.FC = () => {
                           key={option.label}
                           type="button"
                           onClick={() => updateField("hasCompanyLogo", option.value)}
-                          className={`rounded-full border-2 px-6 py-2.5 text-xs sm:text-sm font-bold transition-all duration-200 ${
-                            form.hasCompanyLogo === option.value
+                          className={`rounded-full border-2 px-6 py-2.5 text-xs sm:text-sm font-bold transition-all duration-200 ${form.hasCompanyLogo === option.value
                               ? "border-[#FF6B00] bg-gradient-to-r from-[#FF6B00] to-[#FF8C3D] text-white shadow-sm shadow-[#FF6B00]/15"
                               : "border-slate-200 bg-white text-slate-600 hover:border-[#FF6B00]/40 hover:text-[#07184A] hover:bg-slate-50"
-                          }`}
+                            }`}
                         >
                           {option.label}
                         </button>
@@ -478,11 +475,10 @@ export const Register: React.FC = () => {
                           key={option}
                           type="button"
                           onClick={() => updateField("fundingStatus", option)}
-                          className={`rounded-full border-2 px-6 py-2.5 text-xs sm:text-sm font-bold transition-all duration-200 ${
-                            form.fundingStatus === option
+                          className={`rounded-full border-2 px-6 py-2.5 text-xs sm:text-sm font-bold transition-all duration-200 ${form.fundingStatus === option
                               ? "border-[#07184A] bg-[#07184A] text-white shadow-sm"
                               : "border-slate-200 bg-white text-slate-600 hover:border-[#FF6B00]/40 hover:text-[#07184A] hover:bg-slate-50"
-                          }`}
+                            }`}
                         >
                           {option}
                         </button>
@@ -502,9 +498,8 @@ export const Register: React.FC = () => {
                       value={form.startupName}
                       onChange={(e) => updateField("startupName", e.target.value)}
                       placeholder="Enter startup name"
-                      className={`w-full rounded-xl border-2 px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition duration-200 hover:border-slate-300 focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/8 focus:shadow-none ${
-                        errors.startupName ? "border-red-400 bg-red-50/10" : "border-slate-200 bg-white"
-                      }`}
+                      className={`w-full rounded-xl border-2 px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition duration-200 hover:border-slate-300 focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/8 focus:shadow-none ${errors.startupName ? "border-red-400 bg-red-50/10" : "border-slate-200 bg-white"
+                        }`}
                     />
                     {errors.startupName && <p className="mt-1 text-xs font-bold text-red-500">{errors.startupName}</p>}
                   </div>
@@ -519,11 +514,10 @@ export const Register: React.FC = () => {
                           key={option}
                           type="button"
                           onClick={() => updateField("stage", option)}
-                          className={`rounded-xl border-2 px-3 py-3 text-xs sm:text-sm font-black tracking-tight transition-all duration-200 ${
-                            form.stage === option
+                          className={`rounded-xl border-2 px-3 py-3 text-xs sm:text-sm font-black tracking-tight transition-all duration-200 ${form.stage === option
                               ? "border-[#FF6B00] bg-gradient-to-r from-[#FF6B00] to-[#FF8C3D] text-white shadow-sm shadow-[#FF6B00]/15"
                               : "border-slate-200 bg-white text-slate-600 hover:border-[#FF6B00]/40 hover:text-[#07184A] hover:bg-slate-50"
-                          }`}
+                            }`}
                         >
                           {option}
                         </button>
@@ -541,9 +535,8 @@ export const Register: React.FC = () => {
                       onChange={(e) => updateField("startupBrief", e.target.value)}
                       rows={8}
                       placeholder="Write a concise summary of what your startup does, who it serves, and what you need from support."
-                      className={`w-full rounded-2xl border-2 px-4 py-3 text-sm leading-6 font-medium text-slate-750 outline-none transition duration-200 hover:border-slate-300 focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/8 focus:shadow-none ${
-                        errors.startupBrief ? "border-red-400 bg-red-50/10" : "border-slate-200 bg-white"
-                      }`}
+                      className={`w-full rounded-2xl border-2 px-4 py-3 text-sm leading-6 font-medium text-slate-750 outline-none transition duration-200 hover:border-slate-300 focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/8 focus:shadow-none ${errors.startupBrief ? "border-red-400 bg-red-50/10" : "border-slate-200 bg-white"
+                        }`}
                     />
                     {errors.startupBrief && <p className="mt-1 text-xs font-bold text-red-500">{errors.startupBrief}</p>}
                   </div>
@@ -564,9 +557,8 @@ export const Register: React.FC = () => {
                       value={form.email}
                       onChange={(e) => updateField("email", e.target.value)}
                       placeholder="name@startup.in"
-                      className={`w-full rounded-xl border-2 py-3 pl-11 pr-4 text-sm font-semibold text-slate-800 outline-none transition duration-200 hover:border-slate-300 focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/8 focus:shadow-none ${
-                        errors.email ? "border-red-400 bg-red-50/10" : "border-slate-200 bg-white"
-                      }`}
+                      className={`w-full rounded-xl border-2 py-3 pl-11 pr-4 text-sm font-semibold text-slate-800 outline-none transition duration-200 hover:border-slate-300 focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/8 focus:shadow-none ${errors.email ? "border-red-400 bg-red-50/10" : "border-slate-200 bg-white"
+                        }`}
                     />
                   </div>
                   {errors.email && <p className="mt-1 text-xs font-bold text-red-500">{errors.email}</p>}
@@ -583,9 +575,8 @@ export const Register: React.FC = () => {
                       value={form.mobile}
                       onChange={(e) => updateField("mobile", e.target.value)}
                       placeholder="10-digit mobile number"
-                      className={`w-full rounded-xl border-2 py-3 pl-11 pr-4 text-sm font-semibold text-slate-800 outline-none transition duration-200 hover:border-slate-300 focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/8 focus:shadow-none ${
-                        errors.mobile ? "border-red-400 bg-red-50/10" : "border-slate-200 bg-white"
-                      }`}
+                      className={`w-full rounded-xl border-2 py-3 pl-11 pr-4 text-sm font-semibold text-slate-800 outline-none transition duration-200 hover:border-slate-300 focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/8 focus:shadow-none ${errors.mobile ? "border-red-400 bg-red-50/10" : "border-slate-200 bg-white"
+                        }`}
                     />
                   </div>
                   {errors.mobile && <p className="mt-1 text-xs font-bold text-red-500">{errors.mobile}</p>}
@@ -624,9 +615,8 @@ export const Register: React.FC = () => {
                     value={form.city}
                     onChange={(e) => updateField("city", e.target.value)}
                     placeholder="City"
-                    className={`w-full rounded-xl border-2 px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition duration-200 hover:border-slate-300 focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/8 focus:shadow-none ${
-                      errors.city ? "border-red-400 bg-red-50/10" : "border-slate-200 bg-white"
-                    }`}
+                    className={`w-full rounded-xl border-2 px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition duration-200 hover:border-slate-300 focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/8 focus:shadow-none ${errors.city ? "border-red-400 bg-red-50/10" : "border-slate-200 bg-white"
+                      }`}
                   />
                   {errors.city && <p className="mt-1 text-xs font-bold text-red-500">{errors.city}</p>}
                 </div>
@@ -675,9 +665,8 @@ export const Register: React.FC = () => {
                         updateField("industry", e.target.value);
                         updateField("sector", "");
                       }}
-                      className={`w-full appearance-none rounded-xl border-2 bg-white py-3 pl-4 pr-10 text-sm font-semibold text-slate-800 outline-none transition duration-200 hover:border-slate-300 focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/8 ${
-                        errors.industry ? "border-red-400 bg-red-50/10" : "border-slate-200"
-                      }`}
+                      className={`w-full appearance-none rounded-xl border-2 bg-white py-3 pl-4 pr-10 text-sm font-semibold text-slate-800 outline-none transition duration-200 hover:border-slate-300 focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/8 ${errors.industry ? "border-red-400 bg-red-50/10" : "border-slate-200"
+                        }`}
                     >
                       <option value="" disabled>
                         Select industry
@@ -701,9 +690,8 @@ export const Register: React.FC = () => {
                     <select
                       value={form.sector}
                       onChange={(e) => updateField("sector", e.target.value)}
-                      className={`w-full appearance-none rounded-xl border-2 bg-white py-3 pl-4 pr-10 text-sm font-semibold text-slate-800 outline-none transition duration-200 hover:border-slate-300 focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/8 ${
-                        errors.sector ? "border-red-400 bg-red-50/10" : "border-slate-200"
-                      }`}
+                      className={`w-full appearance-none rounded-xl border-2 bg-white py-3 pl-4 pr-10 text-sm font-semibold text-slate-800 outline-none transition duration-200 hover:border-slate-300 focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/8 ${errors.sector ? "border-red-400 bg-red-50/10" : "border-slate-200"
+                        }`}
                     >
                       <option value="" disabled>
                         Select sector
@@ -727,9 +715,8 @@ export const Register: React.FC = () => {
                     <select
                       value={form.selectedProgram}
                       onChange={(e) => updateField("selectedProgram", e.target.value)}
-                      className={`w-full appearance-none rounded-xl border-2 bg-white py-3 pl-4 pr-10 text-sm font-semibold text-slate-800 outline-none transition duration-200 hover:border-slate-300 focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/8 ${
-                        errors.selectedProgram ? "border-red-400 bg-red-50/10" : "border-slate-200"
-                      }`}
+                      className={`w-full appearance-none rounded-xl border-2 bg-white py-3 pl-4 pr-10 text-sm font-semibold text-slate-800 outline-none transition duration-200 hover:border-slate-300 focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/8 ${errors.selectedProgram ? "border-red-400 bg-red-50/10" : "border-slate-200"
+                        }`}
                     >
                       <option value="">Select support</option>
                       {programCatalog.map((program) => (
@@ -755,11 +742,10 @@ export const Register: React.FC = () => {
                           key={option}
                           type="button"
                           onClick={() => toggleListValue("services", option)}
-                          className={`rounded-lg px-4.5 py-2 text-xs font-black tracking-tight transition-all duration-200 ${
-                            active 
-                              ? "bg-[#07184A] text-white shadow-sm" 
+                          className={`rounded-lg px-4.5 py-2 text-xs font-black tracking-tight transition-all duration-200 ${active
+                              ? "bg-[#07184A] text-white shadow-sm"
                               : "bg-slate-100 text-slate-700 hover:bg-[#FFF4EC] hover:text-[#07184A]"
-                          }`}
+                            }`}
                         >
                           {option}
                         </button>
@@ -827,9 +813,8 @@ export const Register: React.FC = () => {
                     value={form.legalName}
                     onChange={(e) => updateField("legalName", e.target.value)}
                     placeholder="Legal entity name"
-                    className={`w-full rounded-xl border-2 px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition duration-200 hover:border-slate-300 focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/8 focus:shadow-none ${
-                      errors.legalName ? "border-red-400 bg-red-50/10" : "border-slate-200 bg-white"
-                    }`}
+                    className={`w-full rounded-xl border-2 px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition duration-200 hover:border-slate-300 focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/8 focus:shadow-none ${errors.legalName ? "border-red-400 bg-red-50/10" : "border-slate-200 bg-white"
+                      }`}
                   />
                   {errors.legalName && <p className="mt-1 text-xs font-bold text-red-500">{errors.legalName}</p>}
                 </div>
@@ -850,16 +835,14 @@ export const Register: React.FC = () => {
                           key={option}
                           type="button"
                           onClick={() => toggleListValue("interests", option)}
-                          className={`flex items-center gap-3 rounded-2xl border-2 px-4 py-3.5 text-sm font-bold transition-all duration-200 ${
-                            active
+                          className={`flex items-center gap-3 rounded-2xl border-2 px-4 py-3.5 text-sm font-bold transition-all duration-200 ${active
                               ? "border-[#FF6B00] bg-gradient-to-r from-[#FF6B00] to-[#FF8C3D] text-white shadow-sm shadow-[#FF6B00]/15"
                               : "border-slate-200 bg-white text-slate-600 hover:border-[#FF6B00]/50 hover:text-[#07184A]"
-                          }`}
+                            }`}
                         >
                           <span
-                            className={`flex h-7 w-7 items-center justify-center rounded-md ${
-                              active ? "bg-white/20" : "bg-slate-100"
-                            }`}
+                            className={`flex h-7 w-7 items-center justify-center rounded-md ${active ? "bg-white/20" : "bg-slate-100"
+                              }`}
                           >
                             {active ? <Check className="h-4 w-4" /> : <Users className="h-4 w-4" />}
                           </span>
@@ -884,9 +867,8 @@ export const Register: React.FC = () => {
                         onChange={(e) => updateField("password", e.target.value)}
                         placeholder="Create a secure password"
                         autoComplete="new-password"
-                        className={`w-full rounded-xl border-2 py-3 pl-11 pr-4 text-sm font-semibold text-slate-800 outline-none transition duration-200 hover:border-slate-300 focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/8 focus:shadow-none ${
-                          errors.password ? "border-red-400 bg-red-50/10" : "border-slate-200 bg-white"
-                        }`}
+                        className={`w-full rounded-xl border-2 py-3 pl-11 pr-4 text-sm font-semibold text-slate-800 outline-none transition duration-200 hover:border-slate-300 focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/8 focus:shadow-none ${errors.password ? "border-red-400 bg-red-50/10" : "border-slate-200 bg-white"
+                          }`}
                       />
                     </div>
                     <p className="mt-1.5 text-[10px] font-bold text-slate-500">Minimum 8 characters with uppercase, lowercase, and a number.</p>
@@ -905,9 +887,8 @@ export const Register: React.FC = () => {
                         onChange={(e) => updateField("confirmPassword", e.target.value)}
                         placeholder="Re-enter password"
                         autoComplete="new-password"
-                        className={`w-full rounded-xl border-2 py-3 pl-11 pr-4 text-sm font-semibold text-slate-800 outline-none transition duration-200 hover:border-slate-300 focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/8 focus:shadow-none ${
-                          errors.confirmPassword ? "border-red-400 bg-red-50/10" : "border-slate-200 bg-white"
-                        }`}
+                        className={`w-full rounded-xl border-2 py-3 pl-11 pr-4 text-sm font-semibold text-slate-800 outline-none transition duration-200 hover:border-slate-300 focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/8 focus:shadow-none ${errors.confirmPassword ? "border-red-400 bg-red-50/10" : "border-slate-200 bg-white"
+                          }`}
                       />
                     </div>
                     {errors.confirmPassword && <p className="mt-1 text-xs font-bold text-red-500">{errors.confirmPassword}</p>}
