@@ -15,8 +15,8 @@ export type IncubatorPortfolioItem = {
 };
 
 export const portfolioImages = {
-  incubator: "/assets/about-us/about-hero-handshake.png",
-  startup: "/assets/about-us/about-collaboration-hands.png",
+  incubator: "/assets/about-us/incubation.png",
+  startup: "/assets/about-us/startup.jpg",
 };
 
 export const incubatorPortfolio: IncubatorPortfolioItem[] = [
