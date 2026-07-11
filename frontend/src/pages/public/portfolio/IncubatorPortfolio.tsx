@@ -34,7 +34,7 @@ export const IncubatorPortfolio: React.FC = () => {
         <div className="mx-auto max-w-6xl px-5 sm:px-8 lg:px-10">
           <div className="portfolio-reveal overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.08)]">
             <div className="grid lg:grid-cols-[0.72fr_1fr]">
-              <div className="relative overflow-hidden bg-[#07144A] p-8 text-white sm:p-10">
+              <div className="relative overflow-hidden bg-[#07144A] p-6 text-white sm:p-10">
                 <div className="absolute right-[-5rem] top-[-5rem] h-56 w-56 rounded-full bg-[#FF6B00]/20 blur-3xl" />
                 <div className="relative">
                   <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 text-[#F9B233]">
@@ -49,7 +49,7 @@ export const IncubatorPortfolio: React.FC = () => {
                 </div>
               </div>
 
-              <div className="p-8 sm:p-10">
+              <div className="p-6 sm:p-10">
                 <p className="text-base font-medium leading-8 text-slate-700">
                   Startup India Seed Fund Scheme incubators are listed and updated through the official SISFS portal. Please use the official portal to review incubator participation, eligibility, scheme information, and application-related guidance.
                 </p>
@@ -60,7 +60,7 @@ export const IncubatorPortfolio: React.FC = () => {
                   href="https://seedfund.startupindia.gov.in/portfolio"
                   target="_blank"
                   rel="noreferrer"
-                  className="mt-8 inline-flex items-center gap-3 rounded-md bg-[#FF6B00] px-6 py-3 text-xs font-black uppercase tracking-[0.18em] text-white shadow-[0_16px_36px_rgba(255,107,0,0.24)] transition hover:bg-[#ef5f00]"
+                  className="mt-8 flex sm:inline-flex items-center justify-center gap-3 rounded-md bg-[#FF6B00] px-6 py-3 text-[11px] sm:text-xs font-black uppercase tracking-[0.1em] sm:tracking-[0.18em] text-white shadow-[0_16px_36px_rgba(255,107,0,0.24)] transition hover:bg-[#ef5f00] w-full sm:w-auto text-center"
                 >
                   Click here for incubator information
                   <ExternalLink className="h-4 w-4" />
