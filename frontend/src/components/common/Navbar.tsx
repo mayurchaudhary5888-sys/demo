@@ -33,6 +33,7 @@ export const Navbar: React.FC = () => {
   const [loginErrors, setLoginErrors] = useState<Record<string, string>>({});
   const [loginLoading, setLoginLoading] = useState(false);
   const [showDeactivatedModal, setShowDeactivatedModal] = useState(false);
+  const [deactivatedMessage, setDeactivatedMessage] = useState("");
 
   // Register Form input states
   const [regName, setRegName] = useState("");
@@ -111,7 +112,8 @@ export const Navbar: React.FC = () => {
       setMobileMenuOpen(false);
     };
 
-    const showDeactivated = () => {
+    const showDeactivated = (e: any) => {
+      setDeactivatedMessage(e.detail?.message || "");
       setShowDeactivatedModal(true);
     };
 
@@ -152,7 +154,8 @@ export const Navbar: React.FC = () => {
         navigate("/startup/dashboard");
       }
     } catch (err: any) {
-      if (err.message && err.message.includes("Something wrong happens")) {
+      if (err.message && (err.message.includes("Something wrong happens") || err.message.includes("not approved yet"))) {
+        setDeactivatedMessage(err.message);
         setShowLoginModal(false);
         setShowDeactivatedModal(true);
       } else {
@@ -915,6 +918,7 @@ export const Navbar: React.FC = () => {
       <AccountDeactivatedModal
         open={showDeactivatedModal}
         onClose={() => setShowDeactivatedModal(false)}
+        message={deactivatedMessage}
       />
     </div>
   );

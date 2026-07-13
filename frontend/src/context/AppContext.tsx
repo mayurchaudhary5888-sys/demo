@@ -48,9 +48,9 @@ interface AppContextValue {
   // Auth actions
   login: (email: string, password: string) => Promise<UserSession>;
   logout: () => void;
-  verifyOtp: (otp: string) => Promise<void>;
+  verifyOtp: (otp: string) => Promise<UserSession>;
   resendOtp: () => Promise<void>;
-  verifyUserEmail: (otp: string) => Promise<void>;
+  verifyUserEmail: (otp: string) => Promise<UserSession>;
 
   // Toast actions
   showToast: (message: string, type?: Toast["type"]) => void;
@@ -179,7 +179,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setUser(null);
   }, []);
 
-  const verifyOtp = useCallback(async (otp: string) => {
+  const verifyOtp = useCallback(async (otp: string): Promise<UserSession> => {
     const tempReg = JSON.parse(localStorage.getItem("bsi_temp_registration") || "{}");
     const email = tempReg.email;
     if (!email) {
@@ -187,8 +187,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
 
     const response = await authApi.verifyOtp({ email, otp });
-    localStorage.setItem("bsi_auth_token", response.token);
-    localStorage.setItem("bsi_session", JSON.stringify(response.user));
+    const isUserActive = response.user.role === "admin" || response.user.isActive !== false;
+
+    if (isUserActive) {
+      localStorage.setItem("bsi_auth_token", response.token);
+      localStorage.setItem("bsi_session", JSON.stringify(response.user));
+    }
 
     if (response.startupProfile || tempReg.startupProfile) {
       const profile = (response.startupProfile || tempReg.startupProfile) as Record<string, unknown>;
@@ -210,14 +214,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         return [startupProfile, ...prev];
       });
 
-      try {
-        await contentApi.submitStartup(startupProfile as unknown as Record<string, unknown>);
-      } catch {
-        // Local state already reflects the new profile; backend sync can retry later.
+      if (isUserActive) {
+        try {
+          await contentApi.submitStartup(startupProfile as unknown as Record<string, unknown>);
+        } catch {
+          // Local state already reflects the new profile; backend sync can retry later.
+        }
       }
     }
 
-    setUser(response.user);
+    if (isUserActive) {
+      setUser(response.user);
+    } else {
+      setUser(null);
+    }
+
+    return response.user;
   }, []);
 
   const resendOtp = useCallback(async () => {
