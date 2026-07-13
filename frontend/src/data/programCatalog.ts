@@ -123,7 +123,7 @@ export const programCatalog: CatalogProgram[] = [
     benefits: [
       "Eligible startups incorporated on or after 2023 can receive funding of up to ₹70 lakhs.",
       "Up to ₹20 lakhs as a non-repayable grant for PoC, prototype development, and product validation.",
-      "Up to ₹50 lakhs as a repayable seed support, repayable after a 1-year moratorium through EMIs over the next 5 years, at an annual interest rate of 6.5%.",
+      "Up to ₹50 lakhs as a repayable seed support, repayable after a 1-year moratorium through EMIs over the next 5 years, at an annual interest rate of RBI repo rate based.",
     ],
     eligibility: [
       "The applicant must be registered as a Private Limited Company, Limited Liability Partnership (LLP), or Foundation.",
@@ -141,13 +141,13 @@ export const programCatalog: CatalogProgram[] = [
   {
     id: "global-impact-program",
     slug: "global-impact-program",
-    name: "Global Impact Support",
+    name: "Global Support",
     partner: "BHASKAR",
     funding: "Up to ₹5 crore grant",
     tagline: "Back innovative solutions creating social, environmental, and economic change.",
-    shortDescription: "The Global Impact Grant is an international funding support established to support organizations that are developing innovative solutions to address social, environmental, and economic challenges across the world.",
+    shortDescription: "The Global Grant is an international funding support established to support organizations that are developing innovative solutions to address social, environmental, and economic challenges across the world.",
     longDescription:
-      "The Global Impact Grant is an international funding support established to support organizations that are developing innovative solutions to address social, environmental, and economic challenges across the world.",
+      "The Global Grant is an international funding support established to support organizations that are developing innovative solutions to address social, environmental, and economic challenges across the world.",
     benefits: [
       "Grant support of up to ₹5 crores.",
       "Funding for research, innovation, pilot projects, and large-scale implementation.",
