@@ -570,307 +570,344 @@ export const Navbar: React.FC = () => {
 
       {/* ── Login / Register Popup Dialog Modal ── */}
       {showLoginModal && (
-        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-slate-900/65 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-2xl max-w-3xl w-full flex flex-col md:flex-row overflow-hidden relative min-h-[460px] animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-[1000] overflow-y-auto bg-slate-900/65 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="flex min-h-full items-center justify-center p-4">
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-2xl max-w-3xl w-full flex flex-col md:flex-row overflow-hidden relative min-h-0 md:min-h-[460px] animate-in zoom-in-95 duration-200">
 
-            {/* Orange circular close button with white 'x' */}
-            <button
-              onClick={() => setShowLoginModal(false)}
-              className="absolute top-3 right-3 w-6 h-6 bg-[#F05A28] hover:bg-[#D9481B] text-white rounded-full flex items-center justify-center font-bold hover:scale-105 active:scale-95 cursor-pointer z-50 text-[10px] shadow-sm focus:outline-none"
-              title="Close modal"
-            >
-              ✕
-            </button>
+              {/* Orange circular close button with white 'x' */}
+              <button
+                onClick={() => setShowLoginModal(false)}
+                className="absolute top-3 right-3 w-6 h-6 bg-[#F05A28] hover:bg-[#D9481B] text-white rounded-full flex items-center justify-center font-bold hover:scale-105 active:scale-95 cursor-pointer z-50 text-[10px] shadow-sm focus:outline-none"
+                title="Close modal"
+              >
+                ✕
+              </button>
 
-            {/* LEFT COLUMN: Form (Login or Register) */}
-            {modalMode === "login" ? (
-              <div className="w-full md:w-3/5 p-6 sm:p-10 flex flex-col justify-between relative bg-white min-h-[380px]">
-                {/* City skyline background overlay */}
-                <div className="absolute bottom-0 left-0 right-0 h-24 overflow-hidden pointer-events-none opacity-[0.06] z-0">
-                  <svg viewBox="0 0 400 100" fill="none" className="w-full h-full">
-                    <path d="M0 100 H400 V70 H380 V60 H360 V75 H340 V50 H320 V70 H300 V40 H280 V65 H260 V30 H240 V75 H220 V55 H200 V80 H180 V45 H160 V70 H140 V50 H120 V75 H100 V35 H80 V60 H60 V30 H40 V65 H20 V50 H0 Z" fill="#0B2A5B" />
-                  </svg>
-                </div>
-
-                <div className="space-y-5 z-10 w-full">
-                  <div className="space-y-1 text-center md:text-left">
-                    <h2 className="text-2xl font-black text-[#1E293B] tracking-tight text-center">LOGIN</h2>
-                    <p className="text-[10px] text-slate-500 font-bold leading-normal text-center">
-                      You can also access your account using your Startup Bharat credentials.
-                    </p>
+              {/* LEFT COLUMN: Form (Login or Register) */}
+              {modalMode === "login" ? (
+                <div className="w-full md:w-3/5 p-6 sm:p-10 flex flex-col justify-between relative bg-white min-h-[380px]">
+                  {/* City skyline background overlay */}
+                  <div className="absolute bottom-0 left-0 right-0 h-24 overflow-hidden pointer-events-none opacity-[0.06] z-0">
+                    <svg viewBox="0 0 400 100" fill="none" className="w-full h-full">
+                      <path d="M0 100 H400 V70 H380 V60 H360 V75 H340 V50 H320 V70 H300 V40 H280 V65 H260 V30 H240 V75 H220 V55 H200 V80 H180 V45 H160 V70 H140 V50 H120 V75 H100 V35 H80 V60 H60 V30 H40 V65 H20 V50 H0 Z" fill="#0B2A5B" />
+                    </svg>
                   </div>
 
-                  <form onSubmit={handleLoginSubmit} className="space-y-4">
-                    <div className="space-y-1">
-                      <input
-                        type="email"
-                        value={loginEmail}
-                        onChange={(e) => setLoginEmail(e.target.value)}
-                        placeholder="Please enter your email address"
-                        className={`w-full px-3 py-2.5 border-2 rounded-lg text-xs font-semibold text-slate-700 outline-none border-[#F05A28] ${loginErrors.email ? "bg-red-50/10 border-red-500" : ""
-                          }`}
-                      />
-                      {loginErrors.email && (
-                        <p className="text-red-500 text-[9.5px] font-bold">⚠ {loginErrors.email}</p>
-                      )}
+                  <div className="space-y-5 z-10 w-full">
+                    <div className="space-y-1 text-center md:text-left">
+                      <h2 className="text-2xl font-black text-[#1E293B] tracking-tight text-center">LOGIN</h2>
+                      <p className="text-[10px] text-slate-500 font-bold leading-normal text-center">
+                        You can also access your account using your Startup Bharat credentials.
+                      </p>
                     </div>
 
-                    <div className="space-y-1">
-                      <div className="relative">
+                    <form onSubmit={handleLoginSubmit} className="space-y-4">
+                      <div className="space-y-1">
                         <input
-                          type={showPassword ? "text" : "password"}
-                          value={loginPassword}
-                          onChange={(e) => setLoginPassword(e.target.value)}
-                          placeholder="Please enter your password"
-                          className={`w-full px-3 py-2.5 border-2 rounded-lg text-xs font-semibold text-slate-700 outline-none border-[#F05A28] pr-10 ${loginErrors.password ? "bg-red-50/10 border-red-500" : ""
+                          type="email"
+                          value={loginEmail}
+                          onChange={(e) => setLoginEmail(e.target.value)}
+                          placeholder="Please enter your email address"
+                          className={`w-full px-3 py-2.5 border-2 rounded-lg text-xs font-semibold text-slate-700 outline-none border-[#F05A28] ${loginErrors.email ? "bg-red-50/10 border-red-500" : ""
                             }`}
                         />
+                        {loginErrors.email && (
+                          <p className="text-red-500 text-[9.5px] font-bold">⚠ {loginErrors.email}</p>
+                        )}
+                      </div>
+
+                      <div className="space-y-1">
+                        <div className="relative">
+                          <input
+                            type={showPassword ? "text" : "password"}
+                            value={loginPassword}
+                            onChange={(e) => setLoginPassword(e.target.value)}
+                            placeholder="Please enter your password"
+                            className={`w-full px-3 py-2.5 border-2 rounded-lg text-xs font-semibold text-slate-700 outline-none border-[#F05A28] pr-10 ${loginErrors.password ? "bg-red-50/10 border-red-500" : ""
+                              }`}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 focus:outline-none"
+                          >
+                            {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          </button>
+                        </div>
+                        {loginErrors.password && (
+                          <p className="text-red-500 text-[9.5px] font-bold">⚠ {loginErrors.password}</p>
+                        )}
+                      </div>
+
+                      <div className="flex justify-end">
                         <button
                           type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 focus:outline-none"
+                          onClick={() => setModalMode("forgot-password")}
+                          className="text-right text-[10px] font-extrabold text-[#1E293B] hover:underline"
                         >
-                          {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          Forgot password?
                         </button>
                       </div>
-                      {loginErrors.password && (
-                        <p className="text-red-500 text-[9.5px] font-bold">⚠ {loginErrors.password}</p>
-                      )}
-                    </div>
 
-                    <div className="flex justify-end">
+                      <button
+                        type="submit"
+                        disabled={loginLoading}
+                        className="w-full bg-[#F05A28] hover:bg-[#D9481B] text-white font-extrabold py-2.5 rounded-lg text-xs uppercase tracking-wider transition-all cursor-pointer shadow-sm disabled:opacity-50 mt-1"
+                      >
+                        Login
+                      </button>
+                    </form>
+
+                    {/* Google Login Section matching screenshot */}
+                    <div className="text-center pt-2 space-y-2 z-10 relative">
+                      <span className="text-[10px] text-slate-600 font-extrabold tracking-wide block">
+                        Login with others
+                      </span>
                       <button
                         type="button"
-                        onClick={() => setModalMode("forgot-password")}
-                        className="text-right text-[10px] font-extrabold text-[#1E293B] hover:underline"
-                      >
-                        Forgot password?
-                      </button>
-                    </div>
-
-                    <button
-                      type="submit"
-                      disabled={loginLoading}
-                      className="w-full bg-[#F05A28] hover:bg-[#D9481B] text-white font-extrabold py-2.5 rounded-lg text-xs uppercase tracking-wider transition-all cursor-pointer shadow-sm disabled:opacity-50 mt-1"
-                    >
-                      Login
-                    </button>
-                  </form>
-
-                  {/* Google Login Section matching screenshot */}
-                  <div className="text-center pt-2 space-y-2 z-10 relative">
-                    <span className="text-[10px] text-slate-600 font-extrabold tracking-wide block">
-                      Login with others
-                    </span>
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        try {
-                          const u = await login("admin@startupindia.gov.in", "admin@123");
-                          setShowLoginModal(false);
-                          if (u.role === "admin") {
-                            navigate("/admin/dashboard");
-                          } else {
-                            navigate("/startup/dashboard");
+                        onClick={async () => {
+                          try {
+                            const u = await login("admin@startupindia.gov.in", "admin@123");
+                            setShowLoginModal(false);
+                            if (u.role === "admin") {
+                              navigate("/admin/dashboard");
+                            } else {
+                              navigate("/startup/dashboard");
+                            }
+                          } catch (err) {
+                            // No toast shown
                           }
-                        } catch (err) {
-                          // No toast shown
-                        }
-                      }}
-                      className="w-full max-w-xs mx-auto flex items-center justify-center bg-white hover:bg-slate-50 text-slate-700 font-extrabold py-2.5 px-4 border-2 border-slate-200 rounded-full shadow-sm text-xs transition duration-200"
-                    >
-                      <svg className="w-3.5 h-3.5 mr-2" viewBox="0 0 24 24">
-                        <path
-                          fill="#EA4335"
-                          d="M5.266 9.765A7.077 7.077 0 0 1 12 4.909c1.69 0 3.218.6 4.418 1.582L19.91 3C17.782 1.145 15.055 0 12 0 7.336 0 3.327 2.682 1.386 6.586l3.88 3.179z"
-                        />
-                        <path
-                          fill="#FBBC05"
-                          d="M1.386 6.586A11.947 11.947 0 0 0 0 12c0 1.92.455 3.736 1.259 5.355l4.027-3.127A7.072 7.072 0 0 1 4.909 12c0-1.527.482-2.955 1.309-4.145L1.386 6.586z"
-                        />
-                        <path
-                          fill="#4285F4"
-                          d="M12 24c3.245 0 5.973-1.073 7.964-2.918l-3.864-3c-1.127.755-2.564 1.209-4.1 1.209-3.155 0-5.836-2.127-6.791-5.027l-4.027 3.127C3.127 21.145 7.182 24 12 24z"
-                        />
-                        <path
-                          fill="#34A853"
-                          d="M23.49 12.273c0-.818-.082-1.609-.227-2.382H12v4.518h6.464a5.536 5.536 0 0 1-2.4 3.636l3.864 3c2.264-2.09 3.564-5.164 3.564-8.773z"
-                        />
-                      </svg>
-                      Login with <span className="font-black ml-1">Google</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ) : modalMode === "register" ? (
-              // Registration Form Left side
-              <div className="w-full md:w-3/5 p-6 sm:p-10 flex flex-col justify-between bg-white min-h-[380px] overflow-y-auto max-h-[90vh]">
-                <div className="space-y-4 z-10 w-full">
-                  <div className="space-y-1">
-                    <h2 className="text-2xl font-black text-[#1E293B] tracking-tight">REGISTER</h2>
-                    <p className="text-[10px] text-slate-500 font-bold leading-normal">
-                      Configure your secure founder profile to file support applications.
-                    </p>
-                  </div>
+                        }}
+                        className="w-full max-w-xs mx-auto flex items-center justify-center bg-white hover:bg-slate-50 text-slate-700 font-extrabold py-2.5 px-4 border-2 border-slate-200 rounded-full shadow-sm text-xs transition duration-200"
+                      >
+                        <svg className="w-3.5 h-3.5 mr-2" viewBox="0 0 24 24">
+                          <path
+                            fill="#EA4335"
+                            d="M5.266 9.765A7.077 7.077 0 0 1 12 4.909c1.69 0 3.218.6 4.418 1.582L19.91 3C17.782 1.145 15.055 0 12 0 7.336 0 3.327 2.682 1.386 6.586l3.88 3.179z"
+                          />
+                          <path
+                            fill="#FBBC05"
+                            d="M1.386 6.586A11.947 11.947 0 0 0 0 12c0 1.92.455 3.736 1.259 5.355l4.027-3.127A7.072 7.072 0 0 1 4.909 12c0-1.527.482-2.955 1.309-4.145L1.386 6.586z"
+                          />
+                          <path
+                            fill="#4285F4"
+                            d="M12 24c3.245 0 5.973-1.073 7.964-2.918l-3.864-3c-1.127.755-2.564 1.209-4.1 1.209-3.155 0-5.836-2.127-6.791-5.027l-4.027 3.127C3.127 21.145 7.182 24 12 24z"
+                          />
+                          <path
+                            fill="#34A853"
+                            d="M23.49 12.273c0-.818-.082-1.609-.227-2.382H12v4.518h6.464a5.536 5.536 0 0 1-2.4 3.636l3.864 3c2.264-2.09 3.564-5.164 3.564-8.773z"
+                          />
+                        </svg>
+                        Login with <span className="font-black ml-1">Google</span>
+                      </button>
 
-                  <form onSubmit={handleRegSubmit} className="space-y-2.5">
-                    <div className="space-y-1">
-                      <input
-                        type="text"
-                        value={regName}
-                        onChange={(e) => setRegName(e.target.value)}
-                        placeholder="Full Name"
-                        className={`w-full px-3 py-2 border rounded-lg text-xs font-semibold text-slate-700 outline-none focus:border-[#F05A28] ${regErrors.name ? "border-red-500 bg-red-50/10" : "border-slate-300"
-                          }`}
-                      />
-                      {regErrors.name && (
-                        <p className="text-red-500 text-[9px] font-bold">⚠ {regErrors.name}</p>
-                      )}
-                    </div>
-
-                    <div className="space-y-1">
-                      <input
-                        type="email"
-                        value={regEmail}
-                        onChange={(e) => setRegEmail(e.target.value)}
-                        placeholder="Email Address"
-                        className={`w-full px-3 py-2 border rounded-lg text-xs font-semibold text-slate-700 outline-none focus:border-[#F05A28] ${regErrors.email ? "border-red-500 bg-red-50/10" : "border-slate-300"
-                          }`}
-                      />
-                      {regErrors.email && (
-                        <p className="text-red-500 text-[9px] font-bold">⚠ {regErrors.email}</p>
-                      )}
-                    </div>
-
-                    <div className="space-y-1">
-                      <input
-                        type="tel"
-                        value={regMobile}
-                        onChange={(e) => setRegMobile(e.target.value)}
-                        placeholder="10-digit Mobile Number"
-                        className={`w-full px-3 py-2 border rounded-lg text-xs font-semibold text-slate-700 outline-none focus:border-[#F05A28] ${regErrors.mobile ? "border-red-500 bg-red-50/10" : "border-slate-300"
-                          }`}
-                      />
-                      {regErrors.mobile && (
-                        <p className="text-red-500 text-[9px] font-bold">⚠ {regErrors.mobile}</p>
-                      )}
-                    </div>
-
-                    <div className="space-y-1">
-                      <div className="relative">
-                        <select
-                          value={regProgram}
-                          onChange={(e) => setRegProgram(e.target.value)}
-                          className={`w-full appearance-none px-3 py-2.5 border rounded-lg text-xs font-semibold text-slate-700 outline-none focus:border-[#F05A28] ${regErrors.selectedProgram ? "border-red-500 bg-red-50/10" : "border-slate-300"
-                            }`}
-                        >
-                          <option value="">Select support</option>
-                          {programCatalog.map((program) => (
-                            <option key={program.id} value={program.id}>
-                              {program.name}
-                            </option>
-                          ))}
-                        </select>
-                        <ChevronDown className="pointer-events-none absolute right-3 top-3 text-slate-400 w-3.5 h-3.5" />
+                      {/* Don't have an account link only on mobile */}
+                      <div className="md:hidden pt-3 border-t border-slate-100 mt-3 text-center">
+                        <p className="text-[10px] font-bold text-slate-500">
+                          Don't have an account?{" "}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setShowLoginModal(false);
+                              setRegErrors({});
+                              navigate("/register");
+                            }}
+                            className="font-black text-[#F05A28] hover:underline cursor-pointer"
+                          >
+                            Register Now
+                          </button>
+                        </p>
                       </div>
-                      {regErrors.selectedProgram && (
-                        <p className="text-red-500 text-[9px] font-bold">⚠ {regErrors.selectedProgram}</p>
-                      )}
                     </div>
-
-                    <div className="space-y-1">
-                      <input
-                        type="password"
-                        value={regPassword}
-                        onChange={(e) => setRegPassword(e.target.value)}
-                        placeholder="Password: 8+ chars, upper, lower, number"
-                        className={`w-full px-3 py-2 border rounded-lg text-xs font-semibold text-slate-700 outline-none focus:border-[#F05A28] ${regErrors.password ? "border-red-500 bg-red-50/10" : "border-slate-300"
-                          }`}
-                      />
-                      {regErrors.password && (
-                        <p className="text-red-500 text-[9px] font-bold">⚠ {regErrors.password}</p>
-                      )}
-                    </div>
-
-                    <button
-                      type="submit"
-                      disabled={regLoading}
-                      className="w-full bg-[#F05A28] hover:bg-[#D9481B] text-white font-extrabold py-2.5 rounded-lg text-xs uppercase tracking-wider transition-all cursor-pointer shadow-sm disabled:opacity-50 mt-2"
-                    >
-                      {regLoading ? "Registering..." : "Sign Up"}
-                    </button>
-                  </form>
-                </div>
-              </div>
-            ) : (
-              <ForgotPasswordForm
-                onBackToLogin={() => setModalMode("login")}
-                onSuccess={() => setModalMode("login")}
-              />
-            )}
-
-            {/* RIGHT COLUMN: Soft yellow brand info box with gold borders wrapper matching screenshot */}
-            <div className="w-full md:w-2/5 p-4 sm:p-5 bg-[#FFFDF4] border-t md:border-t-0 md:border-l border-[#FCD34D]/40">
-
-              <div className="border-2 border-[#FCD34D] rounded-3xl p-6 bg-white w-full h-full flex flex-col justify-between items-center text-center gap-6 min-h-[380px]">
-                {/* BHASKAR brand stack */}
-                <div className="space-y-3 w-full">
-                  <img
-                    src="/logos/bhaskar.jpeg"
-                    alt="BHASKAR"
-                    className="mx-auto h-20 w-auto max-w-[180px] object-contain"
-                  />
-
-                  <div className="space-y-1">
-                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Welcome to</span>
-                    <h3 className="text-base font-black text-[#1E293B]">BHASKAR</h3>
-                    <span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest font-mono block leading-tight">
-                      Bharat Startup Knowledge Access Registry
-                    </span>
-                    <p className="text-[9px] text-[#F05A28] font-extrabold tracking-wide pt-1">
-                      Innovate. Connect. Thrive.
-                    </p>
                   </div>
                 </div>
+              ) : modalMode === "register" ? (
+                // Registration Form Left side
+                <div className="w-full md:w-3/5 p-6 sm:p-10 flex flex-col justify-between bg-white min-h-[380px] overflow-y-auto max-h-[90vh]">
+                  <div className="space-y-4 z-10 w-full">
+                    <div className="space-y-1">
+                      <h2 className="text-2xl font-black text-[#1E293B] tracking-tight">REGISTER</h2>
+                      <p className="text-[10px] text-slate-500 font-bold leading-normal">
+                        Configure your secure founder profile to file support applications.
+                      </p>
+                    </div>
 
-                {/* Action Box to switch modalMode */}
-                <div className="bg-white border border-slate-150 rounded-xl p-3 shadow-md w-full max-w-[210px] z-10">
-                  {modalMode === "login" ? (
-                    <>
-                      <p className="text-[10px] font-bold text-slate-500">Don't have an account?</p>
+                    <form onSubmit={handleRegSubmit} className="space-y-2.5">
+                      <div className="space-y-1">
+                        <input
+                          type="text"
+                          value={regName}
+                          onChange={(e) => setRegName(e.target.value)}
+                          placeholder="Full Name"
+                          className={`w-full px-3 py-2 border rounded-lg text-xs font-semibold text-slate-700 outline-none focus:border-[#F05A28] ${regErrors.name ? "border-red-500 bg-red-50/10" : "border-slate-300"
+                            }`}
+                        />
+                        {regErrors.name && (
+                          <p className="text-red-500 text-[9px] font-bold">⚠ {regErrors.name}</p>
+                        )}
+                      </div>
+
+                      <div className="space-y-1">
+                        <input
+                          type="email"
+                          value={regEmail}
+                          onChange={(e) => setRegEmail(e.target.value)}
+                          placeholder="Email Address"
+                          className={`w-full px-3 py-2 border rounded-lg text-xs font-semibold text-slate-700 outline-none focus:border-[#F05A28] ${regErrors.email ? "border-red-500 bg-red-50/10" : "border-slate-300"
+                            }`}
+                        />
+                        {regErrors.email && (
+                          <p className="text-red-500 text-[9px] font-bold">⚠ {regErrors.email}</p>
+                        )}
+                      </div>
+
+                      <div className="space-y-1">
+                        <input
+                          type="tel"
+                          value={regMobile}
+                          onChange={(e) => setRegMobile(e.target.value)}
+                          placeholder="10-digit Mobile Number"
+                          className={`w-full px-3 py-2 border rounded-lg text-xs font-semibold text-slate-700 outline-none focus:border-[#F05A28] ${regErrors.mobile ? "border-red-500 bg-red-50/10" : "border-slate-300"
+                            }`}
+                        />
+                        {regErrors.mobile && (
+                          <p className="text-red-500 text-[9px] font-bold">⚠ {regErrors.mobile}</p>
+                        )}
+                      </div>
+
+                      <div className="space-y-1">
+                        <div className="relative">
+                          <select
+                            value={regProgram}
+                            onChange={(e) => setRegProgram(e.target.value)}
+                            className={`w-full appearance-none px-3 py-2.5 border rounded-lg text-xs font-semibold text-slate-700 outline-none focus:border-[#F05A28] ${regErrors.selectedProgram ? "border-red-500 bg-red-50/10" : "border-slate-300"
+                              }`}
+                          >
+                            <option value="">Select support</option>
+                            {programCatalog.map((program) => (
+                              <option key={program.id} value={program.id}>
+                                {program.name}
+                              </option>
+                            ))}
+                          </select>
+                          <ChevronDown className="pointer-events-none absolute right-3 top-3 text-slate-400 w-3.5 h-3.5" />
+                        </div>
+                        {regErrors.selectedProgram && (
+                          <p className="text-red-500 text-[9px] font-bold">⚠ {regErrors.selectedProgram}</p>
+                        )}
+                      </div>
+
+                      <div className="space-y-1">
+                        <input
+                          type="password"
+                          value={regPassword}
+                          onChange={(e) => setRegPassword(e.target.value)}
+                          placeholder="Password: 8+ chars, upper, lower, number"
+                          className={`w-full px-3 py-2 border rounded-lg text-xs font-semibold text-slate-700 outline-none focus:border-[#F05A28] ${regErrors.password ? "border-red-500 bg-red-50/10" : "border-slate-300"
+                            }`}
+                        />
+                        {regErrors.password && (
+                          <p className="text-red-500 text-[9px] font-bold">⚠ {regErrors.password}</p>
+                        )}
+                      </div>
+
                       <button
-                        onClick={() => {
-                          setShowLoginModal(false);
-                          setRegErrors({});
-                          navigate("/register");
-                        }}
-                        className="text-xs font-black text-[#F05A28] hover:underline cursor-pointer block mt-1.5 mx-auto"
+                        type="submit"
+                        disabled={regLoading}
+                        className="w-full bg-[#F05A28] hover:bg-[#D9481B] text-white font-extrabold py-2.5 rounded-lg text-xs uppercase tracking-wider transition-all cursor-pointer shadow-sm disabled:opacity-50 mt-2"
                       >
-                        Register Now
+                        {regLoading ? "Registering..." : "Sign Up"}
                       </button>
-                    </>
-                  ) : (
-                    <>
-                      <p className="text-[10px] font-bold text-slate-500">Remembered password?</p>
-                      <button
-                        onClick={() => {
-                          setModalMode("login");
-                          setLoginErrors({});
-                        }}
-                        className="text-xs font-black text-[#F05A28] hover:underline cursor-pointer block mt-1.5 mx-auto"
-                      >
-                        Login Now
-                      </button>
-                    </>
-                  )}
+                    </form>
+
+                    {/* Remembered password link only on mobile */}
+                    <div className="md:hidden pt-3 border-t border-slate-100 mt-3 text-center">
+                      <p className="text-[10px] font-bold text-slate-500">
+                        Remembered password?{" "}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setModalMode("login");
+                            setLoginErrors({});
+                          }}
+                          className="font-black text-[#F05A28] hover:underline cursor-pointer"
+                        >
+                          Login Now
+                        </button>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <ForgotPasswordForm
+                  onBackToLogin={() => setModalMode("login")}
+                  onSuccess={() => setModalMode("login")}
+                />
+              )}
+
+              {/* RIGHT COLUMN: Soft yellow brand info box with gold borders wrapper matching screenshot */}
+              <div className="hidden md:block w-full md:w-2/5 p-4 sm:p-5 bg-[#FFFDF4] border-t md:border-t-0 md:border-l border-[#FCD34D]/40">
+
+                <div className="border-2 border-[#FCD34D] rounded-3xl p-6 bg-white w-full h-full flex flex-col justify-between items-center text-center gap-6 min-h-[380px]">
+                  {/* BHASKAR brand stack */}
+                  <div className="space-y-3 w-full">
+                    <img
+                      src="/logos/bhaskar.jpeg"
+                      alt="BHASKAR"
+                      className="mx-auto h-20 w-auto max-w-[180px] object-contain"
+                    />
+
+                    <div className="space-y-1">
+                      <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Welcome to</span>
+                      <h3 className="text-base font-black text-[#1E293B]">BHASKAR</h3>
+                      <span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest font-mono block leading-tight">
+                        Bharat Startup Knowledge Access Registry
+                      </span>
+                      <p className="text-[9px] text-[#F05A28] font-extrabold tracking-wide pt-1">
+                        Innovate. Connect. Thrive.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Action Box to switch modalMode */}
+                  <div className="bg-white border border-slate-150 rounded-xl p-3 shadow-md w-full max-w-[210px] z-10">
+                    {modalMode === "login" ? (
+                      <>
+                        <p className="text-[10px] font-bold text-slate-500">Don't have an account?</p>
+                        <button
+                          onClick={() => {
+                            setShowLoginModal(false);
+                            setRegErrors({});
+                            navigate("/register");
+                          }}
+                          className="text-xs font-black text-[#F05A28] hover:underline cursor-pointer block mt-1.5 mx-auto"
+                        >
+                          Register Now
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-[10px] font-bold text-slate-500">Remembered password?</p>
+                        <button
+                          onClick={() => {
+                            setModalMode("login");
+                            setLoginErrors({});
+                          }}
+                          className="text-xs font-black text-[#F05A28] hover:underline cursor-pointer block mt-1.5 mx-auto"
+                        >
+                          Login Now
+                        </button>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Bottom spacer (DPIIT logo completely removed) */}
+                  <div className="w-full h-1" />
                 </div>
 
-                {/* Bottom spacer (DPIIT logo completely removed) */}
-                <div className="w-full h-1" />
               </div>
 
             </div>
-
           </div>
         </div>
       )}

@@ -162,6 +162,35 @@ export const Register: React.FC = () => {
     });
   };
 
+  const toggleInterest = (value: string) => {
+    setForm((prev) => {
+      const current = prev.interests;
+      let next: string[];
+      if (value === "All") {
+        if (current.includes("All")) {
+          next = [];
+        } else {
+          next = [...interestOptions];
+        }
+      } else {
+        if (current.includes(value)) {
+          next = current.filter((item) => item !== value && item !== "All");
+        } else {
+          const added = [...current, value];
+          const hasAllOthers = interestOptions
+            .filter((opt) => opt !== "All")
+            .every((opt) => added.includes(opt));
+          if (hasAllOthers) {
+            next = [...interestOptions];
+          } else {
+            next = added;
+          }
+        }
+      }
+      return { ...prev, interests: next };
+    });
+  };
+
   const buildStepErrors = (targetStep: number) => {
     const nextErrors: Record<string, string> = {};
 
@@ -193,16 +222,6 @@ export const Register: React.FC = () => {
     }
 
     if (targetStep === 4) {
-      if (!form.password) nextErrors.password = "Password is required.";
-      else if (form.password.length < 8) nextErrors.password = "Password must be at least 8 characters.";
-      else if (!/[A-Z]/.test(form.password) || !/[a-z]/.test(form.password) || !/\d/.test(form.password)) {
-        nextErrors.password = "Use uppercase, lowercase, and one number.";
-      }
-
-      if (!form.confirmPassword) nextErrors.confirmPassword = "Confirm your password.";
-      else if (form.confirmPassword !== form.password) nextErrors.confirmPassword = "Passwords do not match.";
-
-      if (!form.interests.length) nextErrors.interests = "Select at least one interest.";
       if (!form.agreeTerms) nextErrors.agreeTerms = "You need to agree to the terms.";
     }
 
@@ -382,10 +401,10 @@ export const Register: React.FC = () => {
                     >
                       <div
                         className={`z-10 flex h-10 w-10 items-center justify-center rounded-full border-4 bg-white text-sm font-black transition-all duration-300 shadow-md ${complete
-                            ? "border-[#07184A] bg-[#07184A] text-white"
-                            : active
-                              ? "border-[#FF6B00] text-[#FF6B00] ring-4 ring-[#FF6B00]/10"
-                              : "border-slate-200 text-slate-400 hover:border-slate-350"
+                          ? "border-[#07184A] bg-[#07184A] text-white"
+                          : active
+                            ? "border-[#FF6B00] text-[#FF6B00] ring-4 ring-[#FF6B00]/10"
+                            : "border-slate-200 text-slate-400 hover:border-slate-350"
                           }`}
                       >
                         {complete ? <Check className="h-4.5 w-4.5" /> : item.number}
@@ -454,8 +473,8 @@ export const Register: React.FC = () => {
                           type="button"
                           onClick={() => updateField("hasCompanyLogo", option.value)}
                           className={`rounded-full border-2 px-6 py-2.5 text-xs sm:text-sm font-bold transition-all duration-200 ${form.hasCompanyLogo === option.value
-                              ? "border-[#FF6B00] bg-gradient-to-r from-[#FF6B00] to-[#FF8C3D] text-white shadow-sm shadow-[#FF6B00]/15"
-                              : "border-slate-200 bg-white text-slate-600 hover:border-[#FF6B00]/40 hover:text-[#07184A] hover:bg-slate-50"
+                            ? "border-[#FF6B00] bg-gradient-to-r from-[#FF6B00] to-[#FF8C3D] text-white shadow-sm shadow-[#FF6B00]/15"
+                            : "border-slate-200 bg-white text-slate-600 hover:border-[#FF6B00]/40 hover:text-[#07184A] hover:bg-slate-50"
                             }`}
                         >
                           {option.label}
@@ -476,8 +495,8 @@ export const Register: React.FC = () => {
                           type="button"
                           onClick={() => updateField("fundingStatus", option)}
                           className={`rounded-full border-2 px-6 py-2.5 text-xs sm:text-sm font-bold transition-all duration-200 ${form.fundingStatus === option
-                              ? "border-[#07184A] bg-[#07184A] text-white shadow-sm"
-                              : "border-slate-200 bg-white text-slate-600 hover:border-[#FF6B00]/40 hover:text-[#07184A] hover:bg-slate-50"
+                            ? "border-[#07184A] bg-[#07184A] text-white shadow-sm"
+                            : "border-slate-200 bg-white text-slate-600 hover:border-[#FF6B00]/40 hover:text-[#07184A] hover:bg-slate-50"
                             }`}
                         >
                           {option}
@@ -515,8 +534,8 @@ export const Register: React.FC = () => {
                           type="button"
                           onClick={() => updateField("stage", option)}
                           className={`rounded-xl border-2 px-3 py-3 text-xs sm:text-sm font-black tracking-tight transition-all duration-200 ${form.stage === option
-                              ? "border-[#FF6B00] bg-gradient-to-r from-[#FF6B00] to-[#FF8C3D] text-white shadow-sm shadow-[#FF6B00]/15"
-                              : "border-slate-200 bg-white text-slate-600 hover:border-[#FF6B00]/40 hover:text-[#07184A] hover:bg-slate-50"
+                            ? "border-[#FF6B00] bg-gradient-to-r from-[#FF6B00] to-[#FF8C3D] text-white shadow-sm shadow-[#FF6B00]/15"
+                            : "border-slate-200 bg-white text-slate-600 hover:border-[#FF6B00]/40 hover:text-[#07184A] hover:bg-slate-50"
                             }`}
                         >
                           {option}
@@ -743,8 +762,8 @@ export const Register: React.FC = () => {
                           type="button"
                           onClick={() => toggleListValue("services", option)}
                           className={`rounded-lg px-4.5 py-2 text-xs font-black tracking-tight transition-all duration-200 ${active
-                              ? "bg-[#07184A] text-white shadow-sm"
-                              : "bg-slate-100 text-slate-700 hover:bg-[#FFF4EC] hover:text-[#07184A]"
+                            ? "bg-[#07184A] text-white shadow-sm"
+                            : "bg-slate-100 text-slate-700 hover:bg-[#FFF4EC] hover:text-[#07184A]"
                             }`}
                         >
                           {option}
@@ -834,10 +853,10 @@ export const Register: React.FC = () => {
                         <button
                           key={option}
                           type="button"
-                          onClick={() => toggleListValue("interests", option)}
+                          onClick={() => toggleInterest(option)}
                           className={`flex items-center gap-3 rounded-2xl border-2 px-4 py-3.5 text-sm font-bold transition-all duration-200 ${active
-                              ? "border-[#FF6B00] bg-gradient-to-r from-[#FF6B00] to-[#FF8C3D] text-white shadow-sm shadow-[#FF6B00]/15"
-                              : "border-slate-200 bg-white text-slate-600 hover:border-[#FF6B00]/50 hover:text-[#07184A]"
+                            ? "border-[#FF6B00] bg-gradient-to-r from-[#FF6B00] to-[#FF8C3D] text-white shadow-sm shadow-[#FF6B00]/15"
+                            : "border-slate-200 bg-white text-slate-600 hover:border-[#FF6B00]/50 hover:text-[#07184A]"
                             }`}
                         >
                           <span
