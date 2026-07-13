@@ -21,6 +21,7 @@ const ensureAdminUser = async () => {
     dept: "DPIIT Seed Fund Committee",
     isEmailVerified: true,
     isOnboarded: true,
+    isActive: true,
   });
 };
 
@@ -74,6 +75,7 @@ export const register = async (req, res, next) => {
       role: "founder",
       isOnboarded: true,
       isEmailVerified: false,
+      isActive: false,
     };
 
     const user = await User.findOneAndUpdate(
@@ -119,7 +121,7 @@ export const login = async (req, res, next) => {
     }
 
     if (user.role !== "admin" && user.isActive === false) {
-      throw new AppError("Something wrong happens. Contact support please.", 403);
+      throw new AppError("Your profile is not approved yet. Please wait 1-2 working days.", 403);
     }
 
     const token = signToken(user);

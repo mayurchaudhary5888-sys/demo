@@ -18,7 +18,7 @@ export const requireAuth = async (req, _res, next) => {
     // Verify account active status from database
     const userObj = await User.findById(decoded.sub);
     if (userObj && userObj.role !== "admin" && userObj.isActive === false) {
-      return next(new AppError("Something wrong happens. Contact support please.", 403));
+      return next(new AppError("Your profile is not approved yet. Please wait 1-2 working days.", 403));
     }
 
     return next();

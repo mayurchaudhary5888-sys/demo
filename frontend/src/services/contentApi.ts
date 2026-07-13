@@ -57,8 +57,8 @@ const request = async <T>(path: string, options: RequestInit = {}): Promise<ApiR
 
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
-    if (data.message && data.message.includes("Something wrong happens")) {
-      window.dispatchEvent(new CustomEvent("bsi:deactivated-account"));
+    if (data.message && (data.message.includes("Something wrong happens") || data.message.includes("not approved yet"))) {
+      window.dispatchEvent(new CustomEvent("bsi:deactivated-account", { detail: { message: data.message } }));
     }
     throw new Error(data.message || "Request failed. Please try again.");
   }

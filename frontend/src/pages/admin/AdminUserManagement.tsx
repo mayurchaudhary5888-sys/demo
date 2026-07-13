@@ -114,7 +114,7 @@ export const AdminUserManagement: React.FC = () => {
       <div className="flex flex-col gap-4 border-b border-slate-200 pb-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h3 className="text-md font-bold text-[#0B2A5B]">User Management</h3>
-          <p className="text-[11px] text-slate-500">Activate or deactivate founders. Deactivated users can log in, but cannot apply to programs.</p>
+          <p className="text-[11px] text-slate-500">Activate or deactivate founders. Deactivated/unapproved users cannot log in to the application.</p>
         </div>
         <div className="rounded-full bg-[#0B2A5B] px-3 py-1.5 text-xs font-black uppercase tracking-wider text-white">
           {users.length} users
@@ -178,8 +178,8 @@ export const AdminUserManagement: React.FC = () => {
                 <p className="text-[10px] font-black uppercase tracking-[0.22em] text-slate-500">Application Access</p>
                 <p className="mt-1 text-sm font-semibold text-slate-700">
                   {selectedUser.isActive
-                    ? "Allowed to apply for programs."
-                    : "Login allowed, but application submissions are blocked."}
+                    ? "Allowed to log in and apply for programs."
+                    : "Login blocked. User profile is under review."}
                 </p>
               </div>
 

@@ -24,6 +24,15 @@ export const VerifyOtp: React.FC = () => {
   // Timer countdown
   const [timerCount, setTimerCount] = useState(59);
   const [loading, setLoading] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+  const handleContinue = () => {
+    setShowSuccessModal(false);
+    navigate("/");
+    setTimeout(() => {
+      window.dispatchEvent(new CustomEvent("bsi:open-login"));
+    }, 150);
+  };
 
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
@@ -109,9 +118,13 @@ export const VerifyOtp: React.FC = () => {
         );
       }
 
-      await verifyOtp(joinedCode);
-      showToast("Email validation authorized successfully! Welcome to Bhaskar.", "success");
-      navigate("/startup/dashboard");
+      const userObj = await verifyOtp(joinedCode);
+      if (userObj.role !== "admin" && userObj.isActive === false) {
+        setShowSuccessModal(true);
+      } else {
+        showToast("Email validation authorized successfully! Welcome to Bhaskar.", "success");
+        navigate("/startup/dashboard");
+      }
     } catch (err: any) {
       showToast(err.message || "Verification failed. Please try again.", "error");
     } finally {
@@ -120,7 +133,8 @@ export const VerifyOtp: React.FC = () => {
   };
 
   return (
-    <AuthShell
+    <>
+      <AuthShell
       badge="email verification"
       title="Security Code Validation"
       description={
@@ -204,5 +218,38 @@ export const VerifyOtp: React.FC = () => {
 
         </div>
       </AuthShell>
+
+      {showSuccessModal && (
+        <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl border border-slate-100 flex flex-col items-center text-center space-y-6 animate-in zoom-in-95 duration-200">
+            {/* Green Checkmark Circle */}
+            <div className="flex h-16 w-16 items-center justify-center rounded-full border-4 border-[#78B643] bg-white text-[#78B643] shadow-sm">
+              <svg className="h-8 w-8 stroke-[4.5]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            
+            {/* Typography */}
+            <div className="space-y-2">
+              <h3 className="text-2xl font-black text-[#2B4B80] tracking-tight">Thank You!</h3>
+              <p className="text-slate-650 font-bold text-sm leading-normal px-2">
+                Your profile will be approved within 1–2 working days.
+              </p>
+              <p className="text-slate-400 text-xs font-semibold">
+                We'll be in touch with you, soon!
+              </p>
+            </div>
+
+            {/* Action button */}
+            <button
+              onClick={handleContinue}
+              className="bg-[#F7C965] hover:bg-[#F3C43D] text-[#2B4B80] font-black tracking-widest text-xs uppercase px-10 py-3.5 rounded-full transition-all duration-200 cursor-pointer shadow-sm hover:scale-102 active:scale-98 focus:outline-none w-48 text-center"
+            >
+              Continue
+            </button>
+          </div>
+        </div>
+      )}
+    </>
   );
 };
