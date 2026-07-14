@@ -370,11 +370,20 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
       if (!hasMember) nextErrors.teamMembers = "Add at least one promoter name.";
     }
     if (step === 4) {
-      if (!fields.fundingAmount.trim()) {
-        nextErrors.fundingAmount = "Funding amount is required.";
-      }
       if (!fields.fundingInstrument) {
         nextErrors.fundingInstrument = "Funding instrument is required.";
+      }
+      if (!fields.fundingAmount.trim()) {
+        nextErrors.fundingAmount = "Funding amount is required.";
+      } else {
+        const amountNum = parseFloat(fields.fundingAmount.replace(/,/g, "").trim());
+        if (isNaN(amountNum)) {
+          nextErrors.fundingAmount = "Please enter a valid numeric amount.";
+        } else if (fields.fundingInstrument === "Grant" && amountNum > 2000000) {
+          nextErrors.fundingAmount = "Maximum funding amount for Grant is ₹20 Lakhs (2,000,000).";
+        } else if ((fields.fundingInstrument === "Convertible Debenture" || fields.fundingInstrument === "Debt") && amountNum > 5000000) {
+          nextErrors.fundingAmount = "Maximum funding amount for this instrument is ₹50 Lakhs (5,000,000).";
+        }
       }
       if (!fields.fundsDeploymentPlan || fields.fundsDeploymentPlan.length === 0 || fields.fundsDeploymentPlan.some(p => !p.expenseBucket.trim() || !p.amount.trim() || !p.startDate.trim() || !p.endDate.trim())) {
         nextErrors.fundsDeploymentPlan = "Please fill in all funds deployment plan fields.";
@@ -419,8 +428,21 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
       nextErrors.teams = "Please fill in all team names.";
     }
     if (!fields.raisedFunding) nextErrors.raisedFunding = "Select funding status.";
-    if (!fields.fundingAmount.trim()) nextErrors.fundingAmount = "Funding amount is required.";
-    if (!fields.fundingInstrument) nextErrors.fundingInstrument = "Select funding instrument.";
+    if (!fields.fundingInstrument) {
+      nextErrors.fundingInstrument = "Select funding instrument.";
+    }
+    if (!fields.fundingAmount.trim()) {
+      nextErrors.fundingAmount = "Funding amount is required.";
+    } else {
+      const amountNum = parseFloat(fields.fundingAmount.replace(/,/g, "").trim());
+      if (isNaN(amountNum)) {
+        nextErrors.fundingAmount = "Please enter a valid numeric amount.";
+      } else if (fields.fundingInstrument === "Grant" && amountNum > 2000000) {
+        nextErrors.fundingAmount = "Maximum funding amount for Grant is ₹20 Lakhs (2,000,000).";
+      } else if ((fields.fundingInstrument === "Convertible Debenture" || fields.fundingInstrument === "Debt") && amountNum > 5000000) {
+        nextErrors.fundingAmount = "Maximum funding amount for this instrument is ₹50 Lakhs (5,000,000).";
+      }
+    }
     if (!fields.fundsDeploymentPlan || fields.fundsDeploymentPlan.length === 0 || fields.fundsDeploymentPlan.some(p => !p.expenseBucket.trim() || !p.amount.trim() || !p.startDate.trim() || !p.endDate.trim())) {
       nextErrors.fundsDeploymentPlan = "Please fill in all funds deployment plan fields.";
     }
@@ -1112,6 +1134,13 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
                           />
                           <span className="text-xs text-slate-400 font-semibold">Enter in (₹)</span>
                         </div>
+                        {fields.fundingInstrument && (
+                          <p className="text-[10px] text-slate-400 font-semibold italic mt-0.5">
+                            {fields.fundingInstrument === "Grant"
+                              ? "Maximum allowed: ₹20 Lakhs (2,000,000)"
+                              : "Maximum allowed: ₹50 Lakhs (5,000,000)"}
+                          </p>
+                        )}
                         {errors.fundingAmount && (
                           <p className="text-red-500 font-bold text-[11px] mt-1">{errors.fundingAmount}</p>
                         )}
