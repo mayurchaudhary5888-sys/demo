@@ -13,7 +13,8 @@ import { AccountDeactivatedModal } from "./AccountDeactivatedModal";
 import { ForgotPasswordForm } from "./ForgotPasswordForm";
 
 export const Navbar: React.FC = () => {
-  const { user, login, logout, showToast } = useAppState();
+  const { user, login, logout, startups, showToast } = useAppState();
+  const myStartup = startups?.find((s) => s.id === user?.startupId);
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -366,23 +367,47 @@ export const Navbar: React.FC = () => {
                       className="px-5 py-2.5 bg-[#FF6B00] hover:bg-[#E65F00] text-white font-extrabold text-[11.5px] uppercase tracking-wider rounded-full transition-all shadow-sm flex items-center gap-1.5 active:scale-97"
                       id="nav-dashboard-btn"
                     >
-                      <User className="w-3.5 h-3.5" />
+                      {myStartup?.logoPreview || myStartup?.logoUrl ? (
+                        <img
+                          src={myStartup.logoPreview || myStartup.logoUrl}
+                          alt="Startup Logo"
+                          className="w-4.5 h-4.5 rounded-full object-contain bg-white p-0.5"
+                        />
+                      ) : (
+                        <User className="w-3.5 h-3.5" />
+                      )}
                       <span className="max-w-[80px] truncate">{user.name}</span>
                     </Link>
                   </>
                 ) : (
                   <div className="relative">
-                    <button
-                      onClick={() => setProfileMenuOpen((prev) => !prev)}
-                      className="px-5 py-2.5 bg-[#FF6B00] hover:bg-[#E65F00] text-white font-extrabold text-[11.5px] uppercase tracking-wider rounded-full transition-all shadow-sm flex items-center gap-1.5 active:scale-97"
-                      id="nav-profile-btn"
-                      aria-expanded={profileMenuOpen}
-                      aria-haspopup="menu"
-                    >
-                      <User className="w-3.5 h-3.5" />
-                      <span className="max-w-[100px] truncate">{user.name}</span>
-                      <ChevronDown className={`w-3.5 h-3.5 transition-transform ${profileMenuOpen ? "rotate-180" : ""}`} />
-                    </button>
+                    {myStartup?.logoPreview || myStartup?.logoUrl ? (
+                      <button
+                        onClick={() => setProfileMenuOpen((prev) => !prev)}
+                        className="w-10 h-10 rounded-full overflow-hidden border border-slate-200 shadow-sm active:scale-97 cursor-pointer hover:border-[#FF6B00] transition-colors bg-white flex items-center justify-center p-1"
+                        id="nav-profile-btn"
+                        aria-expanded={profileMenuOpen}
+                        aria-haspopup="menu"
+                      >
+                        <img
+                          src={myStartup.logoPreview || myStartup.logoUrl}
+                          alt="Startup Logo"
+                          className="w-full h-full rounded-full object-contain"
+                        />
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => setProfileMenuOpen((prev) => !prev)}
+                        className="px-5 py-2.5 bg-[#FF6B00] hover:bg-[#E65F00] text-white font-extrabold text-[11.5px] uppercase tracking-wider rounded-full transition-all shadow-sm flex items-center gap-1.5 active:scale-97"
+                        id="nav-profile-btn"
+                        aria-expanded={profileMenuOpen}
+                        aria-haspopup="menu"
+                      >
+                        <User className="w-3.5 h-3.5" />
+                        <span className="max-w-[100px] truncate">{user.name}</span>
+                        <ChevronDown className={`w-3.5 h-3.5 transition-transform ${profileMenuOpen ? "rotate-180" : ""}`} />
+                      </button>
+                    )}
 
                     {profileMenuOpen && (
                       <div className="absolute right-0 top-[calc(100%+10px)] w-64 rounded-2xl border border-slate-200 bg-white shadow-[0_16px_40px_rgba(15,23,42,0.18)] overflow-hidden z-[120]">
@@ -532,7 +557,15 @@ export const Navbar: React.FC = () => {
                     onClick={() => setMobileMenuOpen(false)}
                     className="flex items-center justify-center gap-1.5 px-4 py-2.5 text-xs font-bold text-white bg-[#FF6B00] rounded-full text-center"
                   >
-                    <User className="w-3.5 h-3.5" />
+                    {myStartup?.logoPreview || myStartup?.logoUrl ? (
+                      <img
+                        src={myStartup.logoPreview || myStartup.logoUrl}
+                        alt="Startup Logo"
+                        className="w-4 h-4 rounded-full object-contain bg-white p-0.5"
+                      />
+                    ) : (
+                      <User className="w-3.5 h-3.5" />
+                    )}
                     <span>Dashboard</span>
                   </Link>
                   <button
