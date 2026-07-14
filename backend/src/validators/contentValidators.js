@@ -106,6 +106,7 @@ export const applicationSchema = z.object({
   fundingStatus: optionalString,
   pitchDeckName: optionalString,
   additionalDocumentsName: optionalString,
+  aoaMoaName: optionalString,
   incubator1: optionalString,
   incubator2: optionalString,
   incubator3: optionalString,

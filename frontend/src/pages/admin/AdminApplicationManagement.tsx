@@ -366,6 +366,32 @@ export const AdminApplicationManagement: React.FC = () => {
                     </div>
                   </div>
                 )}
+
+                {selectedApp.aoaMoaName && (
+                  <div className="space-y-1">
+                    <span className="font-black text-[#0B2A5B] uppercase block">MOA / AOA Document</span>
+                    <div className="p-2.5 bg-purple-50 border border-purple-200 rounded-lg flex items-center justify-between text-purple-700 font-mono text-[11px]">
+                      <span className="font-semibold truncate max-w-[80%]">
+                        {selectedApp.aoaMoaName}
+                      </span>
+                      <a
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          const success = downloadStoredFile(selectedApp.id, "aoaMoa", selectedApp.aoaMoaName);
+                          if (!success) {
+                            showToast(`Simulated download of ${selectedApp.aoaMoaName}`, "info");
+                          } else {
+                            showToast(`Downloading ${selectedApp.aoaMoaName}`, "success");
+                          }
+                        }}
+                        className="text-[#FF6B00] font-bold hover:underline"
+                      >
+                        Download
+                      </a>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Incubator Preference Reviews (Only for Startup Program) */}
