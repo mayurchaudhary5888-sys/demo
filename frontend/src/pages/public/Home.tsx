@@ -310,7 +310,9 @@ export const Home: React.FC = () => {
         <div className="gsap-hero-frame gsap-hero-frame-7 absolute inset-0 z-10">
           <div className="gsap-orange-panel absolute inset-x-0 top-[20%] h-[60%] sm:top-[14%] sm:h-[56%] overflow-hidden rounded-br-[32px] sm:rounded-br-[64px] bg-[#FF6B00]">
             <h2 className="gsap-orange-text absolute inset-0 flex items-center justify-center px-6 sm:px-8 text-center text-lg sm:text-3xl md:text-4xl lg:text-5xl font-medium tracking-normal text-white">
-              community for <span className="mx-1.5 sm:mx-2 font-black">every stakeholder</span> of the ecosystem
+              <span>
+                community for <span className="mx-1.5 sm:mx-2 font-black">every stakeholder</span> of the ecosystem
+              </span>
             </h2>
           </div>
         </div>
