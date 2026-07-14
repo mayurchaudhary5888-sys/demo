@@ -68,6 +68,7 @@ type StartupWizardFields = {
   marketReportName?: string;
   videoUrl: string;
   otherDocumentName?: string;
+  aoaMoaName?: string;
   declarationAccepted: boolean;
   fundsDeploymentPlan: FundsDeploymentPlan[];
 };
@@ -168,6 +169,7 @@ const initialFields = (
   marketReportName: application?.marketReportName || "",
   videoUrl: application?.videoUrl || "",
   otherDocumentName: application?.otherDocumentName || application?.additionalDocumentsName || "",
+  aoaMoaName: application?.aoaMoaName || "",
   declarationAccepted: application?.declarationAccepted ?? true,
   fundsDeploymentPlan: normalizeFundsDeploymentPlan(application?.fundsDeploymentPlan),
 });
@@ -185,6 +187,7 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
   const [pitchDeckFile, setPitchDeckFile] = useState<File | null>(null);
   const [marketReportFile, setMarketReportFile] = useState<File | null>(null);
   const [otherFile, setOtherFile] = useState<File | null>(null);
+  const [aoaMoaFile, setAoaMoaFile] = useState<File | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [successModalOpen, setSuccessModalOpen] = useState(false);
@@ -217,6 +220,7 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
     setPitchDeckFile(null);
     setMarketReportFile(null);
     setOtherFile(null);
+    setAoaMoaFile(null);
     setErrors({});
     setStep(0);
   }, [application?.id, mode, user?.email, user?.name, user?.startupId, userStartup?.name, userStartup?.startupName]);
@@ -345,6 +349,7 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
       if (!fields.designation.trim()) nextErrors.designation = "Designation is required.";
       if (!fields.mobile.trim()) nextErrors.mobile = "Mobile number is required.";
       if (!fields.email.trim()) nextErrors.email = "Email is required.";
+      if (!aoaMoaFile && !fields.aoaMoaName) nextErrors.aoaMoa = "MOA/AOA document is required.";
     }
     if (step === 1) {
       if (!fields.dpiitNumber.trim()) nextErrors.dpiitNumber = "DPIIT Recognition Number is required.";
@@ -406,6 +411,7 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
     if (!fields.designation.trim()) nextErrors.designation = "Designation is required.";
     if (!fields.mobile.trim()) nextErrors.mobile = "Mobile number is required.";
     if (!fields.email.trim()) nextErrors.email = "Email is required.";
+    if (!aoaMoaFile && !fields.aoaMoaName) nextErrors.aoaMoa = "MOA/AOA document is required.";
     if (!fields.dpiitNumber.trim()) nextErrors.dpiitNumber = "DPIIT Recognition Number is required.";
     if (!fields.entityName.trim()) nextErrors.entityName = "Entity name is required.";
     if (!fields.natureOfEntity) nextErrors.natureOfEntity = "Nature of entity is required.";
@@ -468,7 +474,7 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
 
   const handlePrevious = () => setStep((prev) => Math.max(prev - 1, 0));
 
-  const handleFile = (file: File | null, kind: "pitch" | "market" | "other") => {
+  const handleFile = (file: File | null, kind: "pitch" | "market" | "other" | "aoaMoa") => {
     if (isViewMode) return;
     if (!file) return;
     if (file.size > 15 * 1024 * 1024) {
@@ -489,6 +495,14 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
       setErrors((prev) => {
         const next = { ...prev };
         delete next.marketReport;
+        return next;
+      });
+    } else if (kind === "aoaMoa") {
+      setAoaMoaFile(file);
+      updateField("aoaMoaName", file.name);
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next.aoaMoa;
         return next;
       });
     } else {
@@ -513,7 +527,7 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
     if (Object.keys(allErrors).length) {
       setErrors(allErrors);
       const stepOrder = [
-        ["authorFirstName", "authorLastName", "designation", "mobile", "email"],
+        ["authorFirstName", "authorLastName", "designation", "mobile", "email", "aoaMoa"],
         ["entityName", "natureOfEntity", "incorporationDate", "panNumber", "state", "city", "address"],
         ["problemStatement", "valueProposition", "uniqueSellingPoint", "targetCustomer", "marketSize", "scalePlan", "revenueModel"],
         ["teamMembers", "teams"],
@@ -541,9 +555,11 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
         pitchDeckName: pitchDeckFile?.name || "PitchDeck.pdf",
         marketReportName: marketReportFile?.name || "MarketReport.pdf",
         additionalDocumentsName: otherFile?.name,
+        aoaMoaName: aoaMoaFile?.name || fields.aoaMoaName || "AoA_MoA.pdf",
         _pitchDeckFile: pitchDeckFile,
         _marketReportFile: marketReportFile,
         _additionalDocumentsFile: otherFile,
+        _aoaMoaFile: aoaMoaFile,
       });
       setSuccessApplication({ id: created.id, programName: created.programName || program.name });
       setSuccessModalOpen(true);
@@ -718,22 +734,40 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
                     </div>
                     <div className="md:col-span-8 space-y-3">
                       {isViewMode ? (
-                        <div className="flex flex-col items-center justify-center border border-slate-200 rounded-lg bg-slate-50 p-4 max-w-sm">
+                        <div
+                          onClick={() => handleDownloadFile("aoaMoa", fields.aoaMoaName || "AoA_MoA.pdf")}
+                          className="flex flex-col items-center justify-center border border-slate-200 rounded-lg bg-slate-50 p-4 transition-colors hover:bg-slate-100 cursor-pointer max-w-sm"
+                        >
                           <FileText className="h-6 w-6 text-[#FF6B00]" />
-                          <span className="mt-1 text-xs font-bold text-slate-650">AoA_MoA.pdf</span>
-                          <span className="text-[10px] text-slate-400 font-bold mt-0.5 uppercase">Download File</span>
+                          <span className="mt-1 text-xs font-bold text-slate-650 truncate w-full text-center">
+                            {fields.aoaMoaName || "AoA_MoA.pdf"}
+                          </span>
+                          <span className="text-[10px] text-slate-400 font-bold mt-0.5 uppercase">Click to Download</span>
                         </div>
                       ) : (
                         <>
-                          <div>
-                            <button
-                              type="button"
-                              className="inline-flex items-center gap-2 rounded-full border border-[#0B2A5B] px-6 py-2 text-xs font-black uppercase tracking-wider text-[#0B2A5B] hover:bg-slate-50 transition"
+                          <div className="flex items-center gap-4">
+                            <input
+                              type="file"
+                              className="hidden"
+                              id="aoaMoa-file-input"
+                              onChange={(event) => handleFile(event.target.files?.[0] || null, "aoaMoa")}
+                              accept=".pdf"
+                            />
+                            <label
+                              htmlFor="aoaMoa-file-input"
+                              className="inline-flex items-center gap-2 rounded-full border border-[#0B2A5B] px-6 py-2 text-xs font-black uppercase tracking-wider text-[#0B2A5B] hover:bg-slate-50 transition cursor-pointer"
                             >
                               Upload
-                            </button>
+                            </label>
                           </div>
                           <p className="text-xs text-slate-400 font-bold">Supported file format - PDF only</p>
+                          {(aoaMoaFile || fields.aoaMoaName) && (
+                            <p className="text-xs font-extrabold text-[#FF6B00]">
+                              Selected: {aoaMoaFile?.name || fields.aoaMoaName}
+                            </p>
+                          )}
+                          {errors.aoaMoa && <p className="text-red-500 font-bold text-xs mt-1">{errors.aoaMoa}</p>}
                         </>
                       )}
                     </div>

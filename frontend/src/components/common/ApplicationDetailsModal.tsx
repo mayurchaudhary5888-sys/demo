@@ -702,6 +702,22 @@ export const ApplicationDetailsModal: React.FC<ApplicationDetailsModalProps> = (
                         </div>
                       </div>
                     )}
+
+                    {/* AoA / MoA */}
+                    {hasField("aoaMoaName") && (
+                      <div
+                        onClick={() => handleDownload("aoaMoa", app.aoaMoaName)}
+                        className="rounded-2xl border border-slate-200 bg-slate-50/50 p-4 flex items-center gap-3.5 shadow-sm cursor-pointer transition hover:bg-slate-100 hover:border-slate-300 active:scale-[0.98]"
+                      >
+                        <div className="h-10 w-10 rounded-xl bg-purple-100 flex items-center justify-center text-purple-600 shrink-0">
+                          <FileText className="h-5 w-5" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs font-black uppercase tracking-wider text-slate-400">MOA / AOA Document</p>
+                          <p className="text-xs font-bold text-slate-800 truncate mt-0.5">{app.aoaMoaName}</p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

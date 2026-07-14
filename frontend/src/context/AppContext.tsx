@@ -318,6 +318,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           pitchDeckName: data.pitchDeckName || "PitchDeck.pdf",
           marketReportName: data.marketReportName,
           additionalDocumentsName: data.additionalDocumentsName,
+          aoaMoaName: data.aoaMoaName,
         });
 
         setApplications((prev) => [created as unknown as Application, ...prev]);
@@ -339,6 +340,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           }
           if (data._additionalDocumentsFile) {
             saveFileToLocalStorage(appId, "additionalDocuments", data._additionalDocumentsFile).catch(console.error);
+          }
+          if (data._aoaMoaFile) {
+            saveFileToLocalStorage(appId, "aoaMoa", data._aoaMoaFile).catch(console.error);
           }
         }
 

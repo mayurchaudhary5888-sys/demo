@@ -127,6 +127,7 @@ export interface Application {
   fundingStatus: string;
   pitchDeckName: string;
   additionalDocumentsName?: string;
+  aoaMoaName?: string;
   adminRemarks?: string;
   rejectedAt?: string;
   selectedProgram?: string;

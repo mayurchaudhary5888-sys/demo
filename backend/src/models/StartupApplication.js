@@ -85,6 +85,7 @@ const startupApplicationSchema = new mongoose.Schema(
     pitchDeckName: String,
     marketReportName: String,
     otherDocumentName: String,
+    aoaMoaName: String,
 
     // Incubator Preferences
     incubatorPreferences: [
