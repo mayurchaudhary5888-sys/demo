@@ -7,7 +7,7 @@ const corsOrigin = (origin, callback) => {
   if (!origin || env.allowAllClientOrigins || env.clientOrigins.includes(origin.replace(/\/$/, ""))) {
     return callback(null, true);
   }
-  return callback(new Error("CORS origin is not allowed."));
+  return callback(null, false);
 };
 
 export const securityMiddleware = [
