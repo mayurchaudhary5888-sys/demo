@@ -10,9 +10,6 @@ import {
   FileText,
   Globe,
   ImagePlus,
-  KeyRound,
-  Lock,
-  LockKeyhole,
   Mail,
   MapPin,
   Phone,
@@ -144,9 +141,6 @@ export const Settings: React.FC = () => {
 
   const [profileForm, setProfileForm] = useState<ProfileFormState>(() => buildFormState(myStartup, user?.email));
   const sectorOptions = profileForm.industry ? (industrySectors[profileForm.industry] || []) : [];
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -507,36 +501,6 @@ export const Settings: React.FC = () => {
           </div>
           <div className="rounded-2xl border border-[#E7EBFB] bg-white/70 p-4 text-sm font-medium text-slate-600">
             Your current login email is <span className="font-mono font-bold text-[#162457]">{profileForm.email || user?.email}</span>.
-          </div>
-        </section>
-
-        <section id="password" className={sectionClassName}>
-          <div className="mb-5 flex items-center gap-2 text-[#162457]">
-            <LockKeyhole className="h-5 w-5 text-[#FF8A1C]" />
-            <h2 className="text-lg font-black">Change Password</h2>
-          </div>
-          <div className="grid gap-5 md:grid-cols-3">
-            <div>
-              <label className={labelClassName}>Current Password</label>
-              <div className="relative">
-                <Lock className="pointer-events-none absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
-                <input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} className={`${inputClassName} pl-11`} />
-              </div>
-            </div>
-            <div>
-              <label className={labelClassName}>New Password</label>
-              <div className="relative">
-                <KeyRound className="pointer-events-none absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
-                <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className={`${inputClassName} pl-11`} />
-              </div>
-            </div>
-            <div>
-              <label className={labelClassName}>Confirm Password</label>
-              <div className="relative">
-                <Lock className="pointer-events-none absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
-                <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className={`${inputClassName} pl-11`} />
-              </div>
-            </div>
           </div>
         </section>
 
