@@ -258,18 +258,58 @@ export const Register: React.FC = () => {
 
   const handleLogoUpload = (file: File | null) => {
     if (!file) return;
-    if (file.size > 4 * 1024 * 1024) {
-      showToast("Logo image must be smaller than 4MB.", "error");
+    if (file.size > 5 * 1024 * 1024) {
+      showToast("Logo image must be smaller than 5MB.", "error");
       return;
     }
 
     const reader = new FileReader();
-    reader.onload = () => {
-      setLogoPreview(typeof reader.result === "string" ? reader.result : "");
-      setForm((prev) => ({
-        ...prev,
-        logoName: file.name,
-      }));
+    reader.onload = (e) => {
+      const rawDataUrl = typeof e.target?.result === "string" ? e.target.result : "";
+      if (!rawDataUrl) return;
+
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const maxDim = 400;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > maxDim) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          }
+        } else {
+          if (height > maxDim) {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressed = canvas.toDataURL("image/jpeg", 0.8);
+          setLogoPreview(compressed);
+        } else {
+          setLogoPreview(rawDataUrl);
+        }
+        setForm((prev) => ({
+          ...prev,
+          logoName: file.name,
+        }));
+      };
+      img.onerror = () => {
+        setLogoPreview(rawDataUrl);
+        setForm((prev) => ({
+          ...prev,
+          logoName: file.name,
+        }));
+      };
+      img.src = rawDataUrl;
     };
     reader.readAsDataURL(file);
   };
