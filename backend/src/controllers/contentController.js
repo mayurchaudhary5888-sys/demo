@@ -309,6 +309,26 @@ export const toggleStartupApproval = async (req, res, next) => {
   }
 };
 
+export const deleteStartup = async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    const startup = await StartupProfile.findOneAndDelete({
+      $or: [{ id }, ...(mongoose.Types.ObjectId.isValid(id) ? [{ _id: id }] : [])],
+    });
+    if (!startup) throw new AppError("Startup not found.", 404);
+
+    // Sync deletion to User collection if user is associated
+    await User.updateMany(
+      { startupId: startup.id },
+      { $unset: { startupProfile: "" }, $set: { startupId: null } }
+    );
+
+    res.json({ success: true, message: "Startup profile deleted successfully." });
+  } catch (err) {
+    next(err);
+  }
+};
+
 export const listInvestors = async (_req, res, next) => {
   try {
     const data = await InvestorProfile.find().sort(sortNewestFirst).lean();

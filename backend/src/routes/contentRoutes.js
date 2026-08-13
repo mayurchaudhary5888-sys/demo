@@ -21,6 +21,7 @@ import {
   replyQuery,
   toggleProgram,
   toggleStartupApproval,
+  deleteStartup,
   updateUserStatus,
   updateApplicationStatus,
   updateApplicationIncubatorStatus,
@@ -57,6 +58,7 @@ contentRoutes.get("/startups/:id", optionalAuth, getStartup);
 contentRoutes.post("/startups", requireAuth, writeRateLimiter, validateBody(startupProfileSchema), createOrUpdateStartup);
 contentRoutes.patch("/startups/:id", requireAuth, writeRateLimiter, validateBody(startupProfileSchema.partial()), updateStartup);
 contentRoutes.patch("/admin/startups/:id/approval", requireAuth, requireAdmin, writeRateLimiter, toggleStartupApproval);
+contentRoutes.delete("/admin/startups/:id", requireAuth, requireAdmin, writeRateLimiter, deleteStartup);
 
 contentRoutes.get("/investors", listInvestors);
 contentRoutes.post("/investors", publicSubmissionRateLimiter, validateBody(investorProfileSchema), createInvestor);

@@ -1,18 +1,15 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.5
- */
-
 import React, { useState } from "react";
 import { useAppState } from "../../context/AppContext";
 import { DataTable } from "../../components/common/DataTable";
 import { StatusBadge } from "../../components/common/StatusBadge";
-import { Building2, ShieldCheck, Mail, MapPin, Eye, X } from "lucide-react";
+import { Building2, ShieldCheck, Mail, MapPin, Eye, X, Trash2 } from "lucide-react";
 import { StartupProfile } from "../../types";
 
 export const AdminStartupManagement: React.FC = () => {
-  const { startups, toggleStartupApproval, showToast } = useAppState();
+  const { startups, toggleStartupApproval, deleteStartup, showToast } = useAppState();
   const [selectedCorp, setSelectedCorp] = useState<StartupProfile | null>(null);
+  const [corpToDelete, setCorpToDelete] = useState<StartupProfile | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const handleToggleApproval = (id: string, currentlyApproved: boolean) => {
     toggleStartupApproval(id);
@@ -22,6 +19,22 @@ export const AdminStartupManagement: React.FC = () => {
     );
     if (selectedCorp && selectedCorp.id === id) {
       setSelectedCorp(prev => prev ? { ...prev, isApproved: !currentlyApproved } : null);
+    }
+  };
+
+  const confirmDeleteStartup = async () => {
+    if (!corpToDelete) return;
+    setDeleting(true);
+    try {
+      await deleteStartup(corpToDelete.id);
+      if (selectedCorp?.id === corpToDelete.id) {
+        setSelectedCorp(null);
+      }
+      setCorpToDelete(null);
+    } catch {
+      // Error handled in AppContext toast
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -86,6 +99,16 @@ export const AdminStartupManagement: React.FC = () => {
           >
             {item.isApproved ? "Suspend" : "Approve"}
           </button>
+
+          <button
+            onClick={() => setCorpToDelete(item)}
+            className="px-2.5 py-1.5 border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 rounded text-xs font-bold flex items-center gap-1 focus:outline-none transition-colors"
+            id={`delete-startup-${item.id}`}
+            title="Delete Startup"
+          >
+            <Trash2 className="w-3.5 h-3.5 text-red-600" />
+            <span>Delete</span>
+          </button>
         </div>
       )
     }
@@ -98,7 +121,7 @@ export const AdminStartupManagement: React.FC = () => {
       <div className="border-b border-slate-200 pb-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div className="space-y-1">
           <h3 className="text-md font-bold text-[#0B2A5B]">DPIIT Startup Recognition registry</h3>
-          <p className="text-[11px] text-slate-500">Vet, audit, and approve registered candidate profiles for the public portfolio showcases.</p>
+          <p className="text-[11px] text-slate-500">Vet, audit, approve, or delete registered candidate profiles for the public portfolio showcases.</p>
         </div>
         <span className="text-xs bg-[#0B2A5B] text-white font-mono font-bold uppercase py-0.5 px-2 rounded-full shrink-0">
           Total: {startups.length} rows
@@ -185,29 +208,82 @@ export const AdminStartupManagement: React.FC = () => {
             </div>
 
             {/* Actions button */}
-            <div className="flex justify-end gap-3 pt-3 border-t border-slate-100 text-xs font-sans">
+            <div className="flex justify-between items-center pt-3 border-t border-slate-100 text-xs font-sans">
               <button
                 type="button"
-                onClick={() => setSelectedCorp(null)}
-                className="px-4 py-2.5 border border-slate-200 hover:bg-slate-100 text-slate-700 font-bold rounded-lg"
+                onClick={() => setCorpToDelete(selectedCorp)}
+                className="px-3.5 py-2 border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 font-bold rounded-lg flex items-center gap-1.5 transition-colors"
+                id="modal-delete-startup-btn"
               >
-                Close Audit
+                <Trash2 className="w-3.5 h-3.5 text-red-600" />
+                <span>Delete Startup</span>
               </button>
-              
-              <button
-                type="button"
-                onClick={() => handleToggleApproval(selectedCorp.id, selectedCorp.isApproved)}
-                className={`px-5 py-2.5 rounded font-extrabold text-white uppercase tracking-wider ${
-                  selectedCorp.isApproved 
-                    ? "bg-amber-650 hover:bg-amber-700" 
-                    : "bg-emerald-600 hover:bg-emerald-700"
-                }`}
-                id="modal-toggle-approved-btn"
-              >
-                {selectedCorp.isApproved ? "Suspend Approval" : "Certify compliance"}
-              </button>
+
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setSelectedCorp(null)}
+                  className="px-4 py-2 border border-slate-200 hover:bg-slate-100 text-slate-700 font-bold rounded-lg"
+                >
+                  Close Audit
+                </button>
+                
+                <button
+                  type="button"
+                  onClick={() => handleToggleApproval(selectedCorp.id, selectedCorp.isApproved)}
+                  className={`px-4 py-2 rounded font-extrabold text-white uppercase tracking-wider ${
+                    selectedCorp.isApproved 
+                      ? "bg-amber-650 hover:bg-amber-700" 
+                      : "bg-emerald-600 hover:bg-emerald-700"
+                  }`}
+                  id="modal-toggle-approved-btn"
+                >
+                  {selectedCorp.isApproved ? "Suspend Approval" : "Certify compliance"}
+                </button>
+              </div>
             </div>
 
+          </div>
+        </div>
+      )}
+
+      {/* Delete Startup Confirmation Modal */}
+      {corpToDelete && (
+        <div className="fixed inset-0 z-[1000] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4" id="delete-startup-modal">
+          <div className="bg-white rounded-2xl border border-slate-200 p-6 max-w-md w-full shadow-2xl space-y-4">
+            <div className="flex items-center gap-3 text-red-600">
+              <div className="p-3 bg-red-100 rounded-full">
+                <Trash2 className="h-6 w-6" />
+              </div>
+              <div>
+                <h4 className="font-bold text-slate-900 text-base">Delete Startup Profile</h4>
+                <p className="text-xs text-slate-500 font-medium">This action cannot be undone.</p>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Are you sure you want to permanently delete startup <strong className="text-slate-900">{corpToDelete.name}</strong> (<span className="font-mono text-slate-700">{corpToDelete.id.toUpperCase()}</span>)?
+            </p>
+
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setCorpToDelete(null)}
+                disabled={deleting}
+                className="px-4 py-2 rounded-lg border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmDeleteStartup}
+                disabled={deleting}
+                className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-xs font-bold text-white transition-colors disabled:opacity-50 flex items-center gap-1.5"
+                id="confirm-delete-startup-btn"
+              >
+                {deleting ? "Deleting..." : "Permanently Delete"}
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -215,3 +291,4 @@ export const AdminStartupManagement: React.FC = () => {
     </div>
   );
 };
+

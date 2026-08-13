@@ -59,6 +59,7 @@ interface AppContextValue {
   // Admin actions
   toggleStartupApproval: (startupId: string) => void;
   updateStartupProfile: (startupId: string, updates: Partial<StartupProfile>) => Promise<void>;
+  deleteStartup: (startupId: string) => Promise<void>;
   toggleProgramStatus: (programId: string) => void;
   addProgram: (program: any) => void;
 
@@ -254,6 +255,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setStartups((prev) => prev.map((s) => (s.id === startupId ? { ...s, ...updates } : s)));
     await contentApi.updateStartup(startupId, updates as Record<string, unknown>);
   }, []);
+
+  const deleteStartup = useCallback(
+    async (startupId: string) => {
+      try {
+        await contentApi.deleteStartup(startupId);
+        setStartups((prev) => prev.filter((s) => s.id !== startupId));
+        showToast("Startup profile deleted successfully.", "success");
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Failed to delete startup.";
+        showToast(message, "error");
+        throw err;
+      }
+    },
+    [showToast]
+  );
 
   const toggleProgramStatus = useCallback((programId: string) => {
     setPrograms((prev) =>
@@ -457,6 +473,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     removeToast,
     toggleStartupApproval,
     updateStartupProfile,
+    deleteStartup,
     toggleProgramStatus,
     addProgram,
     applyToProgram,

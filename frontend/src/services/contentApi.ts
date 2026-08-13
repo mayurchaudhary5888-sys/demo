@@ -92,6 +92,8 @@ export const contentApi = {
     unwrap(request<any>(`/startups/${id}`, { method: "PATCH", body: JSON.stringify(payload) })),
   toggleStartupApproval: (id: string) =>
     unwrap(request<any>(`/admin/startups/${id}/approval`, { method: "PATCH" })),
+  deleteStartup: (id: string) =>
+    unwrap(request<any>(`/admin/startups/${id}`, { method: "DELETE" })),
   updateUserStatus: (id: string, payload: Record<string, unknown>) =>
     unwrap(request<any>(`/admin/users/${id}/status`, { method: "PATCH", body: JSON.stringify(payload) })),
   deleteUser: (id: string) =>
