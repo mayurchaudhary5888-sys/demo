@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAppState } from "../../../../context/AppContext";
 import type { Program } from "../../../../types";
 import { ApplicationSuccessModal } from "../../../../components/common/ApplicationSuccessModal";
-import { UploadCloud, CheckCircle2, ShieldAlert, FileText } from "lucide-react";
+import { UploadCloud, CheckCircle2, ShieldAlert, FileText, X } from "lucide-react";
 import { downloadStoredFile } from "../../../../utils/documentStorage";
 
 type MsmeProgramApplicationProps = {
@@ -652,7 +652,22 @@ export const MsmeProgramApplication: React.FC<MsmeProgramApplicationProps> = ({ 
                     <UploadCloud className="h-8 w-8 text-slate-400" />
                     <span className="mt-2 text-xs font-bold text-slate-600 text-center">Choose Image or PDF (Max 15MB)</span>
                     <input type="file" accept="image/*,.pdf" className="absolute inset-0 opacity-0 cursor-pointer" onChange={(e) => handleFileUpload(e, setPrototypePhotos, "prototypePhotos", ["image/*", ".pdf"])} />
-                    {prototypePhotos && <p className="mt-2 text-[11px] font-bold text-[#FF6B00] text-center truncate w-full">{prototypePhotos.name}</p>}
+                    {prototypePhotos && (
+                      <div className="relative z-10 flex items-center justify-center gap-2 mt-2">
+                        <p className="text-[11px] font-bold text-[#FF6B00] text-center truncate">{prototypePhotos.name}</p>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setPrototypePhotos(null);
+                          }}
+                          className="p-1 rounded-full text-slate-400 hover:text-red-600 hover:bg-red-50 transition cursor-pointer"
+                          title="Remove file"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
                 {errors.prototypePhotos && <p className="text-xs font-bold text-red-500">{errors.prototypePhotos}</p>}
@@ -681,7 +696,22 @@ export const MsmeProgramApplication: React.FC<MsmeProgramApplicationProps> = ({ 
                     <UploadCloud className="h-8 w-8 text-slate-400" />
                     <span className="mt-2 text-xs font-bold text-slate-600 text-center">Choose Image or PDF (Max 15MB)</span>
                     <input type="file" accept="image/*,.pdf" className="absolute inset-0 opacity-0 cursor-pointer" onChange={(e) => handleFileUpload(e, setBlockDiagram, "blockDiagram", ["image/*", ".pdf"])} />
-                    {blockDiagram && <p className="mt-2 text-[11px] font-bold text-[#FF6B00] text-center truncate w-full">{blockDiagram.name}</p>}
+                    {blockDiagram && (
+                      <div className="relative z-10 flex items-center justify-center gap-2 mt-2">
+                        <p className="text-[11px] font-bold text-[#FF6B00] text-center truncate">{blockDiagram.name}</p>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setBlockDiagram(null);
+                          }}
+                          className="p-1 rounded-full text-slate-400 hover:text-red-600 hover:bg-red-50 transition cursor-pointer"
+                          title="Remove file"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
                 {errors.blockDiagram && <p className="text-xs font-bold text-red-500">{errors.blockDiagram}</p>}
@@ -706,7 +736,22 @@ export const MsmeProgramApplication: React.FC<MsmeProgramApplicationProps> = ({ 
                     <UploadCloud className="h-8 w-8 text-slate-400" />
                     <span className="mt-2 text-xs font-bold text-slate-600 text-center">Choose PDF, PPT, PPTX (Max 15MB)</span>
                     <input type="file" accept=".pdf,.ppt,.pptx" className="absolute inset-0 opacity-0 cursor-pointer" onChange={(e) => handleFileUpload(e, setPitchDeck, "pitchDeck", [".pdf", ".ppt", ".pptx"])} />
-                    {pitchDeck && <p className="mt-2 text-[11px] font-bold text-[#FF6B00] text-center truncate w-full">{pitchDeck.name}</p>}
+                    {pitchDeck && (
+                      <div className="relative z-10 flex items-center justify-center gap-2 mt-2">
+                        <p className="text-[11px] font-bold text-[#FF6B00] text-center truncate">{pitchDeck.name}</p>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setPitchDeck(null);
+                          }}
+                          className="p-1 rounded-full text-slate-400 hover:text-red-600 hover:bg-red-50 transition cursor-pointer"
+                          title="Remove file"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
                 {errors.pitchDeck && <p className="text-xs font-bold text-red-500">{errors.pitchDeck}</p>}

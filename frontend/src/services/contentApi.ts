@@ -94,6 +94,8 @@ export const contentApi = {
     unwrap(request<any>(`/admin/startups/${id}/approval`, { method: "PATCH" })),
   updateUserStatus: (id: string, payload: Record<string, unknown>) =>
     unwrap(request<any>(`/admin/users/${id}/status`, { method: "PATCH", body: JSON.stringify(payload) })),
+  deleteUser: (id: string) =>
+    unwrap(request<any>(`/admin/users/${id}`, { method: "DELETE" })),
   addProgram: (payload: Record<string, unknown>) =>
     unwrap(request<any>("/admin/programs", { method: "POST", body: JSON.stringify(payload) })),
   toggleProgramStatus: (id: string) =>
@@ -104,6 +106,8 @@ export const contentApi = {
     unwrap(request<any>(`/admin/applications/${id}/status`, { method: "PATCH", body: JSON.stringify(payload) })),
   updateApplicationIncubatorStatus: (id: string, payload: { preferenceOrder: number; status?: string; completenessStatus?: string; comments?: string }) =>
     unwrap(request<any>(`/admin/applications/${id}/incubator-status`, { method: "PATCH", body: JSON.stringify(payload) })),
+  deleteApplication: (id: string) =>
+    unwrap(request<any>(`/admin/applications/${id}`, { method: "DELETE" })),
   createQuery: (payload: Record<string, unknown>) =>
     unwrap(request<any>("/queries", { method: "POST", body: JSON.stringify(payload) })),
   replyQuery: (id: string, reply: string) =>

@@ -476,7 +476,22 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
 
   const handleFile = (file: File | null, kind: "pitch" | "market" | "other" | "aoaMoa") => {
     if (isViewMode) return;
-    if (!file) return;
+    if (!file) {
+      if (kind === "pitch") {
+        setPitchDeckFile(null);
+        updateField("pitchDeckName", "");
+      } else if (kind === "market") {
+        setMarketReportFile(null);
+        updateField("marketReportName", "");
+      } else if (kind === "aoaMoa") {
+        setAoaMoaFile(null);
+        updateField("aoaMoaName", "");
+      } else {
+        setOtherFile(null);
+        updateField("otherDocumentName", "");
+      }
+      return;
+    }
     if (file.size > 15 * 1024 * 1024) {
       showToast("Maximum document upload size is 15MB.", "error");
       return;
@@ -763,9 +778,21 @@ export const StartupProgramApplication: React.FC<StartupProgramApplicationProps>
                           </div>
                           <p className="text-xs text-slate-400 font-bold">Supported file format - PDF only</p>
                           {(aoaMoaFile || fields.aoaMoaName) && (
-                            <p className="text-xs font-extrabold text-[#FF6B00]">
-                              Selected: {aoaMoaFile?.name || fields.aoaMoaName}
-                            </p>
+                            <div className="flex items-center gap-2">
+                              <p className="text-xs font-extrabold text-[#FF6B00]">
+                                Selected: {aoaMoaFile?.name || fields.aoaMoaName}
+                              </p>
+                              {!isViewMode && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleFile(null, "aoaMoa")}
+                                  className="p-1 rounded-full text-slate-400 hover:text-red-600 hover:bg-red-50 transition cursor-pointer"
+                                  title="Remove file"
+                                >
+                                  <X className="h-4 w-4" />
+                                </button>
+                              )}
+                            </div>
                           )}
                           {errors.aoaMoa && <p className="text-red-500 font-bold text-xs mt-1">{errors.aoaMoa}</p>}
                         </>
@@ -1805,9 +1832,21 @@ const FileUpload: React.FC<{
       </div>
       <p className="text-xs text-slate-500 font-semibold leading-relaxed">{helper}</p>
       {(file || fileName) && (
-        <p className="text-xs font-extrabold text-[#FF6B00]">
-          Selected: {file?.name || fileName}
-        </p>
+        <div className="flex items-center gap-2">
+          <p className="text-xs font-extrabold text-[#FF6B00]">
+            Selected: {file?.name || fileName}
+          </p>
+          {!disabled && (
+            <button
+              type="button"
+              onClick={() => onFile(null, kind)}
+              className="p-1 rounded-full text-slate-400 hover:text-red-600 hover:bg-red-50 transition cursor-pointer"
+              title="Remove file"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
       )}
     </div>
   </FormRow>

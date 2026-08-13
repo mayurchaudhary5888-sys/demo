@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAppState } from "../../../../context/AppContext";
 import type { Program } from "../../../../types";
 import { ApplicationSuccessModal } from "../../../../components/common/ApplicationSuccessModal";
-import { FileText } from "lucide-react";
+import { FileText, X } from "lucide-react";
 import { downloadStoredFile } from "../../../../utils/documentStorage";
 
 type FoundationProgramProps = {
@@ -281,7 +281,19 @@ export const FoundationProgram: React.FC<FoundationProgramProps> = ({ program, o
             ) : (
               <>
                 <input type="file" onChange={handleFileChange} accept=".pdf,.ppt,.pptx" className="block w-full rounded-lg border border-slate-300 p-3 text-sm" />
-                {pitchDeck && <p className="text-xs font-bold text-[#FF6B00]">Selected: {pitchDeck.name}</p>}
+                {pitchDeck && (
+                  <div className="flex items-center gap-2 pt-1">
+                    <p className="text-xs font-bold text-[#FF6B00]">Selected: {pitchDeck.name}</p>
+                    <button
+                      type="button"
+                      onClick={() => setPitchDeck(null)}
+                      className="p-1 rounded-full text-slate-400 hover:text-red-600 hover:bg-red-50 transition cursor-pointer"
+                      title="Remove file"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                )}
               </>
             )}
             {errors.pitchDeck && <p className="text-xs font-bold text-red-500">{errors.pitchDeck}</p>}

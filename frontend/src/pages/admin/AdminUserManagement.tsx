@@ -1,19 +1,16 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
 import React, { useEffect, useMemo, useState } from "react";
-import { Eye, ShieldOff, ShieldCheck, Users, Mail, Building2, X } from "lucide-react";
+import { Eye, ShieldOff, ShieldCheck, Users, Mail, Building2, X, Trash2 } from "lucide-react";
 import { DataTable } from "../../components/common/DataTable";
 import { useAppState } from "../../context/AppContext";
 import { contentApi } from "../../services/contentApi";
 import type { AdminUser } from "../../types";
 
 export const AdminUserManagement: React.FC = () => {
-  const { showToast } = useAppState();
+  const { showToast, deleteUser } = useAppState();
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
+  const [userToDelete, setUserToDelete] = useState<AdminUser | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -47,6 +44,23 @@ export const AdminUserManagement: React.FC = () => {
       showToast(`User ${updated.isActive ? "activated" : "deactivated"} successfully.`, "success");
     } catch {
       showToast("Unable to update user status.", "error");
+    }
+  };
+
+  const confirmDeleteUser = async () => {
+    if (!userToDelete) return;
+    setDeleting(true);
+    try {
+      await deleteUser(userToDelete.id);
+      setUsers((prev) => prev.filter((item) => item.id !== userToDelete.id));
+      if (selectedUser?.id === userToDelete.id) {
+        setSelectedUser(null);
+      }
+      setUserToDelete(null);
+    } catch {
+      // Error handled in AppContext toast
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -89,7 +103,7 @@ export const AdminUserManagement: React.FC = () => {
           <button
             type="button"
             onClick={() => setSelectedUser(item)}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors"
           >
             <Eye className="h-3.5 w-3.5" />
             View
@@ -97,12 +111,21 @@ export const AdminUserManagement: React.FC = () => {
           <button
             type="button"
             onClick={() => toggleUser(item)}
-            className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold text-white ${
+            className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold text-white transition-colors ${
               item.isActive ? "bg-amber-600 hover:bg-amber-700" : "bg-emerald-600 hover:bg-emerald-700"
             }`}
           >
             {item.isActive ? <ShieldOff className="h-3.5 w-3.5" /> : <ShieldCheck className="h-3.5 w-3.5" />}
             {item.isActive ? "Deactivate" : "Activate"}
+          </button>
+          <button
+            type="button"
+            onClick={() => setUserToDelete(item)}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-bold text-red-700 hover:bg-red-100 hover:border-red-300 transition-colors"
+            title="Delete User"
+          >
+            <Trash2 className="h-3.5 w-3.5 text-red-600" />
+            Delete
           </button>
         </div>
       ),
@@ -114,7 +137,7 @@ export const AdminUserManagement: React.FC = () => {
       <div className="flex flex-col gap-4 border-b border-slate-200 pb-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h3 className="text-md font-bold text-[#0B2A5B]">User Management</h3>
-          <p className="text-[11px] text-slate-500">Activate or deactivate founders. Deactivated/unapproved users cannot log in to the application.</p>
+          <p className="text-[11px] text-slate-500">Manage, activate, deactivate, or delete user accounts and founder profiles.</p>
         </div>
         <div className="rounded-full bg-[#0B2A5B] px-3 py-1.5 text-xs font-black uppercase tracking-wider text-white">
           {users.length} users
@@ -183,15 +206,25 @@ export const AdminUserManagement: React.FC = () => {
                 </p>
               </div>
 
-              <button
-                type="button"
-                onClick={() => toggleUser(selectedUser)}
-                className={`w-full rounded-2xl px-4 py-3 text-xs font-black uppercase tracking-wider text-white ${
-                  selectedUser.isActive ? "bg-amber-600 hover:bg-amber-700" : "bg-emerald-600 hover:bg-emerald-700"
-                }`}
-              >
-                {selectedUser.isActive ? "Deactivate User" : "Activate User"}
-              </button>
+              <div className="space-y-2">
+                <button
+                  type="button"
+                  onClick={() => toggleUser(selectedUser)}
+                  className={`w-full rounded-xl px-4 py-2.5 text-xs font-black uppercase tracking-wider text-white transition-colors ${
+                    selectedUser.isActive ? "bg-amber-600 hover:bg-amber-700" : "bg-emerald-600 hover:bg-emerald-700"
+                  }`}
+                >
+                  {selectedUser.isActive ? "Deactivate User" : "Activate User"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setUserToDelete(selectedUser)}
+                  className="w-full rounded-xl border border-red-200 bg-red-50 hover:bg-red-100 px-4 py-2.5 text-xs font-black uppercase tracking-wider text-red-700 transition-colors flex items-center justify-center gap-2"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Delete User
+                </button>
+              </div>
             </div>
           ) : (
             <div className="flex h-full min-h-[240px] items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 text-center text-sm text-slate-500">
@@ -200,6 +233,47 @@ export const AdminUserManagement: React.FC = () => {
           )}
         </aside>
       </div>
+
+      {/* Delete User Confirmation Modal */}
+      {userToDelete && (
+        <div className="fixed inset-0 z-[999] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl border border-slate-200 p-6 max-w-md w-full shadow-2xl space-y-4">
+            <div className="flex items-center gap-3 text-red-600">
+              <div className="p-3 bg-red-100 rounded-full">
+                <Trash2 className="h-6 w-6" />
+              </div>
+              <div>
+                <h4 className="font-bold text-slate-900 text-base">Delete User Account</h4>
+                <p className="text-xs text-slate-500 font-medium">This action cannot be undone.</p>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Are you sure you want to permanently delete user <strong className="text-slate-900">{userToDelete.name}</strong> (<span className="font-mono text-slate-700">{userToDelete.email}</span>)?
+            </p>
+
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setUserToDelete(null)}
+                disabled={deleting}
+                className="px-4 py-2 rounded-lg border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmDeleteUser}
+                disabled={deleting}
+                className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-xs font-bold text-white transition-colors disabled:opacity-50 flex items-center gap-1.5"
+              >
+                {deleting ? "Deleting..." : "Permanently Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
+

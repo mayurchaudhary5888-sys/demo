@@ -25,6 +25,8 @@ import {
   updateApplicationStatus,
   updateApplicationIncubatorStatus,
   updateStartup,
+  deleteApplication,
+  deleteUser,
 } from "../controllers/contentController.js";
 import { optionalAuth, requireAdmin, requireAuth } from "../middleware/auth.js";
 import { publicSubmissionRateLimiter, writeRateLimiter } from "../middleware/security.js";
@@ -64,8 +66,10 @@ contentRoutes.get("/applications/:id", requireAuth, getApplication);
 contentRoutes.post("/applications", requireAuth, writeRateLimiter, validateBody(applicationSchema), createApplication);
 contentRoutes.patch("/admin/applications/:id/status", requireAuth, requireAdmin, writeRateLimiter, validateBody(applicationStatusSchema), updateApplicationStatus);
 contentRoutes.patch("/admin/applications/:id/incubator-status", requireAuth, requireAdmin, writeRateLimiter, updateApplicationIncubatorStatus);
+contentRoutes.delete("/admin/applications/:id", requireAuth, requireAdmin, writeRateLimiter, deleteApplication);
 contentRoutes.get("/admin/users", requireAuth, requireAdmin, listUsers);
 contentRoutes.patch("/admin/users/:id/status", requireAuth, requireAdmin, writeRateLimiter, validateBody(userStatusSchema), updateUserStatus);
+contentRoutes.delete("/admin/users/:id", requireAuth, requireAdmin, writeRateLimiter, deleteUser);
 
 contentRoutes.get("/queries", requireAuth, requireAdmin, listQueries);
 contentRoutes.post("/queries", publicSubmissionRateLimiter, validateBody(contactQuerySchema), createQuery);

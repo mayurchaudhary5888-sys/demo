@@ -65,6 +65,8 @@ interface AppContextValue {
   applyToProgram: (data: any) => Promise<Application>;
   updateApplicationStatus: (appId: string, status: ApplicationStatus, remarks?: string) => Promise<void>;
   updateApplicationIncubatorStatus: (appId: string, preferenceOrder: number, status?: string, completenessStatus?: string, remarks?: string) => Promise<void>;
+  deleteApplication: (appId: string) => Promise<void>;
+  deleteUser: (userId: string) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextValue | undefined>(undefined);
@@ -410,6 +412,35 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     [showToast]
   );
 
+  const deleteApplication = useCallback(
+    async (appId: string) => {
+      try {
+        await contentApi.deleteApplication(appId);
+        setApplications((prev) => prev.filter((app) => app.id !== appId));
+        showToast("Application deleted successfully.", "success");
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Failed to delete application.";
+        showToast(message, "error");
+        throw err;
+      }
+    },
+    [showToast]
+  );
+
+  const deleteUser = useCallback(
+    async (userId: string) => {
+      try {
+        await contentApi.deleteUser(userId);
+        showToast("User deleted successfully.", "success");
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Failed to delete user.";
+        showToast(message, "error");
+        throw err;
+      }
+    },
+    [showToast]
+  );
+
   const value: AppContextValue = {
     user,
     startups,
@@ -431,6 +462,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     applyToProgram,
     updateApplicationStatus,
     updateApplicationIncubatorStatus,
+    deleteApplication,
+    deleteUser,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

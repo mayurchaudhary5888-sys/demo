@@ -209,6 +209,20 @@ export const updateUserStatus = async (req, res, next) => {
   }
 };
 
+export const deleteUser = async (req, res, next) => {
+  try {
+    const user = mongoose.Types.ObjectId.isValid(req.params.id)
+      ? await User.findById(req.params.id)
+      : await User.findOne({ email: req.params.id });
+    if (!user) throw new AppError("User not found.", 404);
+
+    await user.deleteOne();
+    res.json({ success: true, message: "User deleted successfully." });
+  } catch (err) {
+    next(err);
+  }
+};
+
 export const getStartup = async (req, res, next) => {
   try {
     const data = await StartupProfile.findOne({ id: req.params.id }).lean();
@@ -603,6 +617,23 @@ export const updateApplicationIncubatorStatus = async (req, res, next) => {
 
     await app.save();
     res.json({ success: true, data: app.toObject() });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const deleteApplication = async (req, res, next) => {
+  try {
+    const query = applicationLookup(req.params.id);
+    let app = await IdeaValidationApplication.findOneAndDelete(query)
+      || await MsmeApplication.findOneAndDelete(query)
+      || await FoundationApplication.findOneAndDelete(query)
+      || await StartupApplication.findOneAndDelete(query)
+      || await GlobalImpactApplication.findOneAndDelete(query);
+
+    if (!app) throw new AppError("Application not found.", 404);
+
+    res.json({ success: true, message: "Application deleted successfully." });
   } catch (err) {
     next(err);
   }

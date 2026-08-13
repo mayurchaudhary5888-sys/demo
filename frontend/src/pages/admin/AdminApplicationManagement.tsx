@@ -9,7 +9,7 @@ import { DataTable } from "../../components/common/DataTable";
 import { StatusBadge } from "../../components/common/StatusBadge";
 import { Timeline } from "../../components/common/Timeline";
 import { Application, ApplicationStatus } from "../../types";
-import { FileText, Eye, X, MessageSquare, CheckSquare } from "lucide-react";
+import { FileText, Eye, X, MessageSquare, CheckSquare, Trash2 } from "lucide-react";
 import { ApplicationDetailsModal } from "../../components/common/ApplicationDetailsModal";
 import { downloadStoredFile } from "../../utils/documentStorage";
 
@@ -97,13 +97,31 @@ const IncubatorPrefForm: React.FC<{
 };
 
 export const AdminApplicationManagement: React.FC = () => {
-  const { applications, updateApplicationStatus, updateApplicationIncubatorStatus, showToast } = useAppState();
+  const { applications, updateApplicationStatus, updateApplicationIncubatorStatus, deleteApplication, showToast } = useAppState();
   const [selectedApp, setSelectedApp] = useState<Application | null>(null);
+  const [appToDelete, setAppToDelete] = useState<Application | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const [statusInput, setStatusInput] = useState<ApplicationStatus | "">("");
   const [remarksInput, setRemarksInput] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [showFullDetails, setShowFullDetails] = useState(false);
+
+  const confirmDeleteApp = async () => {
+    if (!appToDelete) return;
+    setDeleting(true);
+    try {
+      await deleteApplication(appToDelete.id);
+      if (selectedApp?.id === appToDelete.id) {
+        setSelectedApp(null);
+      }
+      setAppToDelete(null);
+    } catch {
+      // Handled in toast
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   const handleUpdateStatus = (e: React.FormEvent) => {
     e.preventDefault();
@@ -180,18 +198,30 @@ export const AdminApplicationManagement: React.FC = () => {
     {
       header: "Action",
       accessor: (item: Application) => (
-        <button
-          onClick={() => {
-            setSelectedApp(item);
-            setStatusInput("");
-            setRemarksInput("");
-          }}
-          className="px-3 py-1.5 border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors focus:outline-none"
-          id={`inspect-app-${item.id}`}
-        >
-          <Eye className="w-3.5 h-3.5" />
-          <span>Review</span>
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => {
+              setSelectedApp(item);
+              setStatusInput("");
+              setRemarksInput("");
+            }}
+            className="px-3 py-1.5 border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors focus:outline-none"
+            id={`inspect-app-${item.id}`}
+          >
+            <Eye className="w-3.5 h-3.5" />
+            <span>Review</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setAppToDelete(item)}
+            className="px-3 py-1.5 border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 hover:border-red-300 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors focus:outline-none"
+            id={`delete-app-${item.id}`}
+            title="Delete Application"
+          >
+            <Trash2 className="w-3.5 h-3.5 text-red-600" />
+            <span>Delete</span>
+          </button>
+        </div>
       ),
     },
   ];
@@ -273,13 +303,23 @@ export const AdminApplicationManagement: React.FC = () => {
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={() => setShowFullDetails(true)}
-              className="rounded-full bg-[#F05A28] px-4 py-2 text-xs font-black uppercase tracking-wider text-white transition hover:bg-[#d9481b]"
-            >
-              View Full Application
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setShowFullDetails(true)}
+                className="rounded-full bg-[#F05A28] px-4 py-2 text-xs font-black uppercase tracking-wider text-white transition hover:bg-[#d9481b]"
+              >
+                View Full Application
+              </button>
+              <button
+                type="button"
+                onClick={() => setAppToDelete(selectedApp)}
+                className="rounded-full border border-red-200 bg-red-50 px-4 py-2 text-xs font-black uppercase tracking-wider text-red-700 transition hover:bg-red-100 flex items-center gap-1.5"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                Delete
+              </button>
+            </div>
 
             {/* Application Detail Fields */}
             <div className="space-y-4 text-xs font-sans text-slate-700">
@@ -510,6 +550,46 @@ export const AdminApplicationManagement: React.FC = () => {
         application={selectedApp}
         onClose={() => setShowFullDetails(false)}
       />
+
+      {/* Delete Application Confirmation Modal */}
+      {appToDelete && (
+        <div className="fixed inset-0 z-[999] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl border border-slate-200 p-6 max-w-md w-full shadow-2xl space-y-4">
+            <div className="flex items-center gap-3 text-red-600">
+              <div className="p-3 bg-red-100 rounded-full">
+                <Trash2 className="h-6 w-6" />
+              </div>
+              <div>
+                <h4 className="font-bold text-slate-900 text-base">Delete Application</h4>
+                <p className="text-xs text-slate-500 font-medium">This action cannot be undone.</p>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Are you sure you want to permanently delete application <strong className="text-slate-900 font-mono">{appToDelete.id}</strong> for <strong className="text-slate-900">{appToDelete.startupName}</strong> ({appToDelete.programName})?
+            </p>
+
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setAppToDelete(null)}
+                disabled={deleting}
+                className="px-4 py-2 rounded-lg border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmDeleteApp}
+                disabled={deleting}
+                className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-xs font-bold text-white transition-colors disabled:opacity-50 flex items-center gap-1.5"
+              >
+                {deleting ? "Deleting..." : "Permanently Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
